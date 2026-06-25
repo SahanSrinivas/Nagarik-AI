@@ -1,0 +1,102 @@
+"""Closes the feedback loop — every meaningful agent transition writes a
+human-readable Notification row addressed to the issue reporter.
+
+In production this fans out to WhatsApp Business API (AiSensy) + Web Push.
+For the hackathon we just persist them; the /tracking page polls + renders.
+"""
+
+from __future__ import annotations
+
+import uuid
+from datetime import datetime, timezone
+from typing import Any
+
+from sqlalchemy import JSON, DateTime, ForeignKey, String, func
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column
+
+from nagarik.db import Base, SessionLocal
+from nagarik.models import Issue
+
+
+class Notification(Base):
+    __tablename__ = "notifications"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    issue_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("issues.id"), index=True)
+    citizen_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("citizens.id"), index=True)
+    kind: Mapped[str] = mapped_column(String(40))           # "classified" / "verified" / "scheduled" / ...
+    title: Mapped[str] = mapped_column(String(160))
+    body: Mapped[str] = mapped_column(String(500))
+    channel: Mapped[str] = mapped_column(String(20), default="in_app")  # in_app | whatsapp | push | sms
+    delivered_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    payload: Mapped[dict] = mapped_column(JSON, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+# ---- Human-friendly copy per status transition ----------------------------
+
+TEMPLATES: dict[str, tuple[str, str]] = {
+    "classified":  ("AI saw your photo",        "We classified it as {type} (severity {severity}/5). Routing to the right department now."),
+    "deduped":     ("Matched an existing report", "Looks like {original_id} flagged this nearby first. We've merged your report and you'll get its updates too."),
+    "triaged":     ("Routed to {dept}",         "Filed with {dept}. SLA: by {sla}."),
+    "verified":    ("Verified by your neighbours", "{count} nearby citizens confirmed. The crew dispatcher just picked it up."),
+    "scheduled":   ("Crew assigned",            "Crew {crew} will visit on {when}. Optimized via our MILP route solver."),
+    "in_progress": ("Crew on-site",             "The team is at the location right now."),
+    "resolved":    ("Marked resolved",          "{dept} reported the fix. After-photo verified by CLIP at {sim}% similarity. +{xp} XP earned."),
+    "rejected":    ("Couldn't proceed",         "We had to reject this report — usually a duplicate or out of scope."),
+}
+
+
+def emit(
+    issue_id: str,
+    kind: str,
+    *,
+    extras: dict[str, Any] | None = None,
+    channel: str = "in_app",
+) -> Notification | None:
+    tpl = TEMPLATES.get(kind)
+    if tpl is None:
+        return None
+
+    with SessionLocal() as db:
+        issue = db.get(Issue, issue_id)
+        if issue is None:
+            return None
+
+        ctx: dict[str, Any] = {
+            "type": getattr(issue.type, "value", issue.type),
+            "severity": issue.severity,
+            "dept": issue.routed_department or "the department",
+            "sla": issue.sla_deadline.astimezone(timezone.utc).strftime("%a %d %b, %H:%M IST")
+            if issue.sla_deadline
+            else "soon",
+            **(extras or {}),
+        }
+        # Safe formatting — missing keys render as the literal {name}.
+        title = _safe_format(tpl[0], ctx)
+        body = _safe_format(tpl[1], ctx)
+
+        n = Notification(
+            issue_id=issue.id,
+            citizen_id=issue.reporter_id,
+            kind=kind,
+            title=title,
+            body=body,
+            channel=channel,
+            delivered_at=datetime.now(timezone.utc),
+            payload=ctx,
+        )
+        db.add(n)
+        db.commit()
+        db.refresh(n)
+        return n
+
+
+def _safe_format(template: str, ctx: dict[str, Any]) -> str:
+    class _Missing(dict):
+        def __missing__(self, key: str) -> str:
+            return "{" + key + "}"
+
+    return template.format_map(_Missing(ctx))

@@ -55,6 +55,11 @@ def run_triage(state: AgentState) -> AgentState:
         )
         db.commit()
 
+    # Close the loop: tell the citizen the report has been routed.
+    from nagarik.notifications import emit
+    emit(state["issue_id"], "classified")
+    emit(state["issue_id"], "triaged")
+
     return {
         **state,
         "routed_department": department,

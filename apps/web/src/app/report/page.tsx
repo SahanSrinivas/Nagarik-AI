@@ -70,9 +70,14 @@ export default function ReportPage() {
           <p className="mt-2 text-sm text-ink-600">
             Issue <code className="font-mono">{submitted.slice(0, 8)}…</code> is flowing through the agent pipeline.
           </p>
-          <Link href={`/agents?issue=${submitted}`} className="btn-primary mt-6">
-            Watch the agents work <ArrowRight className="h-4 w-4" />
-          </Link>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <Link href={`/tracking/${submitted}`} className="btn-primary">
+              Track your report <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link href={`/agents?issue=${submitted}`} className="btn-ghost">
+              Watch the agents
+            </Link>
+          </div>
         </div>
       </div>
     );

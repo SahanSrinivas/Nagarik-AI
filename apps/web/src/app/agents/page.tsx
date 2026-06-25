@@ -21,23 +21,43 @@ const PIPELINE = [
 export default function AgentsPage() {
   const [issueId, setIssueId] = useState<string>("");
   const [events, setEvents] = useState<AgentEvent[]>([]);
-  const [tick, setTick] = useState(0);
+  const [connected, setConnected] = useState(false);
 
   useEffect(() => {
     const url = new URL(window.location.href);
     setIssueId(url.searchParams.get("issue") ?? "");
   }, []);
 
+  // Live SSE stream — falls back to polling if EventSource fails.
   useEffect(() => {
     if (!issueId) return;
-    const t = setInterval(() => setTick((x) => x + 1), 1500);
-    return () => clearInterval(t);
+    setEvents([]);
+    setConnected(false);
+    const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    const es = new EventSource(`${base}/issues/${issueId}/events/stream`);
+    es.onopen = () => setConnected(true);
+    es.onmessage = (e) => {
+      try {
+        const ev: AgentEvent = JSON.parse(e.data);
+        setEvents((prev) => [...prev, ev]);
+      } catch {}
+    };
+    let pollT: ReturnType<typeof setInterval> | null = null;
+    es.onerror = () => {
+      setConnected(false);
+      es.close();
+      // Fallback: poll if SSE blocked.
+      if (pollT == null) {
+        pollT = setInterval(() => {
+          api.issueEvents(issueId).then(setEvents).catch(() => {});
+        }, 2000);
+      }
+    };
+    return () => {
+      es.close();
+      if (pollT) clearInterval(pollT);
+    };
   }, [issueId]);
-
-  useEffect(() => {
-    if (!issueId) return;
-    api.issueEvents(issueId).then(setEvents).catch(() => {});
-  }, [issueId, tick]);
 
   const lastByAgent: Record<string, AgentEvent> = {};
   events.forEach((e) => { lastByAgent[e.agent] = e; });
@@ -51,8 +71,10 @@ export default function AgentsPage() {
               <Activity className="h-5 w-5 text-brand-600" />
               <h1 className="text-xl font-semibold tracking-tight">Live agent pipeline</h1>
             </div>
-            <p className="mt-1 text-sm text-ink-600">
-              Polls every 1.5s · Issue <code className="font-mono text-ink-900">{issueId || "—"}</code>
+            <p className="mt-1 flex items-center gap-2 text-sm text-ink-600">
+              <span className={`inline-block h-2 w-2 rounded-full ${connected ? "bg-brand-500 animate-pulse-ring" : "bg-ink-300"}`} />
+              {connected ? "SSE connected · live" : "Not connected"}
+              <span className="ml-1">· Issue <code className="font-mono text-ink-900">{issueId || "—"}</code></span>
             </p>
           </div>
           <input

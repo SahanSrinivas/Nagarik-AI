@@ -24,7 +24,7 @@ LIST_PATH = "/complaints/{city}/all/{page}"
 HEADERS = {
     "User-Agent": (
         "NagarikAI-Hackathon-Scraper/0.1 "
-        "(contact: 26sahan@gmail.com — academic backtest only)"
+        "(contact: 26sahan@gmail.com - academic backtest only)"
     )
 }
 

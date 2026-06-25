@@ -17,6 +17,7 @@ from nagarik.models import (  # noqa: F401 — load model metadata
     Issue,
     Verification,
 )
+from nagarik.notifications import Notification  # noqa: F401 — register model
 from nagarik.settings import get_settings
 
 config = context.config

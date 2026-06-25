@@ -28,11 +28,38 @@ export interface AgentEvent {
   created_at: string;
 }
 
+export interface RouteStop {
+  issue_id: string;
+  lat: number;
+  lng: number;
+  type: string;
+  severity: number;
+  address: string | null;
+}
+
+export interface CrewRoute {
+  crew_id: string;
+  crew_name: string;
+  department: string;
+  depot: { lat: number; lng: number };
+  stops: RouteStop[];
+  total_km: number;
+  total_time_min: number;
+}
+
 export interface ScheduleResponse {
   solver_status: string;
   runtime_seconds: number;
-  routes: { crew_id: string; sequence: string[]; total_km: number; total_time_min: number }[];
+  routes: CrewRoute[];
   metrics: Record<string, number>;
+}
+
+export interface CompareResponse {
+  fifo: Record<string, number>;
+  milp: Record<string, number>;
+  improvement: { km_reduction_pct: number | null; additional_served: number };
+  n_issues: number;
+  n_crews: number;
 }
 
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
@@ -70,11 +97,18 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ date, ward }),
     }),
+  compareSchedule: (date: string, ward?: string) =>
+    call<CompareResponse>("/schedule/compare", {
+      method: "POST",
+      body: JSON.stringify({ date, ward }),
+    }),
   wardStats: () => call<{ ward: string; total: number; resolved: number }[]>("/insights/ward-stats"),
   leaderboard: () =>
     call<{ id: string; name: string; xp: number; badge: string | null }[]>("/insights/leaderboard"),
   hotspots: () =>
     call<{ lat: number; lng: number; risk: number; type: string }[]>("/insights/hotspot-prediction"),
+  hotspotsGeoJSON: () =>
+    call<GeoJSON.FeatureCollection>("/insights/hotspots.geojson"),
   signedUpload: (contentType = "image/jpeg") =>
     call<SignedUpload>(`/uploads/signed-url?content_type=${encodeURIComponent(contentType)}`, {
       method: "POST",
@@ -85,6 +119,15 @@ export const api = {
     call<{ enabled: boolean; merkle_root: string; tx_hash: string | null; batch_id: number | null; leaf_count: number }>("/chain/anchor/flush", { method: "POST" }),
   mintBadge: (citizenId: string) =>
     call<{ minted: boolean; shadow_mode: boolean; tier: string; wallet: string | null; tx_hash: string | null }>(`/chain/badge/check/${citizenId}`, { method: "POST" }),
+  wallet: (citizenId: string) =>
+    call<{
+      citizen: { id: string; name: string; phone_masked: string; xp: number; current_badge: string | null };
+      wallet_address: string;
+      chain: { enabled: boolean; network: string; badge_contract: string | null; explorer_base: string | null };
+      earned_count: number;
+      badges: { tier: string; xp_threshold: number; image: string; earned: boolean; is_current: boolean }[];
+      next_tier: { tier: string; xp_threshold: number; xp_to_go: number; progress_pct: number } | null;
+    }>(`/chain/wallet/${citizenId}`),
 };
 
 export async function uploadPhoto(file: File): Promise<string> {

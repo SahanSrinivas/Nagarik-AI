@@ -1,7 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Award, Trophy } from "lucide-react";
+import { Award, Trophy, Wallet } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { Counter, Reveal, Stagger } from "@/components/Motion";
@@ -32,21 +33,26 @@ export default function ImpactPage() {
         <Stagger step={0.08} className="grid gap-4 sm:grid-cols-3">
           {top.map((c, i) => (
             <Reveal key={c.id}>
-              <motion.div
-                whileHover={{ y: -3 }}
-                className="card p-6 text-center"
-                style={{ background: i === 0 ? "linear-gradient(180deg, #ecfdf5 0%, #ffffff 60%)" : undefined }}
-              >
-                <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-glow">
-                  <Award className="h-6 w-6" />
-                </div>
-                <div className="mt-3 text-xs uppercase tracking-wider text-ink-500">Rank #{i + 1}</div>
-                <div className="mt-1 text-lg font-semibold">{c.name}</div>
-                <div className="mt-1 font-mono text-2xl text-brand-700">
-                  <Counter to={c.xp} suffix=" XP" />
-                </div>
-                {c.badge && <Pill tone="brand" className="mt-3">{c.badge}</Pill>}
-              </motion.div>
+              <Link href={`/wallet/${c.id}`} className="block">
+                <motion.div
+                  whileHover={{ y: -3 }}
+                  className="card p-6 text-center"
+                  style={{ background: i === 0 ? "linear-gradient(180deg, #ecfdf5 0%, #ffffff 60%)" : undefined }}
+                >
+                  <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-glow">
+                    <Award className="h-6 w-6" />
+                  </div>
+                  <div className="mt-3 text-xs uppercase tracking-wider text-ink-500">Rank #{i + 1}</div>
+                  <div className="mt-1 text-lg font-semibold">{c.name}</div>
+                  <div className="mt-1 font-mono text-2xl text-brand-700">
+                    <Counter to={c.xp} suffix=" XP" />
+                  </div>
+                  <div className="mt-2 inline-flex items-center gap-1 text-xs text-brand-700">
+                    <Wallet className="h-3 w-3" /> view wallet
+                  </div>
+                  {c.badge && <Pill tone="brand" className="mt-3">{c.badge}</Pill>}
+                </motion.div>
+              </Link>
             </Reveal>
           ))}
         </Stagger>
@@ -64,10 +70,12 @@ export default function ImpactPage() {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.04 * i }}
-                className="border-t border-ink-100"
+                className="border-t border-ink-100 hover:bg-ink-50"
               >
                 <td className="p-4 text-ink-500">{i + 4}</td>
-                <td className="p-4 font-medium text-ink-900">{c.name}</td>
+                <td className="p-4 font-medium text-ink-900">
+                  <Link href={`/wallet/${c.id}`} className="hover:text-brand-700">{c.name}</Link>
+                </td>
                 <td className="p-4 text-right font-mono">{c.xp}</td>
                 <td className="p-4">{c.badge ? <Pill tone="brand">{c.badge}</Pill> : <span className="text-ink-400">—</span>}</td>
               </motion.tr>

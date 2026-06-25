@@ -34,6 +34,9 @@ const NAV = [
   { href: "/chain",     label: "Chain",     icon: Link2 },
 ];
 
+// Tracking + wallet routes are linked from contextual surfaces (report
+// success page, leaderboard cards) rather than the top nav.
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${mono.variable}`}>

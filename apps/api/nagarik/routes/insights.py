@@ -1,6 +1,9 @@
 """Predictive insights — risk heatmap, top wards, leaderboard."""
 
-from fastapi import APIRouter, Depends
+import json
+from pathlib import Path
+
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import desc, func, select
 from sqlalchemy.orm import Session
 
@@ -8,6 +11,9 @@ from nagarik.db import get_db
 from nagarik.models import Citizen, Issue, IssueStatus
 
 router = APIRouter(prefix="/insights", tags=["insights"])
+
+# Repo root → data/processed/hotspots.geojson  (written by notebook 03).
+HOTSPOTS_PATH = Path(__file__).resolve().parents[3] / "data" / "processed" / "hotspots.geojson"
 
 
 @router.get("/ward-stats")
@@ -42,14 +48,36 @@ def leaderboard(db: Session = Depends(get_db)) -> list[dict]:
 
 @router.get("/hotspot-prediction")
 def hotspot_prediction(db: Session = Depends(get_db)) -> list[dict]:
-    """Placeholder — replaced in Week 3 by LightGBM model output."""
+    """Lightweight summary view — top N hotspots as records."""
+    fc = _read_hotspots_geojson()
     return [
         {
-            "lat": 12.9716,
-            "lng": 77.5946,
-            "risk": 0.78,
-            "type": "pothole",
+            "lat": f["geometry"]["coordinates"][1],
+            "lng": f["geometry"]["coordinates"][0],
+            "risk": f["properties"].get("risk", 0.0),
+            "type": f["properties"].get("type", "pothole"),
             "horizon_days": 30,
-            "drivers": ["high rainfall forecast", "high traffic", "history density"],
+            "drivers": list((f["properties"].get("drivers") or {}).keys()),
         }
+        for f in fc.get("features", [])
     ]
+
+
+@router.get("/hotspots.geojson")
+def hotspots_geojson() -> dict:
+    """Raw GeoJSON FeatureCollection for the Mapbox heatmap layer.
+
+    Produced by `notebooks/03_predictive_model.ipynb` → LightGBM risk model
+    over a 250m grid of Bangalore. If the file isn't generated yet, return a
+    minimal placeholder so the frontend renders nothing instead of erroring.
+    """
+    return _read_hotspots_geojson()
+
+
+def _read_hotspots_geojson() -> dict:
+    if not HOTSPOTS_PATH.exists():
+        return {"type": "FeatureCollection", "features": []}
+    try:
+        return json.loads(HOTSPOTS_PATH.read_text())
+    except json.JSONDecodeError as e:
+        raise HTTPException(500, f"hotspots.geojson is malformed: {e}") from e

@@ -66,5 +66,5 @@ class ScheduleRequest(BaseModel):
 class ScheduleResponse(BaseModel):
     solver_status: str
     runtime_seconds: float
-    routes: list[dict]                   # [{crew_id, sequence:[issue_id,...], total_km, total_time_min}]
+    routes: list[dict]                   # [{crew_id, crew_name, depot:{lat,lng}, stops:[{issue_id,lat,lng,type,severity}], total_km, total_time_min}]
     metrics: dict                        # {weighted_lateness, total_km, served, unserved}

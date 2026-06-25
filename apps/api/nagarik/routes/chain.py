@@ -113,3 +113,61 @@ def check_and_mint_badge(citizen_id: str, db: Session = Depends(get_db)) -> dict
         "tx_hash": result.tx_hash,
         "xp": citizen.xp,
     }
+
+
+@router.get("/wallet/{citizen_id}")
+def wallet(citizen_id: str, db: Session = Depends(get_db)) -> dict:
+    """Citizen-facing wallet view — current XP, derived address, every milestone
+    they've earned (and the next tier they're working toward)."""
+    from nagarik.chain.badges import MILESTONES, derive_wallet, tier_for_xp
+    from nagarik.chain.settings import get_chain_settings
+
+    citizen = db.get(Citizen, citizen_id)
+    if citizen is None:
+        raise HTTPException(404, "citizen not found")
+
+    cs = get_chain_settings()
+    wallet_addr = derive_wallet(citizen.phone, cs.chain_signer_pk or "demo-secret")
+    earned = tier_for_xp(citizen.xp)
+    earned_tiers = {m[1] for m in MILESTONES if citizen.xp >= m[0]}
+
+    # Find the next tier above current XP.
+    next_tier = next(((xp, name, img) for (xp, name, img) in MILESTONES if xp > citizen.xp), None)
+
+    return {
+        "citizen": {
+            "id": str(citizen.id),
+            "name": citizen.name or "Anonymous",
+            "phone_masked": citizen.phone[:3] + "****" + citizen.phone[-3:],
+            "xp": citizen.xp,
+            "current_badge": citizen.badge,
+        },
+        "wallet_address": wallet_addr,
+        "chain": {
+            "enabled": cs.chain_enabled,
+            "network": "polygon-amoy" if cs.chain_id == 80002 else f"chain-{cs.chain_id}",
+            "badge_contract": cs.badge_contract or None,
+            "explorer_base": "https://amoy.polygonscan.com/address/" if cs.chain_id == 80002 else None,
+        },
+        "earned_count": len(earned_tiers),
+        "badges": [
+            {
+                "tier": name,
+                "xp_threshold": xp,
+                "image": image,
+                "earned": name in earned_tiers,
+                "is_current": earned is not None and earned[1] == name,
+            }
+            for xp, name, image in MILESTONES
+        ],
+        "next_tier": (
+            {
+                "tier": next_tier[1],
+                "xp_threshold": next_tier[0],
+                "xp_to_go": next_tier[0] - citizen.xp,
+                "progress_pct": round(100 * citizen.xp / next_tier[0], 1),
+            }
+            if next_tier
+            else None
+        ),
+    }

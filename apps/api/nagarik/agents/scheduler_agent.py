@@ -83,6 +83,16 @@ def run_scheduler(state: AgentState) -> AgentState:
                     scheduled_this_issue = (route["crew_id"], seq)
         db.commit()
 
+    # Close the loop: notify the citizen that a crew has been assigned.
+    if scheduled_this_issue is not None:
+        from nagarik.notifications import emit
+        crew_id, seq = scheduled_this_issue
+        emit(
+            state["issue_id"],
+            "scheduled",
+            extras={"crew": str(crew_id)[:8], "when": f"today, slot {seq + 1}"},
+        )
+
     return {
         **state,
         "scheduled_for": str(scheduled_this_issue) if scheduled_this_issue else None,
