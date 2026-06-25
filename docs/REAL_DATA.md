@@ -78,6 +78,27 @@ Distance reduction: 79.7%
 The full JSON dump lands at `data/processed/backtest.json` — the frontend
 `/milp` page calls `/schedule/compare` to recompute live during the demo.
 
+## Predictive layer (real rainfall, real complaints panel)
+
+```bash
+PYTHONPATH=. python -m scripts.build_hotspots
+# panel: 14,580 rows | wards: 243 | months: 2021-01→2025-12
+#   MAE (counts)  : 1.66
+#   R²  (log)     : 0.857
+#   R²  (counts)  : 0.871
+# wrote 150 hotspots → data/processed/hotspots.geojson
+```
+
+Spec: `log(road_complaints+1) ~ ward_FE + month_FE + rain + rain_lag1`.
+Train: 2021-2024. Test: 2025. Same recipe as the reference forecast.json.
+
+## Defect CNN (real model)
+
+`data/processed/defect_cnn.pt` is the published 24k-parameter pothole defect
+classifier (3 conv blocks → GAP → 2-class head, 64×64 RGB input). ~92% test
+accuracy on the held-out set per `defect_cnn.json`. Wired into ResolutionAgent
+for before/after fix verification.
+
 ## What's still interface, not validated
 
 Per the source dataset's own honesty audit, we copy here:

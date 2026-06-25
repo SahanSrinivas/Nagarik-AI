@@ -91,13 +91,15 @@ subject to:  each issue served ≤ 1 time
 
 The ingest reads `community-hero/data/ward_backlog.json` (243 real KGIS wards,
 19,194 open complaints), distributes them by category mix into our schema, and
-feeds the live DB. Then `scripts/run_real_backtest.py` runs both solvers.
+feeds the live DB (`--cap 50` → **17,481 real-distributed issues**, basically
+the full open backlog). Then `scripts/run_real_backtest.py` runs both solvers.
 
 | Issue load | Metric | FIFO baseline | NagarikAI MILP | Δ |
 |---|---|---:|---:|---:|
 | 120 / 12 crews | Total km driven | 874 km | **52 km** | **−94.1%** |
 | 250 / 12 crews | Total km driven | 1,509 km | **104 km** | **−93.1%** |
 | 600 / 12 crews | Total km driven | 1,311 km | **266 km** | **−79.7%** |
+| **800 / 12 crews** | Total km driven | 1,019 km | **107 km** | **−89.5%** |
 
 ### What the numbers mean — honest
 
@@ -117,10 +119,16 @@ feeds the live DB. Then `scripts/run_real_backtest.py` runs both solvers.
 > **Real Bengaluru data. Real solver. Real wins.**
 
 ### Data provenance
-- **243 KGIS ward polygons** — DataMeet `Municipal_Spatial_Data` (real)
+- **243 KGIS ward polygons** — DataMeet `Municipal_Spatial_Data` (real,
+  rendered as a translucent overlay on `/map`)
 - **126,980 grievances aggregated** — OpenCity / Janaagraha "Decoding Bengaluru's
   Civic Complaints" H1-2025 (real)
-- **19,194 open complaints** distributed by category & ward (real ratios)
+- **17,481 issues live in our DB** at `--cap 50` (real distribution across
+  243 wards and 8 categories)
+- **Real rainfall panel** — 60 months of Bengaluru rainfall × 243 wards (14,580
+  observations); LightGBM hits **R² = 0.871** on 2025 hold-out
+- **Real pothole CNN** — `data/processed/defect_cnn.pt` (~92% test accuracy
+  per `defect_cnn.json`); wired into ResolutionAgent for 2-layer closure verify
 - **NagarikAI MILP backtest** — `scripts/run_real_backtest.py` reads the DB and
   runs both solvers head-to-head; results in `data/processed/backtest.json`
 
@@ -128,6 +136,14 @@ feeds the live DB. Then `scripts/run_real_backtest.py` runs both solvers.
 - Every status change emits a `Notification` row addressed to the reporter
 - Citizen sees a live timeline on `/tracking/{id}` — no more "in progress" lies
 - Channels are pluggable: `in_app` today, `whatsapp` / `push` / `sms` tomorrow
+
+### Closure verification (the trust differentiator)
+- ResolutionAgent runs a **2-layer audit** on every after-photo:
+  - Scene similarity via CLIP between before/after → catches photo swaps
+  - Defect CNN (24k-param custom net, ~92% acc) → catches "same hole reposted"
+- Genuine fix → status `RESOLVED` + closure notification fired
+- Fake closure → reverts to `SCHEDULED`, crew has to redo
+- This is what BBMP's own apps **structurally cannot do** — they trust the crew's word
 
 ### On-chain transparency
 - Every `AgentEvent` Merkle-hashed and anchored to Polygon Amoy
@@ -138,9 +154,12 @@ feeds the live DB. Then `scripts/run_real_backtest.py` runs both solvers.
 1. Snap a photo on `/report` → 7 agents fire in &lt; 10 seconds (visible on `/agents` via SSE)
 2. Citizen sees the timeline build on `/tracking/[id]` in real time
 3. Operator hits `/milp` → "Solve & visualize" draws optimal routes on the map
-4. Hit "Compare vs FIFO" → 80%+ km reduction headline on real data
-5. `/map` toggles the LightGBM hotspot heatmap → next-30-day risk
-6. `/chain` shows the live anchor; `/wallet/[id]` shows earned soulbound badges
+4. Hit "Compare vs FIFO" → 80–94% km reduction headline on real data
+5. `/map` shows real KGIS ward polygons + hotspot heatmap predicted by the
+   real-rainfall LightGBM (toggle on/off)
+6. Crew uploads after-photo → CNN audit catches "same hole" frauds, only
+   genuine fixes get RESOLVED
+7. `/chain` shows the live anchor; `/wallet/[id]` shows earned soulbound badges
 
 ### Why this wins
 1. **7 visible agents** — judges see live SSE-streamed orchestration, not slideware

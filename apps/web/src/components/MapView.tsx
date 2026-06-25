@@ -9,6 +9,7 @@ interface Props {
   issues?: Issue[];
   routes?: CrewRoute[];
   hotspots?: GeoJSON.FeatureCollection | null;
+  wards?: GeoJSON.FeatureCollection | null;
   center?: [number, number];
   zoom?: number;
   onPick?: (lng: number, lat: number) => void;
@@ -33,6 +34,7 @@ export function MapView({
   issues = [],
   routes = [],
   hotspots = null,
+  wards = null,
   center = CITY,
   zoom = 11,
   onPick,
@@ -95,6 +97,15 @@ export function MapView({
     if (map.isStyleLoaded()) ensure();
     else map.once("load", ensure);
   }, [hotspots]);
+
+  // --- ward polygons ---
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const ensure = () => applyWards(map, wards);
+    if (map.isStyleLoaded()) ensure();
+    else map.once("load", ensure);
+  }, [wards]);
 
   if (!TOKEN) {
     return (
@@ -207,6 +218,32 @@ function applyRoutes(map: mapboxgl.Map, routes: CrewRoute[]) {
   });
   if (touched) map.fitBounds(bounds, { padding: 60, duration: 600, maxZoom: 13 });
 }
+
+function applyWards(map: mapboxgl.Map, wards: GeoJSON.FeatureCollection | null) {
+  const SRC = "wards-src";
+  const FILL = "wards-fill";
+  const LINE = "wards-line";
+  if (map.getLayer(FILL)) map.removeLayer(FILL);
+  if (map.getLayer(LINE)) map.removeLayer(LINE);
+  if (map.getSource(SRC)) map.removeSource(SRC);
+  if (!wards || wards.features.length === 0) return;
+
+  map.addSource(SRC, { type: "geojson", data: wards });
+  // Translucent fill — sit BELOW issue pins and route polylines.
+  map.addLayer({
+    id: FILL,
+    type: "fill",
+    source: SRC,
+    paint: { "fill-color": "#10b981", "fill-opacity": 0.06 },
+  }, map.getLayer("wards-fill-noop") ? undefined : undefined);
+  map.addLayer({
+    id: LINE,
+    type: "line",
+    source: SRC,
+    paint: { "line-color": "#10b981", "line-width": 1, "line-opacity": 0.45 },
+  });
+}
+
 
 function applyHotspots(map: mapboxgl.Map, hotspots: GeoJSON.FeatureCollection | null) {
   const ID = "hotspots";

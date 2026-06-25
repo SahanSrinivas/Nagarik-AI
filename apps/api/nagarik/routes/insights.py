@@ -12,8 +12,8 @@ from nagarik.models import Citizen, Issue, IssueStatus
 
 router = APIRouter(prefix="/insights", tags=["insights"])
 
-# Repo root → data/processed/hotspots.geojson  (written by notebook 03).
-HOTSPOTS_PATH = Path(__file__).resolve().parents[3] / "data" / "processed" / "hotspots.geojson"
+# apps/api/nagarik/routes/insights.py → parents[4] = repo root.
+HOTSPOTS_PATH = Path(__file__).resolve().parents[4] / "data" / "processed" / "hotspots.geojson"
 
 
 @router.get("/ward-stats")
@@ -61,6 +61,22 @@ def hotspot_prediction(db: Session = Depends(get_db)) -> list[dict]:
         }
         for f in fc.get("features", [])
     ]
+
+
+@router.get("/wards.geojson")
+def wards_geojson() -> dict:
+    """243 real KGIS Bengaluru ward polygons.
+
+    Sourced from DataMeet `Municipal_Spatial_Data` via community-hero/data.
+    File-served (~145KB); cache with ETag in production.
+    """
+    path = HOTSPOTS_PATH.parent / "wards.geojson"
+    if not path.exists():
+        return {"type": "FeatureCollection", "features": []}
+    try:
+        return json.loads(path.read_text())
+    except json.JSONDecodeError as e:
+        raise HTTPException(500, f"wards.geojson is malformed: {e}") from e
 
 
 @router.get("/hotspots.geojson")

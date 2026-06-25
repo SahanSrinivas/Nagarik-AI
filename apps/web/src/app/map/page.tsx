@@ -1,6 +1,6 @@
 "use client";
 
-import { Flame, Map as MapIcon } from "lucide-react";
+import { Flame, LandPlot, Map as MapIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { MapView } from "@/components/MapView";
@@ -10,15 +10,15 @@ import { api, type Issue } from "@/lib/api";
 export default function MapPage() {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [hotspots, setHotspots] = useState<GeoJSON.FeatureCollection | null>(null);
+  const [wards, setWards] = useState<GeoJSON.FeatureCollection | null>(null);
   const [showHotspots, setShowHotspots] = useState(true);
+  const [showWards, setShowWards] = useState(true);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
-    api.listIssues().then(setIssues).catch((e) => setErr(String(e)));
-    api
-      .hotspotsGeoJSON()
-      .then((fc) => setHotspots(fc))
-      .catch(() => setHotspots(null));
+    api.listIssues().then((issues) => setIssues(issues.slice(0, 1500))).catch((e) => setErr(String(e)));
+    api.hotspotsGeoJSON().then((fc) => setHotspots(fc)).catch(() => setHotspots(null));
+    api.wardsGeoJSON().then((fc) => setWards(fc)).catch(() => setWards(null));
   }, []);
 
   return (
@@ -36,6 +36,12 @@ export default function MapPage() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => setShowWards((s) => !s)}
+              className={showWards ? "btn-primary" : "btn-ghost"}
+            >
+              <LandPlot className="h-4 w-4" /> {showWards ? "Wards on" : "Wards off"}
+            </button>
             <button
               onClick={() => setShowHotspots((s) => !s)}
               className={showHotspots ? "btn-primary" : "btn-ghost"}
@@ -57,6 +63,7 @@ export default function MapPage() {
         <MapView
           issues={issues}
           hotspots={showHotspots ? hotspots : null}
+          wards={showWards ? wards : null}
           className="h-[65vh] w-full rounded-xl"
         />
       </div>

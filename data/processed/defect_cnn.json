@@ -1,0 +1,13 @@
+{
+ "arch": "3x conv(16,32,64)+GAP+FC, 96x96 RGB, from scratch",
+ "n_train": 3518,
+ "n_val": 620,
+ "n_test": 1185,
+ "train_acc": 0.945,
+ "val_acc": 0.942,
+ "test_acc": 0.92,
+ "input": 64,
+ "embed_dim": 64,
+ "data": "real potholes (michelpf/dataset-pothole) vs synthetic patched repairs",
+ "note": "proof-of-concept defect detector; negatives are synthetic repairs"
+}

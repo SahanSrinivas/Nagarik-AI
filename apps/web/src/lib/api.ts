@@ -109,6 +109,8 @@ export const api = {
     call<{ lat: number; lng: number; risk: number; type: string }[]>("/insights/hotspot-prediction"),
   hotspotsGeoJSON: () =>
     call<GeoJSON.FeatureCollection>("/insights/hotspots.geojson"),
+  wardsGeoJSON: () =>
+    call<GeoJSON.FeatureCollection>("/insights/wards.geojson"),
   signedUpload: (contentType = "image/jpeg") =>
     call<SignedUpload>(`/uploads/signed-url?content_type=${encodeURIComponent(contentType)}`, {
       method: "POST",
