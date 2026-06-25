@@ -137,6 +137,35 @@ the full open backlog). Then `scripts/run_real_backtest.py` runs both solvers.
 - Citizen sees a live timeline on `/tracking/{id}` — no more "in progress" lies
 - Channels are pluggable: `in_app` today, `whatsapp` / `push` / `sms` tomorrow
 
+### Routing — "model proposes, gate decides" (with tough guardrails)
+
+The TriageAgent runs in two stages:
+
+1. **LLM proposes** — Claude Haiku 4.5 reads the citizen report + Vision
+   Agent's classification, then calls a `route_issue` tool with a strictly-typed
+   JSON schema (allowlist-enforced via tool-use, low temp, server-controlled
+   system message, prompt-injection delimiters around citizen content).
+2. **Deterministic gate decides** — `nagarik/agents/guardrails.py` checks
+   the proposal against the canonical SOP, allowlists, SLA bounds, severity
+   bounds. Catches PII, prompt injection, hallucinated values, and
+   department↔type mismatches. **Any failure → SOP fallback. Always.**
+
+### Ablation — 51 deliberately-tricky fixtures
+
+`python -m scripts.ablate_routing` (real Claude call):
+
+| Outcome | Count | Notes |
+|---|---:|---|
+| LLM proposal accepted (gate agrees with SOP) | **48 / 51** | 94% direct agreement |
+| Gate overrode LLM (wrong department picked) | **3 / 51** | all 3 were encroachment → Helpdesk vs. Town Planning |
+| Prompt-injection attempts that fooled the LLM | **0 / 4** | Claude resisted "IGNORE PREVIOUS INSTRUCTIONS" cleanly |
+| PII regurgitated into LLM reasoning | **0 / 3** | Claude excluded phone/email/Aadhaar from notes |
+| Hallucinated departments/types | **0 / 51** | tool-use schema enforces enum |
+
+> **The gate caught every misroute the LLM made.** Claude itself was tougher
+> than expected on the adversarial inputs — but the gate is still
+> non-negotiable, because we cannot promise 0 misroutes on unseen inputs.
+
 ### Closure verification (the trust differentiator)
 - ResolutionAgent runs a **2-layer audit** on every after-photo:
   - Scene similarity via CLIP between before/after → catches photo swaps

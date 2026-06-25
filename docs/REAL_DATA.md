@@ -78,6 +78,34 @@ Distance reduction: 79.7%
 The full JSON dump lands at `data/processed/backtest.json` — the frontend
 `/milp` page calls `/schedule/compare` to recompute live during the demo.
 
+## Routing ablation — LLM proposes, gate decides
+
+```bash
+PYTHONPATH=. python -m scripts.ablate_routing
+# === Routing ablation on 51 fixtures ===
+#   LLM proposals reached the gate :  51
+#   Gate verdicts:
+#     accepted                          48
+#     rejected                           3
+#   Fell back to SOP                :   3  (6%)
+#   Department misroutes caught     :   3
+#   Prompt-injection caught         :   0   (LLM resisted at the model layer)
+#   PII redacted in reasoning       :   0   (LLM excluded PII at the model layer)
+#   Hallucinated values caught      :   0   (tool-use schema enforces enums)
+```
+
+The 3 SOP overrides were all "encroachment → BBMP Helpdesk" picks; the gate
+corrected them to "encroachment → BBMP Town Planning". No injection or PII
+leaks survived to the gate — Claude refused at the model layer.
+
+Run with `--offline` to stress-test the gate without spending API credits:
+the offline path passes a worst-case stub proposal (wrong dept, SLA=9999,
+severity=7) and the gate rejects 100% (51/51) — proving the deterministic
+override works regardless of LLM behaviour.
+
+Output JSON: `data/processed/routing_ablation.json` — per-fixture verdict
++ LLM reasoning + disagreement list.
+
 ## Predictive layer (real rainfall, real complaints panel)
 
 ```bash
