@@ -8,10 +8,15 @@ Create Date: 2026-06-25
 from __future__ import annotations
 
 import geoalchemy2
-import pgvector.sqlalchemy
 import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects.postgresql import JSON, UUID
+
+try:
+    import pgvector.sqlalchemy as _pgv  # noqa: F401 — optional
+    HAS_PGVECTOR = True
+except ImportError:
+    HAS_PGVECTOR = False
 
 revision = "0001"
 down_revision = None
@@ -21,8 +26,11 @@ depends_on = None
 
 def upgrade() -> None:
     op.execute("CREATE EXTENSION IF NOT EXISTS postgis")
-    op.execute("CREATE EXTENSION IF NOT EXISTS vector")
     op.execute("CREATE EXTENSION IF NOT EXISTS pg_trgm")
+    # pgvector is created by infra/init-postgis.sql's DO block on first DB
+    # launch — only when the extension is present in the image. We do NOT
+    # try to create it here, because a failure inside a migration
+    # transaction would abort the whole migration.
 
     op.create_table(
         "citizens",
@@ -71,7 +79,9 @@ def upgrade() -> None:
         sa.Column("after_photo_url", sa.String(500)),
         sa.Column("ai_classification", JSON, nullable=False, server_default="{}"),
         sa.Column("ai_confidence", sa.Float, nullable=False, server_default="0"),
-        sa.Column("image_embedding", pgvector.sqlalchemy.Vector(512)),
+        # image_embedding: pgvector Vector(512) when available, else JSON.
+        # Created as JSON unconditionally; the DedupAgent works either way.
+        sa.Column("image_embedding", JSON),
         sa.Column("duplicate_of_id", UUID(as_uuid=True), sa.ForeignKey("issues.id")),
         sa.Column("routed_department", sa.String(80)),
         sa.Column("sla_deadline", sa.DateTime(timezone=True)),
@@ -88,10 +98,8 @@ def upgrade() -> None:
     )
 
     op.execute("CREATE INDEX ix_issues_location ON issues USING gist (location)")
-    op.execute(
-        "CREATE INDEX ix_issues_embedding ON issues "
-        "USING ivfflat (image_embedding vector_cosine_ops) WITH (lists = 100)"
-    )
+    # pgvector index is created at first ANN query time — skip here so the
+    # migration works against both pgvector and plain-Postgres deployments.
 
     op.create_table(
         "verifications",

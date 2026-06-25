@@ -1,0 +1,18 @@
+{
+  "source": "real BBMP backlog via community-hero/data/ward_backlog.json (OpenCity / Janaagraha H1-2025)",
+  "n_issues": 250,
+  "n_crews": 12,
+  "fifo_metrics": {
+    "total_km": 1509.02,
+    "served": 104,
+    "unserved": 146
+  },
+  "milp_metrics": {
+    "total_km": 103.61,
+    "served": 51,
+    "unserved": 199,
+    "weighted_lateness_proxy": 100
+  },
+  "km_reduction_pct": 93.1,
+  "additional_served": -53
+}

@@ -66,3 +66,16 @@
 {"type":"edit","file":"/Users/sahan_kolluri/Pegasus/Work/NagarikAI/apps/web/src/app/impact/page.tsx","timestamp":1782425849793,"sessionId":null}
 {"type":"edit","file":"/Users/sahan_kolluri/Pegasus/Work/NagarikAI/apps/api/nagarik/agents/vision_agent.py","timestamp":1782425878519,"sessionId":null}
 {"type":"edit","file":"/Users/sahan_kolluri/Pegasus/Work/NagarikAI/apps/web/src/app/layout.tsx","timestamp":1782425883832,"sessionId":null}
+{"type":"edit","file":"/Users/sahan_kolluri/Pegasus/Work/NagarikAI/infra/docker-compose.yml","timestamp":1782426947255,"sessionId":null}
+{"type":"edit","file":"/Users/sahan_kolluri/Pegasus/Work/NagarikAI/infra/init-postgis.sql","timestamp":1782426951205,"sessionId":null}
+{"type":"edit","file":"/Users/sahan_kolluri/Pegasus/Work/NagarikAI/apps/api/alembic/versions/0001_initial.py","timestamp":1782426955421,"sessionId":null}
+{"type":"edit","file":"/Users/sahan_kolluri/Pegasus/Work/NagarikAI/apps/api/alembic/versions/0001_initial.py","timestamp":1782426958809,"sessionId":null}
+{"type":"edit","file":"/Users/sahan_kolluri/Pegasus/Work/NagarikAI/apps/api/alembic/versions/0001_initial.py","timestamp":1782426961379,"sessionId":null}
+{"type":"edit","file":"/Users/sahan_kolluri/Pegasus/Work/NagarikAI/apps/api/alembic/versions/0001_initial.py","timestamp":1782426964902,"sessionId":null}
+{"type":"edit","file":"/Users/sahan_kolluri/Pegasus/Work/NagarikAI/apps/api/nagarik/models.py","timestamp":1782426969493,"sessionId":null}
+{"type":"edit","file":"/Users/sahan_kolluri/Pegasus/Work/NagarikAI/apps/api/nagarik/models.py","timestamp":1782426971949,"sessionId":null}
+{"type":"edit","file":"/Users/sahan_kolluri/Pegasus/Work/NagarikAI/apps/api/nagarik/models.py","timestamp":1782426976018,"sessionId":null}
+{"type":"edit","file":"/Users/sahan_kolluri/Pegasus/Work/NagarikAI/apps/api/alembic/versions/0001_initial.py","timestamp":1782427026928,"sessionId":null}
+{"type":"edit","file":"/Users/sahan_kolluri/Pegasus/Work/NagarikAI/apps/api/scripts/run_real_backtest.py","timestamp":1782427063304,"sessionId":null}
+{"type":"edit","file":"/Users/sahan_kolluri/Pegasus/Work/NagarikAI/docs/PITCH.md","timestamp":1782427196440,"sessionId":null}
+{"type":"edit","file":"/Users/sahan_kolluri/Pegasus/Work/NagarikAI/docs/REAL_DATA.md","timestamp":1782427217053,"sessionId":null}

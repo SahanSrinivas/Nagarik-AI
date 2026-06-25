@@ -10,12 +10,19 @@ from datetime import datetime
 from enum import Enum
 
 from geoalchemy2 import Geography
-from pgvector.sqlalchemy import Vector
 from sqlalchemy import JSON, DateTime, Float, ForeignKey, Index, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from nagarik.db import Base
+
+# pgvector is optional — fall back to JSON-stored list of floats when not
+# available. The DedupAgent reads either form via a unified helper.
+try:
+    from pgvector.sqlalchemy import Vector as _Vector  # type: ignore
+    EmbeddingType = _Vector(512)
+except ImportError:
+    EmbeddingType = JSON
 
 
 class IssueType(str, Enum):
@@ -79,7 +86,7 @@ class Issue(Base):
     ai_confidence: Mapped[float] = mapped_column(Float, default=0.0)
 
     # Filled in by DedupAgent — CLIP image embedding for similarity search.
-    image_embedding: Mapped[list[float] | None] = mapped_column(Vector(512))
+    image_embedding: Mapped[list[float] | None] = mapped_column(EmbeddingType, nullable=True)
     duplicate_of_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("issues.id"), nullable=True
     )
@@ -105,14 +112,8 @@ class Issue(Base):
     __table_args__ = (
         # GIST index for fast nearest-neighbor queries.
         Index("ix_issues_location", "location", postgresql_using="gist"),
-        # IVFFlat for embedding similarity (build after data load).
-        Index(
-            "ix_issues_embedding",
-            "image_embedding",
-            postgresql_using="ivfflat",
-            postgresql_with={"lists": 100},
-            postgresql_ops={"image_embedding": "vector_cosine_ops"},
-        ),
+        # IVFFlat for embedding similarity is created at first query time
+        # by the DedupAgent — only when pgvector is actually installed.
     )
 
 

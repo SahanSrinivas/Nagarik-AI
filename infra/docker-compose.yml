@@ -4,14 +4,19 @@
 
 services:
   postgres:
-    image: pgvector/pgvector:pg16
+    # PostGIS-bundled image. pgvector isn't included; if you need semantic
+    # CLIP-based dedup, switch to imresamu/postgis-pgvector:16-3.4. For demos
+    # the geo-only dedup path is sufficient and faster to set up.
+    image: postgis/postgis:16-3.4
     container_name: nagarik-pg
     environment:
       POSTGRES_USER: nagarik
       POSTGRES_PASSWORD: nagarik
       POSTGRES_DB: nagarik
     ports:
-      - "5432:5432"
+      # Host 5433 → container 5432: avoids clash with any local Postgres on
+      # the developer's machine. Update DATABASE_URL in .env to use port 5433.
+      - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./init-postgis.sql:/docker-entrypoint-initdb.d/01-init-postgis.sql:ro
