@@ -1,8 +1,10 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { Award, Trophy } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { Counter, Reveal, Stagger } from "@/components/Motion";
 import { Pill } from "@/components/Pill";
 import { api } from "@/lib/api";
 
@@ -17,7 +19,7 @@ export default function ImpactPage() {
   const rest = board.slice(3);
 
   return (
-    <div className="space-y-8 animate-fade-up">
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
       <header className="card p-6">
         <div className="flex items-center gap-2">
           <Trophy className="h-5 w-5 text-brand-600" />
@@ -27,23 +29,27 @@ export default function ImpactPage() {
       </header>
 
       {top.length > 0 && (
-        <section className="grid gap-4 sm:grid-cols-3">
+        <Stagger step={0.08} className="grid gap-4 sm:grid-cols-3">
           {top.map((c, i) => (
-            <div
-              key={c.id}
-              className="card p-6 text-center"
-              style={{ background: i === 0 ? "linear-gradient(180deg, #ecfdf5 0%, #ffffff 60%)" : undefined }}
-            >
-              <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-glow">
-                <Award className="h-6 w-6" />
-              </div>
-              <div className="mt-3 text-xs uppercase tracking-wider text-ink-500">Rank #{i + 1}</div>
-              <div className="mt-1 text-lg font-semibold">{c.name}</div>
-              <div className="mt-1 font-mono text-2xl text-brand-700">{c.xp} XP</div>
-              {c.badge && <Pill tone="brand" className="mt-3">{c.badge}</Pill>}
-            </div>
+            <Reveal key={c.id}>
+              <motion.div
+                whileHover={{ y: -3 }}
+                className="card p-6 text-center"
+                style={{ background: i === 0 ? "linear-gradient(180deg, #ecfdf5 0%, #ffffff 60%)" : undefined }}
+              >
+                <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-glow">
+                  <Award className="h-6 w-6" />
+                </div>
+                <div className="mt-3 text-xs uppercase tracking-wider text-ink-500">Rank #{i + 1}</div>
+                <div className="mt-1 text-lg font-semibold">{c.name}</div>
+                <div className="mt-1 font-mono text-2xl text-brand-700">
+                  <Counter to={c.xp} suffix=" XP" />
+                </div>
+                {c.badge && <Pill tone="brand" className="mt-3">{c.badge}</Pill>}
+              </motion.div>
+            </Reveal>
           ))}
-        </section>
+        </Stagger>
       )}
 
       <div className="card overflow-hidden">
@@ -53,12 +59,18 @@ export default function ImpactPage() {
           </thead>
           <tbody>
             {rest.map((c, i) => (
-              <tr key={c.id} className="border-t border-ink-100">
+              <motion.tr
+                key={c.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.04 * i }}
+                className="border-t border-ink-100"
+              >
                 <td className="p-4 text-ink-500">{i + 4}</td>
                 <td className="p-4 font-medium text-ink-900">{c.name}</td>
                 <td className="p-4 text-right font-mono">{c.xp}</td>
                 <td className="p-4">{c.badge ? <Pill tone="brand">{c.badge}</Pill> : <span className="text-ink-400">—</span>}</td>
-              </tr>
+              </motion.tr>
             ))}
             {board.length === 0 && (
               <tr><td colSpan={4} className="p-8 text-center text-ink-500">No citizens yet — run `python -m scripts.seed`.</td></tr>
@@ -66,6 +78,6 @@ export default function ImpactPage() {
           </tbody>
         </table>
       </div>
-    </div>
+    </motion.div>
   );
 }
