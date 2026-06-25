@@ -1,7 +1,9 @@
 "use client";
 
+import { Award, Trophy } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { Pill } from "@/components/Pill";
 import { api } from "@/lib/api";
 
 export default function ImpactPage() {
@@ -11,23 +13,56 @@ export default function ImpactPage() {
     api.leaderboard().then(setBoard).catch(() => {});
   }, []);
 
+  const top = board.slice(0, 3);
+  const rest = board.slice(3);
+
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Citizen leaderboard</h1>
-      <div className="overflow-hidden rounded-xl border bg-white">
+    <div className="space-y-8 animate-fade-up">
+      <header className="card p-6">
+        <div className="flex items-center gap-2">
+          <Trophy className="h-5 w-5 text-brand-600" />
+          <h1 className="text-xl font-semibold tracking-tight">Citizen leaderboard</h1>
+        </div>
+        <p className="mt-1 text-sm text-ink-600">Top contributors. Each badge is a soulbound NFT.</p>
+      </header>
+
+      {top.length > 0 && (
+        <section className="grid gap-4 sm:grid-cols-3">
+          {top.map((c, i) => (
+            <div
+              key={c.id}
+              className="card p-6 text-center"
+              style={{ background: i === 0 ? "linear-gradient(180deg, #ecfdf5 0%, #ffffff 60%)" : undefined }}
+            >
+              <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-glow">
+                <Award className="h-6 w-6" />
+              </div>
+              <div className="mt-3 text-xs uppercase tracking-wider text-ink-500">Rank #{i + 1}</div>
+              <div className="mt-1 text-lg font-semibold">{c.name}</div>
+              <div className="mt-1 font-mono text-2xl text-brand-700">{c.xp} XP</div>
+              {c.badge && <Pill tone="brand" className="mt-3">{c.badge}</Pill>}
+            </div>
+          ))}
+        </section>
+      )}
+
+      <div className="card overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-zinc-50 text-left text-zinc-600">
-            <tr><th className="p-3">#</th><th className="p-3">Name</th><th className="p-3">XP</th><th className="p-3">Badge</th></tr>
+          <thead className="bg-ink-50 text-left text-xs uppercase tracking-wider text-ink-500">
+            <tr><th className="p-4">#</th><th className="p-4">Name</th><th className="p-4 text-right">XP</th><th className="p-4">Badge</th></tr>
           </thead>
           <tbody>
-            {board.map((c, i) => (
-              <tr key={c.id} className="border-t">
-                <td className="p-3">{i + 1}</td>
-                <td className="p-3">{c.name}</td>
-                <td className="p-3">{c.xp}</td>
-                <td className="p-3">{c.badge ?? "—"}</td>
+            {rest.map((c, i) => (
+              <tr key={c.id} className="border-t border-ink-100">
+                <td className="p-4 text-ink-500">{i + 4}</td>
+                <td className="p-4 font-medium text-ink-900">{c.name}</td>
+                <td className="p-4 text-right font-mono">{c.xp}</td>
+                <td className="p-4">{c.badge ? <Pill tone="brand">{c.badge}</Pill> : <span className="text-ink-400">—</span>}</td>
               </tr>
             ))}
+            {board.length === 0 && (
+              <tr><td colSpan={4} className="p-8 text-center text-ink-500">No citizens yet — run `python -m scripts.seed`.</td></tr>
+            )}
           </tbody>
         </table>
       </div>

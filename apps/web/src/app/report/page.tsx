@@ -1,5 +1,7 @@
 "use client";
 
+import { ArrowRight, Camera, CheckCircle2, MapPin, Upload } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 import { api, uploadPhoto } from "@/lib/api";
@@ -30,8 +32,7 @@ export default function ReportPage() {
     setUploading(true);
     setErr(null);
     try {
-      const url = await uploadPhoto(file);
-      setPhotoUrl(url);
+      setPhotoUrl(await uploadPhoto(file));
     } catch (e) {
       setErr(String(e));
     } finally {
@@ -60,64 +61,70 @@ export default function ReportPage() {
 
   if (submitted) {
     return (
-      <div className="space-y-3">
-        <h1 className="text-xl font-semibold">Reported.</h1>
-        <p className="text-sm text-zinc-600">
-          Issue <code>{submitted}</code> is now flowing through the agent pipeline.
-        </p>
-        <a className="text-brand underline" href={`/agents?issue=${submitted}`}>
-          Watch the agents work →
-        </a>
+      <div className="mx-auto max-w-lg space-y-6 animate-fade-up">
+        <div className="card p-8 text-center">
+          <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-brand-50 text-brand-700">
+            <CheckCircle2 className="h-7 w-7" />
+          </div>
+          <h1 className="mt-4 text-2xl font-semibold tracking-tight">Reported</h1>
+          <p className="mt-2 text-sm text-ink-600">
+            Issue <code className="font-mono">{submitted.slice(0, 8)}…</code> is flowing through the agent pipeline.
+          </p>
+          <Link href={`/agents?issue=${submitted}`} className="btn-primary mt-6">
+            Watch the agents work <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-xl space-y-4">
-      <h1 className="text-xl font-semibold">Report a civic issue</h1>
+    <div className="mx-auto max-w-xl space-y-6 animate-fade-up">
+      <header>
+        <h1 className="text-2xl font-semibold tracking-tight">Report a civic issue</h1>
+        <p className="mt-1 text-sm text-ink-600">Snap a photo. Drop your location. We handle the rest.</p>
+      </header>
 
-      <div className="space-y-3 rounded-xl border bg-white p-4">
-        <button
-          onClick={locate}
-          className="rounded-md bg-brand px-3 py-2 text-sm font-medium text-white"
-        >
+      <div className="card space-y-5 p-6">
+        <button onClick={locate} className={lat != null ? "btn-ghost w-full" : "btn-primary w-full"}>
+          <MapPin className="h-4 w-4" />
           {lat != null ? `Located ✓ (${lat.toFixed(4)}, ${lng?.toFixed(4)})` : "Use my location"}
         </button>
 
-        <label className="block text-sm">
-          Photo
-          <input
-            type="file"
-            accept="image/*"
-            capture="environment"
-            onChange={(e) => onPickFile(e.target.files?.[0])}
-            className="mt-1 block w-full text-sm"
-          />
-          {uploading && <span className="text-xs text-zinc-500">uploading...</span>}
+        <div>
+          <span className="block text-xs uppercase tracking-wider text-ink-500">Photo</span>
+          <label className="mt-1 flex cursor-pointer items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-ink-200 bg-ink-50/50 p-6 text-sm text-ink-600 transition hover:border-brand-400 hover:bg-brand-50/50">
+            <Upload className="h-4 w-4" />
+            {uploading ? "Uploading..." : photoUrl ? "Replace photo" : "Tap to choose or capture"}
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={(e) => onPickFile(e.target.files?.[0])}
+              className="hidden"
+            />
+          </label>
           {photoUrl && (
-            <img src={photoUrl} alt="" className="mt-2 h-32 w-32 rounded object-cover" />
+            <img src={photoUrl} alt="" className="mt-3 h-40 w-full rounded-xl border border-ink-200 object-cover" />
           )}
-        </label>
+        </div>
 
-        <label className="block text-sm">
-          What did you see?
+        <label className="block">
+          <span className="block text-xs uppercase tracking-wider text-ink-500">What did you see?</span>
           <textarea
             value={desc}
             onChange={(e) => setDesc(e.target.value)}
             rows={3}
-            className="mt-1 w-full rounded border px-2 py-1.5 text-sm"
+            className="input mt-1"
             placeholder="Big pothole near 14th Cross, water collects after rain..."
           />
         </label>
 
-        {err && <div className="rounded bg-red-50 p-2 text-sm text-red-700">{err}</div>}
+        {err && <div className="rounded-xl bg-rose-50 p-3 text-sm text-rose-700">{err}</div>}
 
-        <button
-          onClick={submit}
-          disabled={busy || uploading}
-          className="w-full rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-40"
-        >
-          {busy ? "Submitting..." : "Submit"}
+        <button onClick={submit} disabled={busy || uploading} className="btn-dark w-full">
+          <Camera className="h-4 w-4" />
+          {busy ? "Submitting..." : "Submit report"}
         </button>
       </div>
     </div>
