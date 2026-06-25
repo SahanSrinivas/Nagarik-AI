@@ -14,6 +14,7 @@ const NAV = [
   { href: "/milp", label: "Optimizer" },
   { href: "/dashboard", label: "Dashboard" },
   { href: "/impact", label: "Impact" },
+  { href: "/chain", label: "Chain" },
 ];
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

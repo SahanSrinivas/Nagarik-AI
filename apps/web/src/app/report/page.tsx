@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 
-import { api } from "@/lib/api";
+import { api, uploadPhoto } from "@/lib/api";
 
 export default function ReportPage() {
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
   const [desc, setDesc] = useState("");
-  const [photo, setPhoto] = useState("");
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [submitted, setSubmitted] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -24,6 +25,20 @@ export default function ReportPage() {
     );
   }
 
+  async function onPickFile(file: File | undefined) {
+    if (!file) return;
+    setUploading(true);
+    setErr(null);
+    try {
+      const url = await uploadPhoto(file);
+      setPhotoUrl(url);
+    } catch (e) {
+      setErr(String(e));
+    } finally {
+      setUploading(false);
+    }
+  }
+
   async function submit() {
     if (lat == null || lng == null) return setErr("share your location first");
     setBusy(true);
@@ -33,7 +48,7 @@ export default function ReportPage() {
         lat,
         lng,
         description: desc,
-        before_photo_url: photo || null,
+        before_photo_url: photoUrl,
       } as Parameters<typeof api.createIssue>[0]);
       setSubmitted(created.id);
     } catch (e) {
@@ -61,7 +76,7 @@ export default function ReportPage() {
     <div className="mx-auto max-w-xl space-y-4">
       <h1 className="text-xl font-semibold">Report a civic issue</h1>
 
-      <div className="rounded-xl border bg-white p-4 space-y-3">
+      <div className="space-y-3 rounded-xl border bg-white p-4">
         <button
           onClick={locate}
           className="rounded-md bg-brand px-3 py-2 text-sm font-medium text-white"
@@ -70,13 +85,18 @@ export default function ReportPage() {
         </button>
 
         <label className="block text-sm">
-          Photo URL (Supabase upload wired in Week 1 Day 2)
+          Photo
           <input
-            value={photo}
-            onChange={(e) => setPhoto(e.target.value)}
-            placeholder="https://..."
-            className="mt-1 w-full rounded border px-2 py-1.5 text-sm"
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={(e) => onPickFile(e.target.files?.[0])}
+            className="mt-1 block w-full text-sm"
           />
+          {uploading && <span className="text-xs text-zinc-500">uploading...</span>}
+          {photoUrl && (
+            <img src={photoUrl} alt="" className="mt-2 h-32 w-32 rounded object-cover" />
+          )}
         </label>
 
         <label className="block text-sm">
@@ -94,7 +114,7 @@ export default function ReportPage() {
 
         <button
           onClick={submit}
-          disabled={busy}
+          disabled={busy || uploading}
           className="w-full rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-40"
         >
           {busy ? "Submitting..." : "Submit"}

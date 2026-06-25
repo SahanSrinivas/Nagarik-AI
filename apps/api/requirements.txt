@@ -40,3 +40,16 @@ supabase>=2.9,<3
 # Utils
 python-dotenv>=1.0,<2
 structlog>=24.4,<25
+
+# Optional — only needed when CHAIN_ENABLED=true. Lazy-imported by
+# nagarik/chain/* so the app starts fine without these installed.
+web3>=7.4,<8
+eth-account>=0.13,<0.14
+py-solc-x>=2.0,<3
+
+# Optional — CLIP embedder for semantic dedup. Lazy-imported, install
+# only when you want real image similarity (else pipeline falls back to
+# geo-only dedup).
+# open_clip_torch>=2.26,<3
+# torch>=2.4,<3
+# Pillow>=10.0,<12
