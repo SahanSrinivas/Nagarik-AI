@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 
 from nagarik.agents.graph import run_agent_loop
 from nagarik.db import get_db
+from nagarik.geo.resolver import resolve_from_url
 from nagarik.models import AgentEvent, Citizen, Issue, IssueStatus
 from nagarik.schemas import AgentEventRead, IssueCreate, IssueRead
 
@@ -55,14 +56,40 @@ def create_issue(
         db.add(demo)
         db.flush()
 
+    # Resolve location: extract EXIF GPS from the photo + reconcile with the
+    # browser GPS the client submitted. Then point-in-polygon for the ward.
+    # See nagarik/geo/resolver.py for the priority order.
+    resolved = resolve_from_url(
+        payload.before_photo_url,
+        browser_lat=payload.lat,
+        browser_lng=payload.lng,
+    )
+    final_lat = resolved.lat if resolved.lat is not None else payload.lat
+    final_lng = resolved.lng if resolved.lng is not None else payload.lng
+    final_ward = resolved.ward or None
+
     issue = Issue(
         reporter_id=demo.id,
         type=payload.type or "other",
         severity=payload.severity,
-        location=from_shape(Point(payload.lng, payload.lat), srid=4326),
+        location=from_shape(Point(final_lng, final_lat), srid=4326),
         address=payload.address,
+        ward=final_ward,
         description=payload.description,
         before_photo_url=payload.before_photo_url,
+        ai_classification={
+            "location_resolver": {
+                "source": resolved.source,
+                "ward": resolved.ward,
+                "ward_no": resolved.ward_no,
+                "exif_lat": resolved.exif_lat,
+                "exif_lng": resolved.exif_lng,
+                "browser_lat": resolved.browser_lat,
+                "browser_lng": resolved.browser_lng,
+                "cross_check_km": resolved.cross_check_km,
+                "flagged_for_review": resolved.flagged_for_review,
+            }
+        },
     )
     db.add(issue)
     db.commit()
