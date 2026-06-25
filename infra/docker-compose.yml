@@ -1,0 +1,36 @@
+# Local dev infra: Postgres with PostGIS and pgvector extensions
+# Bring up: docker compose up -d
+# Bring down: docker compose down (add -v to wipe data)
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: nagarik-pg
+    environment:
+      POSTGRES_USER: nagarik
+      POSTGRES_PASSWORD: nagarik
+      POSTGRES_DB: nagarik
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init-postgis.sql:/docker-entrypoint-initdb.d/01-init-postgis.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nagarik"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # OSRM for travel-time matrix between issue locations.
+  # Skip on first boot; pre-process Bangalore OSM extract before enabling.
+  # osrm:
+  #   image: ghcr.io/project-osrm/osrm-backend:latest
+  #   container_name: nagarik-osrm
+  #   command: osrm-routed --algorithm mld /data/bangalore.osrm
+  #   volumes:
+  #     - ../data/raw:/data
+  #   ports:
+  #     - "5050:5000"
+
+volumes:
+  pgdata:

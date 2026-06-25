@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+.next/
+out/
+dist/
+*.tsbuildinfo
+.npm/
+.yarn/
+
+# Env
+.env
+.env.local
+.env.*.local
+*.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Data (large)
+data/raw/*.csv
+data/raw/*.json
+data/raw/*.parquet
+data/raw/*.osm.pbf
+data/processed/*.parquet
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Models
+*.pkl
+*.joblib
+*.onnx
+
+# Logs
+*.log
+logs/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# OR-Tools artifacts
+*.sol
+*.lp
+
+# Database
+*.sqlite
+*.db
