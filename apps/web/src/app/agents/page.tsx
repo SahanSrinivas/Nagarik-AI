@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import { Reveal, Stagger } from "@/components/Motion";
 import { Pill } from "@/components/Pill";
+import { RoutingCard } from "@/components/RoutingCard";
 import { api, type AgentEvent } from "@/lib/api";
 
 const PIPELINE = [
@@ -162,29 +163,39 @@ export default function AgentsPage() {
                 No events yet. Paste an issue id above or report one to see the pipeline fire.
               </motion.div>
             )}
-            {events.map((e, i) => (
-              <motion.div
-                key={`${e.agent}-${e.created_at}-${i}`}
-                layout
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ type: "spring", stiffness: 220, damping: 26 }}
-                className="card p-4"
-              >
-                <div className="flex flex-wrap items-center gap-2 text-xs">
-                  <Pill tone="brand">{e.agent}</Pill>
-                  <Pill tone={e.status === "completed" ? "lime" : e.status === "failed" ? "rose" : "amber"}>
-                    {e.status}
-                  </Pill>
-                  <span className="text-ink-500">{e.duration_ms ?? "—"}ms</span>
-                  <span className="text-ink-400">{new Date(e.created_at).toLocaleTimeString()}</span>
-                </div>
-                <pre className="mt-2 overflow-auto rounded-lg bg-ink-950 p-3 font-mono text-[11px] text-brand-200">
+            {events.map((e, i) => {
+              // Pull structured routing telemetry off the triage event.
+              const routingMeta =
+                e.agent === "triage" && (e.payload as { ai_meta?: { routing?: unknown } })?.ai_meta
+                  ? ((e.payload as { ai_meta: { routing?: unknown } }).ai_meta.routing as Parameters<typeof RoutingCard>[0]["meta"])
+                  : undefined;
+              return (
+                <motion.div
+                  key={`${e.agent}-${e.created_at}-${i}`}
+                  layout
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ type: "spring", stiffness: 220, damping: 26 }}
+                  className="space-y-2"
+                >
+                  <div className="card p-4">
+                    <div className="flex flex-wrap items-center gap-2 text-xs">
+                      <Pill tone="brand">{e.agent}</Pill>
+                      <Pill tone={e.status === "completed" ? "lime" : e.status === "failed" ? "rose" : "amber"}>
+                        {e.status}
+                      </Pill>
+                      <span className="text-ink-500">{e.duration_ms ?? "—"}ms</span>
+                      <span className="text-ink-400">{new Date(e.created_at).toLocaleTimeString()}</span>
+                    </div>
+                    <pre className="mt-2 overflow-auto rounded-lg bg-ink-950 p-3 font-mono text-[11px] text-brand-200">
 {JSON.stringify(e.payload, null, 2)}
-                </pre>
-              </motion.div>
-            ))}
+                    </pre>
+                  </div>
+                  {routingMeta && <RoutingCard meta={routingMeta} />}
+                </motion.div>
+              );
+            })}
           </AnimatePresence>
         </div>
       </section>

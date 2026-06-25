@@ -139,32 +139,42 @@ the full open backlog). Then `scripts/run_real_backtest.py` runs both solvers.
 
 ### Routing — "model proposes, gate decides" (with tough guardrails)
 
-The TriageAgent runs in two stages:
+The TriageAgent runs in **three** stages, each one's failure caught by the next:
 
-1. **LLM proposes** — Claude Haiku 4.5 reads the citizen report + Vision
-   Agent's classification, then calls a `route_issue` tool with a strictly-typed
-   JSON schema (allowlist-enforced via tool-use, low temp, server-controlled
-   system message, prompt-injection delimiters around citizen content).
-2. **Deterministic gate decides** — `nagarik/agents/guardrails.py` checks
-   the proposal against the canonical SOP, allowlists, SLA bounds, severity
-   bounds. Catches PII, prompt injection, hallucinated values, and
-   department↔type mismatches. **Any failure → SOP fallback. Always.**
+1. **LLM proposes** — Claude Haiku 4.5 calls a `route_issue` tool with a
+   strictly-typed JSON schema (allowlist-enforced via tool-use, low temp,
+   server-controlled system message, prompt-injection delimiters around
+   citizen content).
+2. **Routing gate** — `nagarik/agents/guardrails.py` checks the proposal
+   against the canonical SOP, allowlists, SLA bounds. Catches PII, prompt
+   injection, hallucinated values, dept↔type mismatches. Any failure → SOP.
+3. **Severity gate** — `nagarik/agents/severity_gate.py` reconciles three
+   votes (Vision photo / LLM text / SOP baseline). **Vision wins on high
+   confidence; LLM may only ESCALATE, never de-escalate.** Citizens who
+   under-describe (e.g. "small pothole near school") cannot lose priority.
 
-### Ablation — 51 deliberately-tricky fixtures
+### Ablation — 106 fixtures (51 original + 55 multilingual/image/adversarial)
 
 `python -m scripts.ablate_routing` (real Claude call):
 
 | Outcome | Count | Notes |
 |---|---:|---|
-| LLM proposal accepted (gate agrees with SOP) | **48 / 51** | 94% direct agreement |
-| Gate overrode LLM (wrong department picked) | **3 / 51** | all 3 were encroachment → Helpdesk vs. Town Planning |
-| Prompt-injection attempts that fooled the LLM | **0 / 4** | Claude resisted "IGNORE PREVIOUS INSTRUCTIONS" cleanly |
-| PII regurgitated into LLM reasoning | **0 / 3** | Claude excluded phone/email/Aadhaar from notes |
-| Hallucinated departments/types | **0 / 51** | tool-use schema enforces enum |
+| LLM proposal accepted by gate | **101 / 106** | 95.3% direct LLM↔SOP agreement |
+| Gate overrode wrong department | **5 / 106** | all encroachment + 1 Hindi "tree on wire" → Horticulture |
+| Multilingual fixtures routed correctly | **19 / 20** | Kannada, Hindi (Devanagari), Hinglish, Tamil |
+| Image-only / emoji-only fixtures | **9 / 10** | 🕳️🕳️🕳️ → pothole, 💩💩 → sewage, 🌳⚡ → tree |
+| Injection attempts that fooled Claude | **0 / 16** | base64, URL-encoded, RTL override, markdown, fake XML, authority-claim |
+| Hallucinated departments / unknown types | **0 / 106** | tool-use schema enforces the enum |
+| PII regurgitated into LLM reasoning | **0 / 3** | Claude excluded phone/email/Aadhaar |
 
-> **The gate caught every misroute the LLM made.** Claude itself was tougher
-> than expected on the adversarial inputs — but the gate is still
-> non-negotiable, because we cannot promise 0 misroutes on unseen inputs.
+> **The gate caught every misroute the LLM made.** Claude held up against
+> adversarial encodings and injection attempts at the model layer, but the
+> gate is still non-negotiable — we cannot guarantee 0 misroutes on inputs
+> we haven't seen yet.
+
+The live `/agents` view renders a **RoutingCard** per triage event showing
+LLM-proposed → gate-decided side-by-side, with red strike-through on
+overridden values, the severity-gate verdict, and per-disagreement chips.
 
 ### Closure verification (the trust differentiator)
 - ResolutionAgent runs a **2-layer audit** on every after-photo:

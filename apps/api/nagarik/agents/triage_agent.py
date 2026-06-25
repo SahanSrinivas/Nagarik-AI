@@ -26,6 +26,7 @@ from sqlalchemy import update
 
 from nagarik.agents.guardrails import GateResult, GateVerdict, evaluate
 from nagarik.agents.llm_router import propose
+from nagarik.agents.severity_gate import evaluate as evaluate_severity
 from nagarik.agents.state import AgentState
 from nagarik.db import SessionLocal
 from nagarik.models import Issue, IssueStatus
@@ -49,10 +50,23 @@ def run_triage(state: AgentState) -> AgentState:
     # Stage 1 — LLM proposes (returns None if API key missing or call failed).
     proposal = propose(description, vision_type=vision_type, vision_severity=vision_severity)
 
-    # Stage 2 — gate decides. Always produces a usable GateResult.
+    # Stage 2 — routing gate decides. Always produces a usable GateResult.
     gate: GateResult = evaluate(proposal, vision_type=vision_type, vision_severity=vision_severity)
 
-    deadline = datetime.now(timezone.utc) + timedelta(hours=gate.sla_hours)
+    # Stage 3 — severity gate: Vision wins on high confidence; LLM may
+    # escalate but never de-escalate. Re-applies severity-aware SLA halving.
+    sev_verdict = evaluate_severity(
+        issue_type=vision_type or (proposal.type if proposal else None) or "other",
+        vision_severity=vision_severity,
+        vision_confidence=state.get("ai_confidence"),
+        llm_severity=(proposal.severity if proposal else None),
+    )
+
+    # Recompute SLA with the gate-approved severity (halve when ≥ 4).
+    sla_hours = gate.sla_hours
+    if sev_verdict.final >= 4 and gate.severity < 4:
+        sla_hours = max(1, gate.sla_hours // 2)
+    deadline = datetime.now(timezone.utc) + timedelta(hours=sla_hours)
 
     with SessionLocal() as db:
         db.execute(
@@ -61,7 +75,7 @@ def run_triage(state: AgentState) -> AgentState:
             .values(
                 routed_department=gate.department,
                 sla_deadline=deadline,
-                severity=gate.severity,
+                severity=sev_verdict.final,
                 status=IssueStatus.TRIAGED,
             )
         )
@@ -89,16 +103,24 @@ def run_triage(state: AgentState) -> AgentState:
         ),
         "final": {
             "department": gate.department,
-            "sla_hours": gate.sla_hours,
-            "severity": gate.severity,
+            "sla_hours": sla_hours,
+            "severity": sev_verdict.final,
         },
         "reasoning": gate.reasoning,
+        "severity_verdict": {
+            "source": sev_verdict.source.value,
+            "vision": sev_verdict.vision,
+            "vision_confidence": sev_verdict.vision_confidence,
+            "llm": sev_verdict.llm,
+            "sop_baseline": sev_verdict.sop_baseline,
+            "notes": sev_verdict.notes,
+        },
     }
 
     return {
         **state,
         "routed_department": gate.department,
-        "sla_hours": gate.sla_hours,
-        "severity": gate.severity,
+        "sla_hours": sla_hours,
+        "severity": sev_verdict.final,
         "ai_meta": {**(state.get("ai_meta") or {}), "routing": routing_meta},
     }  # type: ignore[return-value]
