@@ -98,6 +98,18 @@ GRAPH = build_graph()
 
 
 def run_agent_loop(issue_id: str) -> None:
-    """Entry point fired from FastAPI BackgroundTasks after a new issue lands."""
+    """Entry point fired from FastAPI BackgroundTasks after a new issue lands.
 
+    After the 7-agent graph finishes (status ends at SCHEDULED), kick off
+    the demo auto-progress simulator — this is what walks the ticket all
+    the way to RESOLVED in ~16s so the citizen's /tracking page doesn't
+    stall at 'Awaiting next update' during demos. No-op in production when
+    DEMO_AUTO_PROGRESS=0.
+    """
     GRAPH.invoke({"issue_id": issue_id})
+    try:
+        from nagarik.jobs.demo_progress import maybe_simulate
+        maybe_simulate(issue_id)
+    except Exception as exc:  # noqa: BLE001
+        import logging
+        logging.getLogger(__name__).warning("demo simulate kick-off failed: %s", exc)
