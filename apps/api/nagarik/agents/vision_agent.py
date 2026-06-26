@@ -52,7 +52,16 @@ Schema:
   "width_m":    approximate width in metres (or null),
   "depth_cm":   approximate depth in cm if applicable (or null),
   "indoor":     true if the photo is clearly indoor / not a civic issue,
-  "hazard_to":  one of [pedestrians, vehicles, residents, sanitation, public_safety, none]
+  "hazard_to":  one of [pedestrians, vehicles, residents, sanitation, public_safety, none],
+  "bbox":       [x_min, y_min, x_max, y_max]  // normalised 0-1 image coords
+                                              // of the SMALLEST region that
+                                              // tightly contains the issue.
+                                              // Top-left = (0,0). For point-like
+                                              // issues (a single streetlight,
+                                              // tree branch) make a tight box
+                                              // around the fixture, ~5-15% wide.
+  "focus_label": short 1-3 word label to print next to the box (e.g.
+                 "pothole · sev 4", "broken lamp")
 }
 
 Only return the JSON object. No text before or after."""

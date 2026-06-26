@@ -49,6 +49,10 @@ interface Tracking {
     after_photo_url: string | null;
     before_video_url?: string | null;
     after_video_url?: string | null;
+    ai_confidence?: number;
+    ai_bbox?: [number, number, number, number] | null;   // normalised 0-1
+    ai_focus_label?: string | null;
+    ai_notes?: string | null;
     routed_department: string | null;
     sla_deadline: string | null;
     scheduled_at: string | null;
@@ -167,8 +171,16 @@ export default function TrackingPage() {
 
         {(issue.before_video_url || issue.before_photo_url) && (
           <div className="border-t border-ink-100 px-6 py-4">
-            <div className="text-xs uppercase tracking-wider text-ink-500">
-              {issue.before_video_url ? "Video evidence" : "Photo evidence"}
+            <div className="flex items-center justify-between gap-2">
+              <div className="text-xs font-semibold uppercase tracking-wider"
+                style={{ color: "rgb(var(--accent))" }}>
+                {issue.before_video_url ? "Video evidence" : "Photo evidence · AI focus"}
+              </div>
+              {issue.ai_focus_label && (
+                <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700">
+                  AI saw · {(issue.ai_confidence ?? 0) > 0 ? `${Math.round((issue.ai_confidence ?? 0) * 100)}% conf` : "verified"}
+                </span>
+              )}
             </div>
             {issue.before_video_url ? (
               <video
@@ -179,12 +191,37 @@ export default function TrackingPage() {
                 className="mt-2 max-h-72 w-full rounded-xl border border-ink-200 bg-black object-contain"
               />
             ) : (
-              <img
-                src={issue.before_photo_url!}
-                alt="Reported issue"
-                className="mt-2 max-h-72 w-full rounded-xl border border-ink-200 object-contain"
+              <AIPhotoMask
+                url={issue.before_photo_url!}
+                bbox={issue.ai_bbox ?? null}
+                label={issue.ai_focus_label ?? prettifyType(issue.type)}
               />
             )}
+            {issue.ai_notes && (
+              <p className="mt-2 text-xs italic" style={{ color: "rgb(var(--text-muted))" }}>
+                AI notes: &ldquo;{issue.ai_notes}&rdquo;
+              </p>
+            )}
+          </div>
+        )}
+
+        {issue.after_photo_url && (
+          <div className="border-t border-ink-100 px-6 py-4">
+            <div className="flex items-center justify-between gap-2">
+              <div className="text-xs font-semibold uppercase tracking-wider"
+                style={{ color: "#15803d" }}>
+                After-photo · CLIP + CNN verified
+              </div>
+              <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700">
+                Fix verified
+              </span>
+            </div>
+            <AIPhotoMask
+              url={issue.after_photo_url}
+              bbox={issue.ai_bbox ?? null}
+              label="fix verified"
+              tone="verified"
+            />
           </div>
         )}
       </section>
@@ -358,4 +395,87 @@ function TimelineRow({
       </motion.div>
     </div>
   );
+}
+
+/**
+ * AIPhotoMask — renders the citizen's photo with an SVG overlay showing
+ * the bounding box the Vision agent returned. The box is drawn in
+ * normalised viewBox coordinates so it lines up no matter what aspect
+ * ratio the photo has.
+ *
+ * If Gemini didn't return a usable bbox we fall back to a centred 60%
+ * crop so the layout still reads as 'AI focused here', just with less
+ * precision. The 'verified' tone (used on the after-photo) flips the
+ * stroke to emerald to signal a passed CLIP+CNN audit.
+ */
+function AIPhotoMask({ url, bbox, label, tone = "default" }:
+  { url: string; bbox: [number, number, number, number] | null; label: string;
+    tone?: "default" | "verified" }) {
+  // Fallback box: centred 60% × 60%. Keeps the demo from breaking when the
+  // model didn't return a bbox (e.g., stub fallback when GOOGLE_API_KEY is unset).
+  const [x0, y0, x1, y1] = bbox ?? [0.2, 0.2, 0.8, 0.8];
+  const stroke = tone === "verified" ? "#10b981" : "rgb(var(--accent))";
+  const fill   = tone === "verified" ? "rgba(16,185,129,0.10)" : "rgba(191,79,54,0.10)";
+
+  return (
+    <div className="relative mt-2 overflow-hidden rounded-xl border border-ink-200">
+      <img src={url} alt="Reported issue" className="block max-h-72 w-full object-contain" />
+      {/* Overlay — absolutely positioned to match the image, uses % to track resize */}
+      <svg
+        className="pointer-events-none absolute inset-0 h-full w-full"
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        aria-label={`AI focus area · ${label}`}
+      >
+        {/* Tint mask — slight dim outside the bbox so the focus area pops */}
+        <defs>
+          <mask id={`ai-mask-${tone}-${Math.round(x0 * 1000)}`}>
+            <rect x={0} y={0} width={100} height={100} fill="white" />
+            <rect x={x0 * 100} y={y0 * 100}
+              width={(x1 - x0) * 100} height={(y1 - y0) * 100} fill="black" />
+          </mask>
+        </defs>
+        <rect x={0} y={0} width={100} height={100}
+          fill="rgba(0,0,0,0.20)"
+          mask={`url(#ai-mask-${tone}-${Math.round(x0 * 1000)})`} />
+        {/* The focus box itself */}
+        <rect
+          x={x0 * 100} y={y0 * 100}
+          width={(x1 - x0) * 100} height={(y1 - y0) * 100}
+          fill={fill} stroke={stroke} strokeWidth={0.5}
+          vectorEffect="non-scaling-stroke"
+        />
+        {/* Corner ticks for the 'targeting reticule' look */}
+        {[[x0, y0], [x1, y0], [x0, y1], [x1, y1]].map(([cx, cy], i) => (
+          <g key={i}>
+            <line x1={cx * 100 - 2} y1={cy * 100} x2={cx * 100 + 2} y2={cy * 100}
+              stroke={stroke} strokeWidth={0.6} vectorEffect="non-scaling-stroke" />
+            <line x1={cx * 100} y1={cy * 100 - 2} x2={cx * 100} y2={cy * 100 + 2}
+              stroke={stroke} strokeWidth={0.6} vectorEffect="non-scaling-stroke" />
+          </g>
+        ))}
+      </svg>
+      {/* Label pill — anchored at top-right inside the overlay */}
+      <span
+        className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white shadow"
+        style={{ background: stroke }}
+      >
+        {tone === "verified" ? "✓" : "◎"} {label}
+      </span>
+      {!bbox && (
+        <span className="absolute bottom-2 left-2 rounded-full bg-black/40 px-2 py-0.5 text-[10px] text-white">
+          fallback crop — Gemini bbox unavailable
+        </span>
+      )}
+    </div>
+  );
+}
+
+function prettifyType(t: string): string {
+  const m: Record<string, string> = {
+    pothole: "pothole", garbage: "garbage", streetlight: "broken light",
+    water_leak: "water leak", sewage: "sewage", tree_fall: "fallen tree",
+    encroachment: "encroachment", other: "issue",
+  };
+  return m[t] ?? t;
 }

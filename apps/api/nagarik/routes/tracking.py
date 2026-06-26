@@ -54,7 +54,22 @@ def tracking(
     else:
         translations = [{"title": n.title, "body": n.body} for n in notifs]
 
-    loc_meta = (issue.ai_classification or {}).get("location_resolver") if issue.ai_classification else None
+    ai_meta = issue.ai_classification or {}
+    loc_meta = ai_meta.get("location_resolver")
+
+    # Vision agent bbox — [x_min, y_min, x_max, y_max] normalised 0-1.
+    # Renders as an SVG overlay on the citizen tracking page so they SEE
+    # exactly where the AI focused on their photo. Falls through to a
+    # sensible default if Gemini returned malformed coords.
+    raw_bbox = ai_meta.get("bbox")
+    bbox = None
+    if isinstance(raw_bbox, list) and len(raw_bbox) == 4:
+        try:
+            x0, y0, x1, y1 = [max(0.0, min(1.0, float(v))) for v in raw_bbox]
+            if x1 > x0 and y1 > y0:
+                bbox = [x0, y0, x1, y1]
+        except (TypeError, ValueError):
+            bbox = None
 
     return {
         "issue": {
@@ -76,6 +91,10 @@ def tracking(
             "scheduled_at": issue.scheduled_at.isoformat() if issue.scheduled_at else None,
             "resolved_at": issue.resolved_at.isoformat() if issue.resolved_at else None,
             "created_at": issue.created_at.isoformat(),
+            "ai_confidence": float(issue.ai_confidence or 0),
+            "ai_bbox": bbox,
+            "ai_focus_label": ai_meta.get("focus_label"),
+            "ai_notes": ai_meta.get("notes"),
             "location_resolver": loc_meta,
         },
         "reporter": {
