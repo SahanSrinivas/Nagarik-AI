@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Award, ArrowRight, Camera, ListChecks, LogOut, Trophy } from "lucide-react";
+import { Activity, Award, ArrowRight, Camera, Eye, ListChecks, LogOut, Trophy } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -141,20 +141,41 @@ export default function HomePage() {
           </div>
         ) : (
           <div className="space-y-2">
-            {mine.slice(0, 10).map((i) => (
-              <Link key={i.id} href={`/tracking/${i.id}`}
-                className="card-glow flex items-center justify-between gap-3 p-3 text-sm">
-                <div className="min-w-0">
-                  <div className="truncate font-medium">{i.address ?? prettify(i.type)}</div>
-                  <div className="text-xs text-ink-500">
-                    {i.ward ?? "—"} · {new Date(i.created_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
+            {mine.slice(0, 20).map((i) => (
+              <div key={i.id} className="card-glow p-3 text-sm">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate font-medium">{i.address ?? prettify(i.type)}</div>
+                    <div className="mt-0.5 text-xs text-ink-500">
+                      {i.ward ?? "—"} · {new Date(i.created_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-2">
                   <StatusPill value={i.status} />
-                  <ArrowRight className="h-4 w-4 text-ink-400" />
                 </div>
-              </Link>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Link
+                    href={`/tracking/${i.id}`}
+                    className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium text-white"
+                    style={{ background: "rgb(var(--accent))" }}
+                  >
+                    <Activity className="h-3 w-3" /> Live track
+                  </Link>
+                  <Link
+                    href={`/agents?issue=${i.id}`}
+                    className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium"
+                    style={{
+                      background: "rgb(var(--bg-surface))",
+                      border: "1px solid rgb(var(--border-color))",
+                      color: "rgb(var(--text-primary))",
+                    }}
+                  >
+                    <Eye className="h-3 w-3" /> Watch agents
+                  </Link>
+                  <span className="ml-auto self-center font-mono text-[11px] text-ink-400">
+                    {i.id.slice(0, 8)}…
+                  </span>
+                </div>
+              </div>
             ))}
           </div>
         )}

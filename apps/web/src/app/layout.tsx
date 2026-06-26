@@ -1,21 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  Activity,
-  AlertTriangle,
-  BarChart3,
-  Camera,
-  FileCode2,
-  LayoutDashboard,
-  Link2,
-  Map,
-  Network,
-  Trophy,
-  Truck,
-} from "lucide-react";
 
 import { Brand } from "@/components/Brand";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { MobileNavBar, NavBar } from "@/components/NavBar";
 import { THEME_BOOT_SCRIPT, ThemeToggle } from "@/components/ThemeToggle";
 import { Providers } from "./providers";
 import "./globals.css";
@@ -30,21 +18,9 @@ export const metadata: Metadata = {
   },
 };
 
-// Marketing-friendly top nav. Operator/builder pages (/agents, /milp,
-// /chain, /ops, /test-photos) are still reachable — they're linked from
-// /architecture and from the report-success page. The marketing visitor
-// sees only the things they care about.
-const NAV = [
-  { href: "/report",        label: "Report",         icon: Camera },
-  { href: "/map",           label: "Map",            icon: Map },
-  { href: "/dashboard",     label: "Ward Dashboard", icon: LayoutDashboard },
-  { href: "/crew",          label: "Crew",           icon: Truck },
-  { href: "/impact",        label: "Impact",         icon: Trophy },
-  { href: "/architecture",  label: "Architecture",   icon: FileCode2 },
-];
-
-// Tracking + wallet routes are linked from contextual surfaces (report
-// success page, leaderboard cards) rather than the top nav.
+// The nav itself lives in <NavBar /> (client component) because it
+// needs useAuth to render the 'My Dashboard' entry and user menu
+// conditionally for signed-in citizens.
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -73,24 +49,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/" aria-label="NagarikAI home">
                 <Brand />
               </Link>
-              <nav className="hidden gap-1 md:flex">
-                {NAV.map((n) => (
-                  <Link
-                    key={n.href}
-                    href={n.href}
-                    className="group flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm transition hover:bg-surface-hover"
-                    style={{ color: "rgb(var(--text-secondary))" }}
-                  >
-                    <n.icon className="h-4 w-4 transition group-hover:text-accent" strokeWidth={2.25} />
-                    {n.label}
-                  </Link>
-                ))}
-              </nav>
+              <NavBar />
               <div className="flex items-center gap-2">
                 <ThemeToggle />
                 <LanguageSwitcher />
                 <div className="md:hidden">
-                  <MobileNav />
+                  <MobileNavBar />
                 </div>
               </div>
             </div>
@@ -109,22 +73,5 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Providers>
       </body>
     </html>
-  );
-}
-
-function MobileNav() {
-  // Minimal — collapses NAV into a horizontally scrolling pill bar.
-  return (
-    <div className="flex max-w-[60vw] gap-1 overflow-x-auto">
-      {NAV.map((n) => (
-        <Link
-          key={n.href}
-          href={n.href}
-          className="rounded-full bg-ink-100 px-3 py-1.5 text-xs text-ink-700"
-        >
-          {n.label}
-        </Link>
-      ))}
-    </div>
   );
 }
