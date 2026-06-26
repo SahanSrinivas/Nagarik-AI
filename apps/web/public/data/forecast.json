@@ -1,0 +1,271 @@
+{
+ "spec": "log(road_complaints+1) ~ ward_FE + month_FE + rain + rain_lag1",
+ "n_obs_train": 11664,
+ "n_obs_test": 2916,
+ "train_years": [
+  2021,
+  2022,
+  2023,
+  2024
+ ],
+ "test_years": [
+  2025
+ ],
+ "coef_rain": 0.083,
+ "coef_lag1": 0.226,
+ "train_r2": 0.89,
+ "test": {
+  "rmse_model": 2.11,
+  "rmse_naive": 3.05,
+  "mape_model": 18.0,
+  "mape_naive": 24.1,
+  "skill_vs_naive_pct": 30.8,
+  "series": {
+   "months": [
+    "2025-01",
+    "2025-02",
+    "2025-03",
+    "2025-04",
+    "2025-05",
+    "2025-06",
+    "2025-07",
+    "2025-08",
+    "2025-09",
+    "2025-10",
+    "2025-11",
+    "2025-12"
+   ],
+   "actual": [
+    1282,
+    1238,
+    1311,
+    1487,
+    2016,
+    2705,
+    2281,
+    2626,
+    3234,
+    3046,
+    2321,
+    1503
+   ],
+   "forecast": [
+    1241,
+    1231,
+    1299,
+    1483,
+    1960,
+    2561,
+    2243,
+    2556,
+    3119,
+    2988,
+    2333,
+    1504
+   ],
+   "naive": [
+    1273,
+    1253,
+    1342,
+    1481,
+    1922,
+    2464,
+    2299,
+    2362,
+    2796,
+    2880,
+    2235,
+    1487
+   ]
+  }
+ },
+ "surge": {
+  "month": "Sep (forecast)",
+  "rain_next_mm": 215.0,
+  "rain_this_mm": 190.0,
+  "top_wards": [
+   {
+    "ward": "Horamavu",
+    "predicted": 71.9,
+    "baseline": 46.6,
+    "lift": 25.4
+   },
+   {
+    "ward": "Jakkuru",
+    "predicted": 56.1,
+    "baseline": 34.4,
+    "lift": 21.7
+   },
+   {
+    "ward": "Rajarajeshwari Nagar",
+    "predicted": 56.1,
+    "baseline": 35.8,
+    "lift": 20.3
+   },
+   {
+    "ward": "Thanisandra",
+    "predicted": 56.8,
+    "baseline": 36.8,
+    "lift": 20.0
+   },
+   {
+    "ward": "Hemmigepura",
+    "predicted": 54.8,
+    "baseline": 35.7,
+    "lift": 19.1
+   },
+   {
+    "ward": "Bellanduru",
+    "predicted": 55.8,
+    "baseline": 37.2,
+    "lift": 18.5
+   },
+   {
+    "ward": "Begur",
+    "predicted": 51.3,
+    "baseline": 33.0,
+    "lift": 18.3
+   },
+   {
+    "ward": "Uttarahalli",
+    "predicted": 48.3,
+    "baseline": 31.4,
+    "lift": 16.9
+   },
+   {
+    "ward": "Someshwara Ward",
+    "predicted": 48.3,
+    "baseline": 32.9,
+    "lift": 15.4
+   },
+   {
+    "ward": "Chatrapati Shivaji",
+    "predicted": 38.8,
+    "baseline": 27.2,
+    "lift": 11.7
+   },
+   {
+    "ward": "Jeevanbhima Nagar",
+    "predicted": 25.7,
+    "baseline": 15.6,
+    "lift": 10.1
+   },
+   {
+    "ward": "Basavanapura",
+    "predicted": 26.7,
+    "baseline": 17.6,
+    "lift": 9.1
+   },
+   {
+    "ward": "Hoysala Nagar",
+    "predicted": 22.6,
+    "baseline": 13.5,
+    "lift": 9.1
+   },
+   {
+    "ward": "Hennur",
+    "predicted": 20.7,
+    "baseline": 12.8,
+    "lift": 7.9
+   },
+   {
+    "ward": "Gandhinagar",
+    "predicted": 20.9,
+    "baseline": 13.1,
+    "lift": 7.8
+   },
+   {
+    "ward": "A Narayanapura",
+    "predicted": 22.1,
+    "baseline": 14.4,
+    "lift": 7.7
+   },
+   {
+    "ward": "Medahalli",
+    "predicted": 19.8,
+    "baseline": 12.2,
+    "lift": 7.5
+   },
+   {
+    "ward": "Chokkasandra",
+    "predicted": 20.9,
+    "baseline": 13.4,
+    "lift": 7.4
+   },
+   {
+    "ward": "Dattatreya Temple",
+    "predicted": 18.5,
+    "baseline": 11.4,
+    "lift": 7.1
+   },
+   {
+    "ward": "Pulikeshinagar",
+    "predicted": 18.0,
+    "baseline": 11.0,
+    "lift": 7.0
+   },
+   {
+    "ward": "Kalkere",
+    "predicted": 18.8,
+    "baseline": 11.8,
+    "lift": 6.9
+   },
+   {
+    "ward": "Bharathi Nagar",
+    "predicted": 18.3,
+    "baseline": 11.6,
+    "lift": 6.8
+   },
+   {
+    "ward": "Dodda Bidarakallu",
+    "predicted": 18.5,
+    "baseline": 11.8,
+    "lift": 6.8
+   },
+   {
+    "ward": "Nalvadi Krishnaraja Wadior Park",
+    "predicted": 19.2,
+    "baseline": 12.5,
+    "lift": 6.7
+   },
+   {
+    "ward": "Vijayanagar",
+    "predicted": 18.1,
+    "baseline": 11.4,
+    "lift": 6.7
+   },
+   {
+    "ward": "Manorayanapalya",
+    "predicted": 17.2,
+    "baseline": 10.6,
+    "lift": 6.6
+   },
+   {
+    "ward": "Prakash Nagar",
+    "predicted": 20.5,
+    "baseline": 14.0,
+    "lift": 6.5
+   },
+   {
+    "ward": "Girinagar",
+    "predicted": 15.3,
+    "baseline": 9.0,
+    "lift": 6.3
+   },
+   {
+    "ward": "Devara Jeevanahalli",
+    "predicted": 15.1,
+    "baseline": 8.9,
+    "lift": 6.2
+   },
+   {
+    "ward": "Hegganahalli",
+    "predicted": 16.6,
+    "baseline": 10.4,
+    "lift": 6.1
+   }
+  ],
+  "n_top": 30
+ },
+ "provenance": "calibrated panel; model + methodology real, accuracy is a pipeline check not real-world skill (real multi-year panel swaps in unchanged)"
+}

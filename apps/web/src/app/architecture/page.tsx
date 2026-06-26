@@ -94,11 +94,12 @@ export default function ArchitecturePage() {
           <Stagger step={0.07} className="mx-auto mt-8 grid max-w-2xl grid-cols-2 gap-3 text-center sm:grid-cols-4">
             {STATS.map((s) => (
               <Reveal key={s.label}>
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-3 backdrop-blur">
-                  <div className="text-2xl font-semibold text-brand-300">
+                <div className="rounded-2xl border border-white/15 bg-white/5 p-3 backdrop-blur">
+                  <div className="text-2xl font-semibold text-white sm:text-3xl">
                     {s.precise ? s.value.toFixed(3) : <Counter to={s.value} suffix={s.suffix} />}
                   </div>
-                  <div className="mt-1 text-xs uppercase tracking-wider text-ink-400">{s.label}</div>
+                  <div className="mt-1 text-xs font-semibold uppercase tracking-wider"
+                    style={{ color: "#fbbcab" }}>{s.label}</div>
                 </div>
               </Reveal>
             ))}

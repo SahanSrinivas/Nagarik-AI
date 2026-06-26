@@ -318,6 +318,29 @@
   border-color: rgb(var(--border-color));
 }
 
+/* Top-nav active-tab highlight — "glass selection".
+ * Each PUBLIC_NAV link gets .nav-active when its href matches the current
+ * pathname. Renders as a translucent rust-tinted pill with a subtle bottom
+ * border that doubles as a tab indicator. Works against both themes:
+ *  - Light: faint rust wash + brighter rust underline + soft drop-shadow
+ *  - Dark:  brighter rust glass + thicker glow underline so it still pops
+ */
+.nav-active {
+  background: linear-gradient(180deg, rgba(191, 79, 54, 0.10) 0%, rgba(191, 79, 54, 0.04) 100%);
+  box-shadow:
+    inset 0 -2px 0 0 rgb(var(--accent)),
+    0 1px 2px rgba(191, 79, 54, 0.08);
+  -webkit-backdrop-filter: saturate(140%);
+  backdrop-filter: saturate(140%);
+}
+.dark .nav-active {
+  background: linear-gradient(180deg, rgba(191, 79, 54, 0.22) 0%, rgba(191, 79, 54, 0.10) 100%);
+  box-shadow:
+    inset 0 -2px 0 0 rgb(var(--accent)),
+    0 0 0 1px rgba(191, 79, 54, 0.25),
+    0 4px 16px rgba(191, 79, 54, 0.20);
+}
+
 /* /impact podium leader card — theme-aware glow.
  * Previous version hard-coded #ecfdf5 → #ffffff which turned the
  * dark-mode card into a white slab with invisible white text. */

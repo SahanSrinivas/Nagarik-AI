@@ -16,7 +16,7 @@ import {
   User,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { useAuth } from "@/lib/auth";
@@ -35,8 +35,15 @@ const PUBLIC_NAV = [
 export function NavBar() {
   const { me, token, logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname() || "/";
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
+
+  // True when `href` matches the current route. Treat / as exact match (so it
+  // doesn't highlight on every page); everything else uses startsWith so child
+  // routes like /tracking/[id] still highlight their parent if they had one.
+  const isActive = (href: string) =>
+    href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(href + "/");
 
   // Close the user menu when clicking outside.
   useEffect(() => {
@@ -56,17 +63,27 @@ export function NavBar() {
           to overflow when signed in. It's still reachable from the user avatar
           dropdown on the right, plus the avatar gets a "Go to dashboard" tooltip. */}
       <nav className="hidden gap-1 md:flex">
-        {PUBLIC_NAV.map((n) => (
-          <Link
-            key={n.href}
-            href={n.href}
-            className="group flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-[15px] transition hover:bg-surface-hover"
-            style={{ color: "rgb(var(--text-secondary))" }}
-          >
-            <n.icon className="h-4 w-4 transition group-hover:text-accent" strokeWidth={2.25} />
-            {n.label}
-          </Link>
-        ))}
+        {PUBLIC_NAV.map((n) => {
+          const active = isActive(n.href);
+          return (
+            <Link
+              key={n.href}
+              href={n.href}
+              aria-current={active ? "page" : undefined}
+              className={`group relative flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-[15px] transition ${
+                active ? "nav-active" : "hover:bg-surface-hover"
+              }`}
+              style={{
+                color: active ? "rgb(var(--accent))" : "rgb(var(--text-secondary))",
+                fontWeight: active ? 600 : undefined,
+              }}
+            >
+              <n.icon className={`h-4 w-4 transition ${active ? "" : "group-hover:text-accent"}`}
+                strokeWidth={active ? 2.5 : 2.25} />
+              {n.label}
+            </Link>
+          );
+        })}
       </nav>
 
       {/* Right-side auth pill — sign in OR user menu */}
@@ -183,17 +200,25 @@ export function NavBar() {
 /** Mobile nav — horizontal scroll of pills. Same items as desktop. */
 export function MobileNavBar() {
   const { token } = useAuth();
+  const pathname = usePathname() || "/";
   return (
     <div className="flex max-w-[60vw] gap-1 overflow-x-auto md:hidden">
-      {PUBLIC_NAV.map((n) => (
-        <Link
-          key={n.href}
-          href={n.href}
-          className="whitespace-nowrap rounded-full bg-ink-100 px-3 py-1.5 text-xs text-ink-700"
-        >
-          {n.label}
-        </Link>
-      ))}
+      {PUBLIC_NAV.map((n) => {
+        const active = pathname === n.href || pathname.startsWith(n.href + "/");
+        return (
+          <Link
+            key={n.href}
+            href={n.href}
+            aria-current={active ? "page" : undefined}
+            className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs ${
+              active ? "font-semibold text-white" : "bg-ink-100 text-ink-700"
+            }`}
+            style={active ? { background: "rgb(var(--accent))" } : undefined}
+          >
+            {n.label}
+          </Link>
+        );
+      })}
       {token && (
         <Link href="/home" className="whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold text-white"
               style={{ background: "rgb(var(--accent))" }}>

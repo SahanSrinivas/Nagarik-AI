@@ -1,0 +1,946 @@
+{
+ "status": "Optimal",
+ "objective": 2461.4,
+ "solve_seconds": 3.443,
+ "budget": 180,
+ "crews_deployed": 180,
+ "crews_by_department": {
+  "Engineering": 54,
+  "SWM": 126,
+  "Electrical": 0,
+  "General": 0,
+  "Health": 0,
+  "Veterinary": 0,
+  "Forest": 0
+ },
+ "total_open_backlog": 19194,
+ "backlog_cleared": 3707,
+ "pct_open_cleared": 19.3,
+ "cleared_by_department": {
+  "Engineering": 648,
+  "SWM": 3059,
+  "Electrical": 0,
+  "General": 0,
+  "Health": 0,
+  "Veterinary": 0,
+  "Forest": 0
+ },
+ "mobilisations": 110,
+ "wards_served": 97,
+ "assignment": [
+  {
+   "ward": "Horamavu",
+   "lat": 13.053528308594123,
+   "lon": 77.65149995315382,
+   "crews": {
+    "Engineering": 4,
+    "SWM": 4
+   },
+   "cleared": 148
+  },
+  {
+   "ward": "Jakkuru",
+   "lat": 13.067996429037251,
+   "lon": 77.61733035791426,
+   "crews": {
+    "Engineering": 4,
+    "SWM": 4
+   },
+   "cleared": 148
+  },
+  {
+   "ward": "Bellanduru",
+   "lat": 12.939101903050512,
+   "lon": 77.67290555726144,
+   "crews": {
+    "Engineering": 4,
+    "SWM": 4
+   },
+   "cleared": 148
+  },
+  {
+   "ward": "Rajarajeshwari Nagar",
+   "lat": 12.914162831886715,
+   "lon": 77.52159504405036,
+   "crews": {
+    "Engineering": 4,
+    "SWM": 3
+   },
+   "cleared": 123
+  },
+  {
+   "ward": "Hemmigepura",
+   "lat": 12.880452484211217,
+   "lon": 77.51177951514903,
+   "crews": {
+    "SWM": 4
+   },
+   "cleared": 100
+  },
+  {
+   "ward": "Someshwara Ward",
+   "lat": 13.10372374380672,
+   "lon": 77.57437395134015,
+   "crews": {
+    "SWM": 4
+   },
+   "cleared": 100
+  },
+  {
+   "ward": "Chokkasandra",
+   "lat": 13.038067393843649,
+   "lon": 77.50553632905421,
+   "crews": {
+    "Engineering": 4,
+    "SWM": 2
+   },
+   "cleared": 98
+  },
+  {
+   "ward": "Thanisandra",
+   "lat": 13.060709755209556,
+   "lon": 77.63400564475707,
+   "crews": {
+    "SWM": 3
+   },
+   "cleared": 75
+  },
+  {
+   "ward": "Begur",
+   "lat": 12.871155750222895,
+   "lon": 77.63799843421344,
+   "crews": {
+    "SWM": 3
+   },
+   "cleared": 75
+  },
+  {
+   "ward": "Uttarahalli",
+   "lat": 12.909809885455536,
+   "lon": 77.54665061518611,
+   "crews": {
+    "SWM": 3
+   },
+   "cleared": 75
+  },
+  {
+   "ward": "Medahalli",
+   "lat": 13.023921193532393,
+   "lon": 77.70320897834343,
+   "crews": {
+    "Engineering": 4,
+    "SWM": 1
+   },
+   "cleared": 73
+  },
+  {
+   "ward": "Kalkere",
+   "lat": 13.03422476454506,
+   "lon": 77.67341486591589,
+   "crews": {
+    "Engineering": 4,
+    "SWM": 1
+   },
+   "cleared": 73
+  },
+  {
+   "ward": "Babusab Palya",
+   "lat": 13.02560662623365,
+   "lon": 77.65046817144278,
+   "crews": {
+    "Engineering": 4,
+    "SWM": 1
+   },
+   "cleared": 73
+  },
+  {
+   "ward": "Shakambari Nagar",
+   "lat": 12.917492243420881,
+   "lon": 77.5813586920524,
+   "crews": {
+    "Engineering": 4,
+    "SWM": 1
+   },
+   "cleared": 73
+  },
+  {
+   "ward": "Rajeshwari Nagar",
+   "lat": 13.010223727500426,
+   "lon": 77.51334121662761,
+   "crews": {
+    "Engineering": 4,
+    "SWM": 1
+   },
+   "cleared": 73
+  },
+  {
+   "ward": "Chatrapati Shivaji",
+   "lat": 13.025759580655421,
+   "lon": 77.54331985853574,
+   "crews": {
+    "SWM": 3
+   },
+   "cleared": 72
+  },
+  {
+   "ward": "A Narayanapura",
+   "lat": 12.993716413767949,
+   "lon": 77.67073899508074,
+   "crews": {
+    "Engineering": 4,
+    "SWM": 1
+   },
+   "cleared": 70
+  },
+  {
+   "ward": "Manorayanapalya",
+   "lat": 13.032620292237956,
+   "lon": 77.60210852728936,
+   "crews": {
+    "Engineering": 3,
+    "SWM": 1
+   },
+   "cleared": 61
+  },
+  {
+   "ward": "Kanneshwara Rama",
+   "lat": 13.04699059365017,
+   "lon": 77.54879921985489,
+   "crews": {
+    "Engineering": 3,
+    "SWM": 1
+   },
+   "cleared": 58
+  },
+  {
+   "ward": "Basavanapura",
+   "lat": 13.013327129832245,
+   "lon": 77.71565503549179,
+   "crews": {
+    "SWM": 2
+   },
+   "cleared": 50
+  },
+  {
+   "ward": "Jeevanbhima Nagar",
+   "lat": 12.959116576575152,
+   "lon": 77.65017207194025,
+   "crews": {
+    "SWM": 2
+   },
+   "cleared": 50
+  },
+  {
+   "ward": "Prakash Nagar",
+   "lat": 12.993128316409996,
+   "lon": 77.5582427422405,
+   "crews": {
+    "SWM": 2
+   },
+   "cleared": 50
+  },
+  {
+   "ward": "Dattatreya Temple",
+   "lat": 12.996542887299825,
+   "lon": 77.57416446067639,
+   "crews": {
+    "SWM": 2
+   },
+   "cleared": 50
+  },
+  {
+   "ward": "Vijayanagar",
+   "lat": 12.972406855713638,
+   "lon": 77.54829796531854,
+   "crews": {
+    "Engineering": 4
+   },
+   "cleared": 48
+  },
+  {
+   "ward": "Hoysala Nagar",
+   "lat": 12.97989889421164,
+   "lon": 77.63719501664241,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Gandhinagar",
+   "lat": 12.98129887796256,
+   "lon": 77.57576263742904,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Hennur",
+   "lat": 13.036585495348367,
+   "lon": 77.62941544465309,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Nalvadi Krishnaraja Wadior Park",
+   "lat": 12.957348714666773,
+   "lon": 77.49546644328929,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Bharathi Nagar",
+   "lat": 12.98890807318098,
+   "lon": 77.61061518936621,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Devaraj Urs Nagar",
+   "lat": 12.960763229396749,
+   "lon": 77.54862681587208,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "HRBR Layout",
+   "lat": 13.019552006150455,
+   "lon": 77.6375024894284,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "AECS Layout",
+   "lat": 12.963278907568037,
+   "lon": 77.70944993871417,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Bilekhalli",
+   "lat": 12.899375774741552,
+   "lon": 77.60969421093029,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Pulikeshinagar",
+   "lat": 12.996693472714595,
+   "lon": 77.61057485668019,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Hegganahalli",
+   "lat": 13.003193273114292,
+   "lon": 77.50905013554946,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Umamaheshwara Ward",
+   "lat": 12.924957904500305,
+   "lon": 77.573938844274,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Malleswaram",
+   "lat": 13.014428402855527,
+   "lon": 77.56162791442428,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Rajamahal Guttahalli",
+   "lat": 13.001379516129159,
+   "lon": 77.57909161530361,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Chickpete",
+   "lat": 12.970482427233632,
+   "lon": 77.57728752823988,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Rajaji Nagar",
+   "lat": 12.994213128025217,
+   "lon": 77.5507764200725,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "S K Garden",
+   "lat": 13.00792407482011,
+   "lon": 77.60831407078929,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Ganesh Mandir ward",
+   "lat": 12.92438329320237,
+   "lon": 77.5635522902842,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Nelagadderanahalli",
+   "lat": 13.022592180845395,
+   "lon": 77.50560738478605,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Agara",
+   "lat": 12.91346688949077,
+   "lon": 77.64429962859865,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "J P Nagar",
+   "lat": 12.912239180849513,
+   "lon": 77.59471581034163,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Whitefield",
+   "lat": 12.966272565419404,
+   "lon": 77.73173272283874,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Chamundi Nagara",
+   "lat": 13.025270505655191,
+   "lon": 77.59615027262404,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Girinagar",
+   "lat": 12.939046461581913,
+   "lon": 77.5449360100618,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Devara Jeevanahalli",
+   "lat": 13.013752448638193,
+   "lon": 77.60655536356977,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Kogilu",
+   "lat": 13.102741208119571,
+   "lon": 77.62698123415936,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Vinayakanagar",
+   "lat": 12.898401572675766,
+   "lon": 77.59484552012313,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Venkateshpura",
+   "lat": 13.01467575244935,
+   "lon": 77.6195869835673,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Sarakki",
+   "lat": 12.908270057929169,
+   "lon": 77.58447201352377,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Sudham Nagara",
+   "lat": 12.957198825660221,
+   "lon": 77.58536338678377,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Gurappanapalya",
+   "lat": 12.920393516958901,
+   "lon": 77.60450246266977,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "HSR - Singasandra",
+   "lat": 12.894816206144409,
+   "lon": 77.63995189744203,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Kaveripura",
+   "lat": 12.98131897672091,
+   "lon": 77.52431142458978,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "RBI layout",
+   "lat": 12.889256237850052,
+   "lon": 77.58006108569477,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Lingarajapura",
+   "lat": 13.006054424594671,
+   "lon": 77.62548860215922,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Devasandra",
+   "lat": 13.000616365103532,
+   "lon": 77.6917862815369,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Nandini Layout",
+   "lat": 13.015885186501656,
+   "lon": 77.53503631856523,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Yelahanka Satellite Town",
+   "lat": 13.09134488754035,
+   "lon": 77.5877161140718,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Kaval Bairasandra",
+   "lat": 13.021584295154852,
+   "lon": 77.6044402073582,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "New Thippasandra",
+   "lat": 12.976437814975577,
+   "lon": 77.66012573460094,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Konanakunte",
+   "lat": 12.881361002739322,
+   "lon": 77.56167868220318,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "New Bayappanahalli",
+   "lat": 12.989132339535317,
+   "lon": 77.63109058141197,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 25
+  },
+  {
+   "ward": "Vijayanagara Krishnadevaraya",
+   "lat": 12.985159601298694,
+   "lon": 77.51526890524893,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 24
+  },
+  {
+   "ward": "Sanjaya Nagar",
+   "lat": 13.036806207297007,
+   "lon": 77.58121604441727,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 24
+  },
+  {
+   "ward": "Yelachenahalli",
+   "lat": 12.90236900191163,
+   "lon": 77.56811343051957,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 24
+  },
+  {
+   "ward": "Anjanapura",
+   "lat": 12.85826411086181,
+   "lon": 77.56442346833654,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 24
+  },
+  {
+   "ward": "Ullal",
+   "lat": 12.941458671704282,
+   "lon": 77.48885856270265,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 24
+  },
+  {
+   "ward": "Dayananda Nagar",
+   "lat": 12.991084326627488,
+   "lon": 77.56423450873702,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 24
+  },
+  {
+   "ward": "Tilak Nagar",
+   "lat": 12.92647640877893,
+   "lon": 77.59827093291749,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 23
+  },
+  {
+   "ward": "Kalena Agrahara",
+   "lat": 12.859570470745789,
+   "lon": 77.60768159018903,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 23
+  },
+  {
+   "ward": "Jayamahal",
+   "lat": 12.996510997895372,
+   "lon": 77.59921217052329,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 23
+  },
+  {
+   "ward": "Kadu Malleshwara",
+   "lat": 13.002375392724783,
+   "lon": 77.56851148670704,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 23
+  },
+  {
+   "ward": "Mahalakshimpuram",
+   "lat": 13.008597859314438,
+   "lon": 77.54171761777138,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 23
+  },
+  {
+   "ward": "Puttenahalli - Sarakki Lake",
+   "lat": 12.89893296010998,
+   "lon": 77.5831848110021,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 23
+  },
+  {
+   "ward": "C V Raman Nagar",
+   "lat": 12.991293033236094,
+   "lon": 77.65812271260462,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 23
+  },
+  {
+   "ward": "Attiguppe",
+   "lat": 12.959713025620795,
+   "lon": 77.53006279469133,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 23
+  },
+  {
+   "ward": "Chowdeswari Ward",
+   "lat": 13.121912893272595,
+   "lon": 77.57889170949365,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 23
+  },
+  {
+   "ward": "Dodda Bidarakallu",
+   "lat": 13.027954689747366,
+   "lon": 77.48694424859352,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 22
+  },
+  {
+   "ward": "Doddakanahalli",
+   "lat": 12.909496677530411,
+   "lon": 77.67755070781423,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 22
+  },
+  {
+   "ward": "Kengeri",
+   "lat": 12.923632163532474,
+   "lon": 77.48633563211955,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 22
+  },
+  {
+   "ward": "Ramaswamy Palya",
+   "lat": 13.001964574915014,
+   "lon": 77.60166913815831,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 22
+  },
+  {
+   "ward": "Rajagopal Nagar",
+   "lat": 13.023129052053783,
+   "lon": 77.51782069983322,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 22
+  },
+  {
+   "ward": "Bande Mutt",
+   "lat": 12.91403759788558,
+   "lon": 77.48369518725494,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 22
+  },
+  {
+   "ward": "Hulimavu",
+   "lat": 12.876122083937293,
+   "lon": 77.60199913253926,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 21
+  },
+  {
+   "ward": "Kushal Nagar",
+   "lat": 13.022269440452776,
+   "lon": 77.61336264614314,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 21
+  },
+  {
+   "ward": "Bapuji Nagar",
+   "lat": 12.959138790151323,
+   "lon": 77.5432376187957,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 21
+  },
+  {
+   "ward": "Amrutahalli",
+   "lat": 13.060118719554445,
+   "lon": 77.60377433513699,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 21
+  },
+  {
+   "ward": "Okalipuram",
+   "lat": 12.982813454111906,
+   "lon": 77.56386080847341,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 21
+  },
+  {
+   "ward": "Veerabhadranagar",
+   "lat": 12.943033868030687,
+   "lon": 77.53564239226542,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 21
+  },
+  {
+   "ward": "Jalakanteshwara Nagara",
+   "lat": 12.979986775755119,
+   "lon": 77.67437534892147,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 21
+  },
+  {
+   "ward": "Govindaraja Nagar",
+   "lat": 12.977354313975836,
+   "lon": 77.53367479699777,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 21
+  },
+  {
+   "ward": "Someshwara Nagar",
+   "lat": 12.936317633242968,
+   "lon": 77.59607116660473,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 21
+  },
+  {
+   "ward": "Veera Sindhura Lakshamana",
+   "lat": 12.998223889461235,
+   "lon": 77.51547593514194,
+   "crews": {
+    "SWM": 1
+   },
+   "cleared": 21
+  }
+ ],
+ "baseline": {
+  "method": "proportional",
+  "relief_weighted": 2250.8,
+  "backlog_cleared": 3127,
+  "pct_open_cleared": 16.3,
+  "cleared_by_department": {
+   "Engineering": 1140,
+   "SWM": 1375,
+   "Electrical": 180,
+   "General": 432,
+   "Health": 0,
+   "Veterinary": 0,
+   "Forest": 0
+  }
+ },
+ "uniform": {
+  "method": "uniform",
+  "relief_weighted": 2225.6,
+  "backlog_cleared": 2865,
+  "pct_open_cleared": 14.9
+ },
+ "uplift_vs_baseline": {
+  "extra_backlog_cleared": 580,
+  "pct_more_backlog": 18.5,
+  "relief_weighted_opt": 2461.4,
+  "relief_weighted_baseline": 2250.8,
+  "pct_more_relief": 9.4
+ }
+}
