@@ -113,7 +113,10 @@ export function NavBar() {
               style={{ background: "rgb(var(--accent))" }}
             >
               {(me.name ?? me.username ?? "?")[0].toUpperCase()}
-              {me.is_verifier && (
+              {/* Verifier star only after they actually reach the 250 XP tier — the
+                  is_verifier flag means 'eligible' (gave us a home location), the
+                  star means 'unlocked'. */}
+              {me.is_verifier && (me.xp ?? 0) >= 250 && (
                 <Star
                   className="absolute -right-1.5 -top-1.5 h-3.5 w-3.5 fill-amber-400 text-amber-500"
                   strokeWidth={2}
@@ -138,16 +141,28 @@ export function NavBar() {
                    style={{ borderColor: "rgb(var(--border-light))" }}>
                 <div className="flex items-center gap-1.5 text-sm font-semibold">
                   {me.name ?? me.username}
-                  {me.is_verifier && (
+                  {me.is_verifier && (me.xp ?? 0) >= 250 ? (
                     <span
-                      title="You're a verifier — you can confirm reports near your home"
-                      className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase"
-                      style={{ background: "rgba(245, 158, 11, 0.15)", color: "#b45309" }}
+                      title="Verifier tier reached — you can confirm reports near your home"
+                      className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase"
+                      style={{ background: "rgba(245, 158, 11, 0.18)", color: "#b45309" }}
                     >
-                      <Star className="h-2.5 w-2.5 fill-amber-500 text-amber-500" />
+                      <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
                       Verifier
                     </span>
-                  )}
+                  ) : me.is_verifier ? (
+                    <span
+                      title={`${250 - (me.xp ?? 0)} XP to verifier tier`}
+                      className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase"
+                      style={{
+                        background: "rgb(var(--bg-surface-hover))",
+                        color: "rgb(var(--text-muted))",
+                      }}
+                    >
+                      <Star className="h-3 w-3" />
+                      {Math.max(0, 250 - (me.xp ?? 0))} XP
+                    </span>
+                  ) : null}
                 </div>
                 <div className="font-mono text-[11px]" style={{ color: "rgb(var(--text-muted))" }}>
                   @{me.username} · {me.xp} XP

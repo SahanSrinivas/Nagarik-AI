@@ -65,14 +65,21 @@ export default function HomePage() {
               <div className="text-xs uppercase tracking-wider text-brand-200">Welcome back</div>
               <h1 className="mt-1 flex items-center gap-2 text-2xl font-semibold tracking-tight">
                 {me.name ?? me.username}
-                {me.is_verifier && (
+                {me.is_verifier && xp >= 250 ? (
                   <span
-                    title="You're a verifier — eligible to confirm reports near your home"
-                    className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-300"
+                    title="Verifier tier reached — you can confirm reports near your home"
+                    className="inline-flex items-center gap-1 rounded-full bg-amber-500/20 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-amber-200"
                   >
-                    <Star className="h-3 w-3 fill-amber-400 text-amber-400" /> Verifier
+                    <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" /> Verifier
                   </span>
-                )}
+                ) : me.is_verifier ? (
+                  <span
+                    title={`Verifier-eligible — needs ${250 - xp} more XP to unlock`}
+                    className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-white/70"
+                  >
+                    <Star className="h-3.5 w-3.5 text-white/50" /> {250 - xp} XP to verifier
+                  </span>
+                ) : null}
               </h1>
               <div className="mt-1 text-xs font-mono text-ink-300">@{me.username}</div>
             </div>
@@ -145,53 +152,63 @@ export default function HomePage() {
 
       {/* My reports list */}
       <section id="my-reports" className="space-y-3">
-        <h2 className="text-sm font-semibold text-ink-700">My recent reports</h2>
+        <h2 className="text-base font-semibold" style={{ color: "rgb(var(--text-primary))" }}>My recent reports</h2>
         {mine.length === 0 ? (
-          <div className="card p-6 text-center text-sm text-ink-500">
+          <div className="card p-6 text-center text-base"
+            style={{ color: "rgb(var(--text-secondary))" }}>
             <Award className="mx-auto mb-2 h-6 w-6 text-brand-600" />
-            No reports yet. Tap “Report an issue” above to start earning XP.
+            No reports yet. Tap &ldquo;Report an issue&rdquo; above to start earning XP.
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             {mine.slice(0, 20).map((i) => (
-              <div key={i.id} className="card-glow p-3 text-sm">
+              <div key={i.id} className="rounded-xl p-4 text-sm shadow-sm transition hover:shadow-md"
+                style={{
+                  background: "rgb(var(--bg-surface))",
+                  border: "1px solid rgb(var(--border-color))",
+                  color: "rgb(var(--text-primary))",
+                }}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
-                      <div className="truncate font-medium">{i.address ?? prettify(i.type)}</div>
+                      <div className="truncate text-base font-semibold"
+                        style={{ color: "rgb(var(--text-primary))" }}>
+                        {i.address ?? prettify(i.type)}
+                      </div>
                       {i.before_video_url && (
                         <span title="Video evidence"
-                          className="inline-flex items-center rounded-full bg-ink-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-ink-600">
-                          <Video className="h-2.5 w-2.5" /> Video
+                          className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider"
+                          style={{ background: "rgba(191, 79, 54, 0.10)", color: "rgb(var(--accent))" }}>
+                          <Video className="mr-0.5 h-3 w-3" /> Video
                         </span>
                       )}
                     </div>
-                    <div className="mt-0.5 text-xs text-ink-500">
+                    <div className="mt-1 text-sm" style={{ color: "rgb(var(--text-secondary))" }}>
                       {i.ward ?? "—"} · {new Date(i.created_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
                     </div>
                   </div>
                   <StatusPill value={i.status} />
                 </div>
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className="mt-3 flex flex-wrap items-center gap-2">
                   <Link
                     href={`/tracking/${i.id}`}
-                    className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium text-white"
+                    className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold text-white"
                     style={{ background: "rgb(var(--accent))" }}
                   >
-                    <Activity className="h-3 w-3" /> Live track
+                    <Activity className="h-3.5 w-3.5" /> Live track
                   </Link>
                   <Link
                     href={`/agents?issue=${i.id}`}
-                    className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium"
+                    className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium"
                     style={{
-                      background: "rgb(var(--bg-surface))",
+                      background: "rgb(var(--bg-surface-hover))",
                       border: "1px solid rgb(var(--border-color))",
                       color: "rgb(var(--text-primary))",
                     }}
                   >
-                    <Eye className="h-3 w-3" /> Watch agents
+                    <Eye className="h-3.5 w-3.5" /> Watch agents
                   </Link>
-                  <span className="ml-auto self-center font-mono text-[11px] text-ink-400">
+                  <span className="ml-auto self-center font-mono text-xs" style={{ color: "rgb(var(--text-muted))" }}>
                     {i.id.slice(0, 8)}…
                   </span>
                 </div>
