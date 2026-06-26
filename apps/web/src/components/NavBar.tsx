@@ -27,7 +27,7 @@ const PUBLIC_NAV = [
   { href: "/dashboard",     label: "Wards",        icon: LayoutDashboard },
   { href: "/crew",          label: "Crew",         icon: Truck },
   { href: "/milp",          label: "Schedule",     icon: Activity },
-  { href: "/impact",        label: "Impact",       icon: Trophy },
+  { href: "/impact",        label: "Veer",         icon: Trophy },
   { href: "/references",    label: "Datasets",     icon: BookOpen },
   { href: "/architecture",  label: "Architecture", icon: FileCode2 },
 ];

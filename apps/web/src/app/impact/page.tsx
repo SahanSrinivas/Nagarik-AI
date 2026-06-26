@@ -24,9 +24,14 @@ export default function ImpactPage() {
       <header className="card p-6">
         <div className="flex items-center gap-2">
           <Trophy className="h-5 w-5 text-brand-600" />
-          <h1 className="text-xl font-semibold tracking-tight">Citizen leaderboard</h1>
+          <h1 className="text-xl font-semibold tracking-tight">
+            Veer <span className="font-normal text-ink-500">· वीर</span>
+          </h1>
         </div>
-        <p className="mt-1 text-sm text-ink-600">Top contributors. Each badge is a soulbound NFT.</p>
+        <p className="mt-1 text-sm text-ink-600">
+          Sanskrit for &ldquo;hero&rdquo;. The citizens who report, verify, and follow through —
+          ranked by civic XP. Every tier badge is a soulbound NFT.
+        </p>
       </header>
 
       {top.length > 0 && (

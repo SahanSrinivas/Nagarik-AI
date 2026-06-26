@@ -138,7 +138,7 @@ export default function LoginPage() {
               border: "1px solid rgb(var(--border-light))",
             }}
           >
-            <div className="mb-2 flex items-center gap-1.5 font-semibold">
+            <div className="mb-2 flex flex-wrap items-center gap-1.5 font-semibold">
               <Star className="h-3.5 w-3.5" style={{ color: "rgb(var(--accent))" }} />
               Become a verifier{" "}
               <span
@@ -147,10 +147,23 @@ export default function LoginPage() {
               >
                 +5 XP per confirmation
               </span>
+              <span
+                className="rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase"
+                style={{
+                  background: "rgba(245, 158, 11, 0.15)",
+                  color: "#b45309",
+                  border: "1px solid rgba(245, 158, 11, 0.35)",
+                }}
+                title="Verifier tier unlocks at 250 XP"
+              >
+                Unlocks at 250 XP
+              </span>
             </div>
             <p style={{ color: "rgb(var(--text-secondary))" }}>
-              Share your accurate home location and you can confirm reports near you.
-              We use it only to gate verification — never shown publicly.
+              Share your accurate home location now — we&apos;ll use it to know which reports
+              you can credibly confirm. The verifier role itself activates when you cross
+              the <strong>Verifier tier (250 XP)</strong>, which most active citizens reach
+              within ~25 confirmed reports.
             </p>
             <button
               type="button"
