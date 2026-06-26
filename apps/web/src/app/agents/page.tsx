@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Activity, AlertTriangle, CheckCircle2, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { AgentCard } from "@/components/AgentCard";
 import { Reveal, Stagger } from "@/components/Motion";
 import { Pill } from "@/components/Pill";
 import { RoutingCard } from "@/components/RoutingCard";
@@ -165,56 +166,15 @@ export default function AgentsPage() {
             )}
             {events.map((e, i) => {
               const payload = (e.payload || {}) as Record<string, unknown>;
-              const isDup = payload.is_duplicate === true;
-              const dupOf = payload.duplicate_of_id as string | undefined;
-              // Pull structured routing telemetry off the triage event.
               const routingMeta =
                 e.agent === "triage" && (payload as { ai_meta?: { routing?: unknown } }).ai_meta
                   ? ((payload as { ai_meta: { routing?: unknown } }).ai_meta.routing as Parameters<typeof RoutingCard>[0]["meta"])
                   : undefined;
-              // Agents that early-return on duplicate render as a slim "skipped" row.
-              const skippedDownstream =
-                isDup && e.status === "completed" &&
-                ["triage", "verification", "scheduler", "resolution", "insights"].includes(e.agent);
               return (
-                <motion.div
-                  key={`${e.agent}-${e.created_at}-${i}`}
-                  layout
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ type: "spring", stiffness: 220, damping: 26 }}
-                  className="space-y-2"
-                >
-                  <div className="card p-4">
-                    <div className="flex flex-wrap items-center gap-2 text-xs">
-                      <Pill tone="brand">{e.agent}</Pill>
-                      <Pill tone={e.status === "completed" ? "lime" : e.status === "failed" ? "rose" : "amber"}>
-                        {e.status}
-                      </Pill>
-                      <span className="text-ink-500">{e.duration_ms ?? "—"}ms</span>
-                      <span className="text-ink-400">{new Date(e.created_at).toLocaleTimeString()}</span>
-                      {skippedDownstream && (
-                        <Pill tone="amber">skipped · duplicate of {dupOf?.slice(0, 8)}…</Pill>
-                      )}
-                      {e.agent === "dedup" && isDup && (
-                        <Pill tone="amber">merged into {dupOf?.slice(0, 8)}…</Pill>
-                      )}
-                    </div>
-                    {skippedDownstream ? (
-                      <p className="mt-2 text-xs text-ink-600">
-                        Issue was deduplicated by an earlier report — this agent intentionally
-                        short-circuits to avoid double-dispatch / double-notification.
-                        Submit from a different ward to see this agent run for real.
-                      </p>
-                    ) : (
-                      <pre className="mt-2 overflow-auto rounded-lg bg-ink-950 p-3 font-mono text-[11px] text-brand-200">
-{JSON.stringify(e.payload, null, 2)}
-                      </pre>
-                    )}
-                  </div>
+                <div key={`${e.agent}-${e.created_at}-${i}`} className="space-y-2">
+                  <AgentCard event={e} />
                   {routingMeta && <RoutingCard meta={routingMeta} />}
-                </motion.div>
+                </div>
               );
             })}
           </AnimatePresence>
