@@ -47,10 +47,14 @@ export default function ImpactPage() {
                   <div className="mt-1 font-mono text-2xl text-brand-700">
                     <Counter to={c.xp} suffix=" XP" />
                   </div>
-                  <div className="mt-2 inline-flex items-center gap-1 text-xs text-brand-700">
-                    <Wallet className="h-3 w-3" /> view wallet
+                  {/* Wallet link + badge sit on ONE line so the card height
+                      stays uniform across all three podium slots. */}
+                  <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-xs">
+                    <span className="inline-flex items-center gap-1 text-brand-700">
+                      <Wallet className="h-3 w-3" /> view wallet
+                    </span>
+                    {c.badge && <Pill tone="brand">{c.badge}</Pill>}
                   </div>
-                  {c.badge && <Pill tone="brand" className="mt-3">{c.badge}</Pill>}
                 </motion.div>
               </Link>
             </Reveal>
