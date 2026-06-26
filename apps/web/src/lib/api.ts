@@ -12,6 +12,8 @@ export interface Issue {
   description: string;
   before_photo_url: string | null;
   after_photo_url: string | null;
+  before_video_url?: string | null;
+  after_video_url?: string | null;
   routed_department: string | null;
   sla_deadline: string | null;
   duplicate_of_id: string | null;
@@ -138,6 +140,18 @@ export async function uploadPhoto(file: File): Promise<string> {
   await fetch(slot.upload_url, {
     method: "PUT",
     headers: { "Content-Type": file.type || "image/jpeg" },
+    body: file,
+  });
+  return slot.public_url;
+}
+
+/** Same flow as uploadPhoto but for video — content-type just propagates. */
+export async function uploadVideo(file: File): Promise<string> {
+  const slot = await api.signedUpload(file.type || "video/mp4");
+  if (!slot.upload_url) return slot.public_url; // stub mode → returns a pothole demo clip
+  await fetch(slot.upload_url, {
+    method: "PUT",
+    headers: { "Content-Type": file.type || "video/mp4" },
     body: file,
   });
   return slot.public_url;

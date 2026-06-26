@@ -18,6 +18,7 @@ class IssueCreate(BaseModel):
     address: str | None = None
     description: str = ""
     before_photo_url: str | None = None  # client uploads to Supabase, then sends URL
+    before_video_url: str | None = None  # short clip — Gemini Files API
 
 
 class IssueRead(BaseModel):
@@ -32,6 +33,8 @@ class IssueRead(BaseModel):
     description: str
     before_photo_url: str | None
     after_photo_url: str | None
+    before_video_url: str | None = None
+    after_video_url: str | None = None
     routed_department: str | None
     sla_deadline: datetime | None
     duplicate_of_id: uuid.UUID | None

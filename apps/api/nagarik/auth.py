@@ -101,6 +101,11 @@ class SignupIn(BaseModel):
     password: str = Field(min_length=8, max_length=200)
     name: str | None = Field(default=None, max_length=80)
     phone: str | None = Field(default=None, max_length=15)
+    # Optional accurate home location. When both lat and lng are supplied
+    # the citizen becomes a verifier — eligible to confirm/contest reports
+    # near their address (range checked at verify time).
+    home_lat: float | None = Field(default=None, ge=-90, le=90)
+    home_lng: float | None = Field(default=None, ge=-180, le=180)
 
 
 class LoginIn(BaseModel):
@@ -152,6 +157,9 @@ def _citizen_dict(c: Citizen) -> dict:
         "phone": c.phone,
         "xp": c.xp,
         "badge": c.badge,
+        "is_verifier": bool(getattr(c, "is_verifier", False)),
+        "home_lat": getattr(c, "home_lat", None),
+        "home_lng": getattr(c, "home_lng", None),
     }
 
 
@@ -159,13 +167,18 @@ def _citizen_dict(c: Citizen) -> dict:
 def signup(payload: SignupIn, db: Session = Depends(get_db)) -> TokenOut:
     if db.scalar(select(Citizen).where(Citizen.username == payload.username)):
         raise HTTPException(status.HTTP_409_CONFLICT, "username already taken")
-    phone = payload.phone or f"+91demo-{uuid.uuid4().hex[:10]}"
+    # Auto-phone must fit phone VARCHAR(15). Format: +91d<10 hex> = 14 chars.
+    phone = payload.phone or f"+91d{uuid.uuid4().hex[:10]}"
+    has_home = payload.home_lat is not None and payload.home_lng is not None
     citizen = Citizen(
         username=payload.username,
         password_hash=hash_password(payload.password),
         name=payload.name or payload.username,
         phone=phone,
         xp=0,
+        home_lat=payload.home_lat,
+        home_lng=payload.home_lng,
+        is_verifier=has_home,
     )
     db.add(citizen)
     db.commit()

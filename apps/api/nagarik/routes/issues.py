@@ -37,6 +37,8 @@ def _to_read(issue: Issue) -> IssueRead:
         description=issue.description,
         before_photo_url=issue.before_photo_url,
         after_photo_url=issue.after_photo_url,
+        before_video_url=getattr(issue, "before_video_url", None),
+        after_video_url=getattr(issue, "after_video_url", None),
         routed_department=issue.routed_department,
         sla_deadline=issue.sla_deadline,
         duplicate_of_id=issue.duplicate_of_id,
@@ -130,6 +132,7 @@ def create_issue(
         ward=final_ward,
         description=payload.description,
         before_photo_url=payload.before_photo_url,
+        before_video_url=payload.before_video_url,
         ai_classification={
             "location_resolver": {
                 "source": resolved.source,

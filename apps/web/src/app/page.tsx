@@ -40,7 +40,7 @@ import { Pill } from "@/components/Pill";
 import { useAuth } from "@/lib/auth";
 
 const AGENTS = [
-  { icon: Eye,          name: "Vision",       sub: "Gemini classifies the photo" },
+  { icon: Eye,          name: "Vision",       sub: "Gemini classifies photo or video" },
   { icon: GitBranch,    name: "Dedup",        sub: "Merge nearby duplicates" },
   { icon: Brain,        name: "Triage",       sub: "LLM routes, gate verifies" },
   { icon: CheckCircle2, name: "Verification", sub: "Citizens confirm" },
@@ -63,7 +63,7 @@ const PROBLEMS = [
 ];
 
 const SOLUTIONS = [
-  { icon: Brain,        k: "AI does the work", v: "Snap a photo → Gemini classifies it · Claude routes it · OR-Tools schedules it · CLIP + CNN verify the fix." },
+  { icon: Brain,        k: "AI does the work", v: "Snap a photo (or short video) → Gemini classifies it · Claude routes it · OR-Tools schedules it · CLIP + CNN verify the fix." },
   { icon: ShieldCheck,  k: "Gates keep AI honest", v: "Every LLM output passes through deterministic guardrails. Hallucinations and prompt injections fail closed to the canonical SOP." },
   { icon: TrendingUp,   k: "Closed feedback loop", v: "Citizen sees every status change in real time (in EN / हि / ಕ). XP rewards verified contributions." },
 ];
@@ -228,10 +228,13 @@ export default function MarketingHome() {
             8 issue types · 7 departments · 1 deterministic gate
           </h2>
           <p className="mt-2 text-sm text-ink-600">
-            Vision (Gemini) classifies your photo into one of these 8 categories.
-            The Triage agent's SOP table routes each to the right BBMP / BWSSB / BESCOM
-            department with a default SLA. The deterministic gate verifies the LLM's
-            choice — any mismatch falls back to the canonical mapping below.
+            Vision (Gemini 2.5 Flash) classifies your <strong>photo or short video</strong>
+            into one of these 8 categories. The Triage agent&apos;s SOP table routes each
+            to the right BBMP / BWSSB / BESCOM department with a default SLA. The
+            deterministic gate verifies the LLM&apos;s choice — any mismatch falls back to
+            the canonical mapping below. <Link href="/references" className="underline" style={{ color: "rgb(var(--accent))" }}>
+              See 7/7 video-classification probe on /references →
+            </Link>
           </p>
         </header>
 
@@ -239,8 +242,8 @@ export default function MarketingHome() {
         <div className="mx-auto mb-6 grid max-w-3xl grid-cols-5 items-center gap-2 text-center">
           <div className="card p-3">
             <Camera className="mx-auto h-5 w-5" style={{ color: "rgb(var(--accent))" }} />
-            <div className="mt-1 text-xs font-semibold">Photo</div>
-            <div className="text-[10px] text-ink-500">Citizen snap</div>
+            <div className="mt-1 text-xs font-semibold">Photo or video</div>
+            <div className="text-[10px] text-ink-500">Citizen captures</div>
           </div>
           <ArrowRight className="mx-auto h-5 w-5 text-ink-400" />
           <div className="card p-3">

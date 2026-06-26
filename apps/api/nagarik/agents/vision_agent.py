@@ -1,15 +1,20 @@
 """Agent 1 — VisionAgent.
 
-Calls Gemini 2.5 Flash on the before-photo to extract:
+Calls Gemini 2.5 Flash on the citizen's evidence (photo OR short video) to
+extract:
 - type (pothole / garbage / streetlight / water_leak / ...)
 - severity (1-5)
 - bounding-box metadata (width, depth, hazard score)
 
-The real path:
-  1. Download the photo bytes from before_photo_url (Supabase signed URL or
-     any public image URL).
-  2. Send (prompt + inline image) to gemini-2.5-flash with JSON response mime.
-  3. Parse and persist.
+Two paths depending on the evidence type:
+
+  PHOTO: download bytes from before_photo_url, inline them as a Part, and
+         send (prompt + image) to gemini-2.5-flash with JSON response mime.
+
+  VIDEO: download the clip, upload it to the Gemini Files API (videos must
+         go through Files for processing), poll until the file is ACTIVE,
+         then send (prompt + file_uri) to gemini-2.5-flash. Gemini samples
+         frames internally — same JSON schema comes back.
 
 Falls back to a deterministic stub when GOOGLE_API_KEY is missing or the
 call fails, so the agent loop is never blocked by AI errors.
@@ -84,6 +89,47 @@ def _parse_json(text: str) -> dict[str, Any] | None:
 
 
 _GEMINI_ALLOWED_MIMES = {"image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"}
+_GEMINI_VIDEO_MIMES = {"video/mp4", "video/quicktime", "video/webm", "video/x-m4v", "video/3gpp"}
+
+
+def _build_video_parts(client, video_url: str):
+    """Upload a video to Gemini Files API and return a Part referencing it.
+
+    Gemini cannot accept videos inline — they must be uploaded as a File and
+    polled until ``state == ACTIVE``. We download to a temp file, upload,
+    poll for up to 60 seconds, then return a single-element [Part(file_uri)].
+    """
+    import tempfile
+    import time
+    from pathlib import Path
+
+    from google.genai import types as gtypes
+
+    with httpx.Client(follow_redirects=True, timeout=60) as http:
+        r = http.get(video_url, headers={"User-Agent": "NagarikAI-Vision/0.1"})
+        r.raise_for_status()
+        mime = r.headers.get("content-type", "video/mp4").split(";")[0].strip().lower()
+        if mime not in _GEMINI_VIDEO_MIMES:
+            mime = "video/mp4"  # best-effort; Gemini sniffs the container
+
+        suffix = ".mp4" if mime == "video/mp4" else Path(video_url).suffix or ".mp4"
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as f:
+            f.write(r.content)
+            local_path = f.name
+
+    uploaded = client.files.upload(file=local_path, config={"mime_type": mime})
+    # Poll until ACTIVE — videos take a few seconds to process.
+    for _ in range(20):
+        info = client.files.get(name=uploaded.name)
+        state_name = getattr(info, "state", None)
+        if hasattr(state_name, "name"):
+            state_name = state_name.name
+        if state_name == "ACTIVE":
+            return [gtypes.Part.from_uri(file_uri=info.uri, mime_type=mime)]
+        if state_name == "FAILED":
+            raise RuntimeError(f"Gemini reported FAILED processing {uploaded.name}")
+        time.sleep(2)
+    raise TimeoutError("Gemini video processing did not become ACTIVE within 40s")
 
 
 def _fetch_image(url: str) -> tuple[bytes, str]:
@@ -115,18 +161,16 @@ def run_vision(state: AgentState) -> AgentState:
 
     with SessionLocal() as db:
         issue = db.get(Issue, state["issue_id"])
-        if issue is None or not issue.before_photo_url:
-            new = _stub(state, "no photo on issue")
+        if issue is None:
+            new = _stub(state, "issue not found")
             _persist(new)
             return new
         photo_url = issue.before_photo_url
+        video_url = getattr(issue, "before_video_url", None)
 
-    # Fetch image bytes — Gemini accepts inline data up to 20MB.
-    try:
-        image_bytes, mime = _fetch_image(photo_url)
-    except (httpx.HTTPError, ValueError) as exc:
-        log.warning("vision: failed to fetch %s: %s", photo_url, exc)
-        new = _stub(state, f"image fetch failed: {exc.__class__.__name__}")
+    # Prefer video when present (richer signal); fall back to photo.
+    if not photo_url and not video_url:
+        new = _stub(state, "no evidence on issue")
         _persist(new)
         return new
 
@@ -136,12 +180,31 @@ def run_vision(state: AgentState) -> AgentState:
         from google.genai import types as gtypes
 
         client = genai.Client(api_key=settings.google_api_key)
+
+        if video_url:
+            try:
+                parts = _build_video_parts(client, video_url)
+            except Exception as exc:  # noqa: BLE001
+                log.warning("vision: video prep failed (%s) — trying photo fallback", exc)
+                if not photo_url:
+                    new = _stub(state, f"video prep failed: {exc.__class__.__name__}")
+                    _persist(new)
+                    return new
+                video_url = None  # fall through to photo path
+
+        if not video_url:
+            try:
+                image_bytes, mime = _fetch_image(photo_url)  # type: ignore[arg-type]
+            except (httpx.HTTPError, ValueError) as exc:
+                log.warning("vision: failed to fetch %s: %s", photo_url, exc)
+                new = _stub(state, f"image fetch failed: {exc.__class__.__name__}")
+                _persist(new)
+                return new
+            parts = [gtypes.Part.from_bytes(data=image_bytes, mime_type=mime)]
+
         resp = client.models.generate_content(
             model="gemini-2.5-flash",
-            contents=[
-                gtypes.Part.from_bytes(data=image_bytes, mime_type=mime),
-                PROMPT,
-            ],
+            contents=[*parts, PROMPT],
             config=gtypes.GenerateContentConfig(
                 response_mime_type="application/json",
                 temperature=0.1,

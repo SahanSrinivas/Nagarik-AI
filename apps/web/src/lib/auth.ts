@@ -14,13 +14,22 @@ export interface Me {
   phone: string | null;
   xp: number;
   badge: string | null;
+  is_verifier?: boolean;
+  home_lat?: number | null;
+  home_lng?: number | null;
+}
+
+export interface SignupExtras {
+  name?: string;
+  home_lat?: number;
+  home_lng?: number;
 }
 
 interface AuthCtx {
   token: string | null;
   me: Me | null;
   login: (username: string, password: string) => Promise<void>;
-  signup: (username: string, password: string, name?: string) => Promise<void>;
+  signup: (username: string, password: string, extras?: SignupExtras) => Promise<void>;
   logout: () => void;
   refresh: () => Promise<void>;
 }
@@ -63,11 +72,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     persist(d.access_token, d.citizen);
   }, [persist]);
 
-  const signup = useCallback(async (username: string, password: string, name?: string) => {
+  const signup = useCallback(async (username: string, password: string, extras: SignupExtras = {}) => {
     const r = await fetch(`${BASE}/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password, name }),
+      body: JSON.stringify({ username, password, ...extras }),
     });
     if (!r.ok) {
       const body = await r.json().catch(() => ({}));

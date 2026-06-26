@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Activity, Award, ArrowRight, Camera, Eye, ListChecks, LogOut, Trophy } from "lucide-react";
+import { Activity, Award, ArrowRight, Camera, Eye, ListChecks, LogOut, Star, Trophy, Video } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -17,6 +17,8 @@ interface MyIssue {
   ward: string | null;
   address: string | null;
   created_at: string;
+  before_photo_url?: string | null;
+  before_video_url?: string | null;
 }
 
 const NEXT_TIERS = [
@@ -61,7 +63,17 @@ export default function HomePage() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <div className="text-xs uppercase tracking-wider text-brand-200">Welcome back</div>
-              <h1 className="mt-1 text-2xl font-semibold tracking-tight">{me.name ?? me.username}</h1>
+              <h1 className="mt-1 flex items-center gap-2 text-2xl font-semibold tracking-tight">
+                {me.name ?? me.username}
+                {me.is_verifier && (
+                  <span
+                    title="You're a verifier — eligible to confirm reports near your home"
+                    className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-300"
+                  >
+                    <Star className="h-3 w-3 fill-amber-400 text-amber-400" /> Verifier
+                  </span>
+                )}
+              </h1>
               <div className="mt-1 text-xs font-mono text-ink-300">@{me.username}</div>
             </div>
             <div className="text-right">
@@ -145,7 +157,15 @@ export default function HomePage() {
               <div key={i.id} className="card-glow p-3 text-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
-                    <div className="truncate font-medium">{i.address ?? prettify(i.type)}</div>
+                    <div className="flex items-center gap-1.5">
+                      <div className="truncate font-medium">{i.address ?? prettify(i.type)}</div>
+                      {i.before_video_url && (
+                        <span title="Video evidence"
+                          className="inline-flex items-center rounded-full bg-ink-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-ink-600">
+                          <Video className="h-2.5 w-2.5" /> Video
+                        </span>
+                      )}
+                    </div>
                     <div className="mt-0.5 text-xs text-ink-500">
                       {i.ward ?? "—"} · {new Date(i.created_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
                     </div>

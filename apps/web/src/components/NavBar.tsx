@@ -3,12 +3,14 @@
 import { motion } from "framer-motion";
 import {
   Activity,
+  BookOpen,
   Camera,
   FileCode2,
   LayoutDashboard,
   LogIn,
   LogOut,
   Map,
+  Star,
   Trophy,
   Truck,
   User,
@@ -26,6 +28,7 @@ const PUBLIC_NAV = [
   { href: "/crew",          label: "Crew",           icon: Truck },
   { href: "/impact",        label: "Impact",         icon: Trophy },
   { href: "/architecture",  label: "Architecture",   icon: FileCode2 },
+  { href: "/references",    label: "References",     icon: BookOpen },
 ];
 
 export function NavBar() {
@@ -94,10 +97,17 @@ export function NavBar() {
             aria-label="User menu"
           >
             <span
-              className="grid h-5 w-5 place-items-center rounded-full text-[10px] font-semibold text-white"
+              className="relative grid h-5 w-5 place-items-center rounded-full text-[10px] font-semibold text-white"
               style={{ background: "rgb(var(--accent))" }}
             >
               {(me.name ?? me.username ?? "?")[0].toUpperCase()}
+              {me.is_verifier && (
+                <Star
+                  className="absolute -right-1.5 -top-1.5 h-3 w-3 fill-amber-400 text-amber-500"
+                  strokeWidth={2}
+                  aria-label="Verifier"
+                />
+              )}
             </span>
             <span className="hidden font-mono sm:inline">{me.xp} XP</span>
           </button>
@@ -114,7 +124,19 @@ export function NavBar() {
             >
               <div className="border-b px-3 py-2.5"
                    style={{ borderColor: "rgb(var(--border-light))" }}>
-                <div className="text-sm font-semibold">{me.name ?? me.username}</div>
+                <div className="flex items-center gap-1.5 text-sm font-semibold">
+                  {me.name ?? me.username}
+                  {me.is_verifier && (
+                    <span
+                      title="You're a verifier — you can confirm reports near your home"
+                      className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase"
+                      style={{ background: "rgba(245, 158, 11, 0.15)", color: "#b45309" }}
+                    >
+                      <Star className="h-2.5 w-2.5 fill-amber-500 text-amber-500" />
+                      Verifier
+                    </span>
+                  )}
+                </div>
                 <div className="font-mono text-[11px]" style={{ color: "rgb(var(--text-muted))" }}>
                   @{me.username} · {me.xp} XP
                 </div>

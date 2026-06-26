@@ -69,6 +69,8 @@ def tracking(
             "description": issue.description,
             "before_photo_url": issue.before_photo_url,
             "after_photo_url": issue.after_photo_url,
+            "before_video_url": getattr(issue, "before_video_url", None),
+            "after_video_url": getattr(issue, "after_video_url", None),
             "routed_department": issue.routed_department,
             "sla_deadline": issue.sla_deadline.isoformat() if issue.sla_deadline else None,
             "scheduled_at": issue.scheduled_at.isoformat() if issue.scheduled_at else None,

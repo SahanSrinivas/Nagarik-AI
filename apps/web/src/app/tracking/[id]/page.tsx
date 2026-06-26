@@ -47,6 +47,8 @@ interface Tracking {
     description: string;
     before_photo_url: string | null;
     after_photo_url: string | null;
+    before_video_url?: string | null;
+    after_video_url?: string | null;
     routed_department: string | null;
     sla_deadline: string | null;
     scheduled_at: string | null;
@@ -160,6 +162,29 @@ export default function TrackingPage() {
         {issue.location_resolver && (
           <div className="border-t border-ink-100 px-6 py-3">
             <LocationProvenance loc={issue.location_resolver} ward={issue.ward} />
+          </div>
+        )}
+
+        {(issue.before_video_url || issue.before_photo_url) && (
+          <div className="border-t border-ink-100 px-6 py-4">
+            <div className="text-xs uppercase tracking-wider text-ink-500">
+              {issue.before_video_url ? "Video evidence" : "Photo evidence"}
+            </div>
+            {issue.before_video_url ? (
+              <video
+                src={issue.before_video_url}
+                controls
+                playsInline
+                preload="metadata"
+                className="mt-2 max-h-72 w-full rounded-xl border border-ink-200 bg-black object-contain"
+              />
+            ) : (
+              <img
+                src={issue.before_photo_url!}
+                alt="Reported issue"
+                className="mt-2 max-h-72 w-full rounded-xl border border-ink-200 object-contain"
+              />
+            )}
           </div>
         )}
       </section>

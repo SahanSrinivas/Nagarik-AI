@@ -1,12 +1,12 @@
 "use client";
 
-import { ArrowRight, Camera, CheckCircle2, FlaskConical, MapPin, ShieldAlert, Upload } from "lucide-react";
+import { ArrowRight, Camera, CheckCircle2, FlaskConical, MapPin, ShieldAlert, Upload, Video } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { useT } from "@/i18n";
-import { uploadPhoto } from "@/lib/api";
+import { uploadPhoto, uploadVideo } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -55,7 +55,9 @@ export default function ReportPage() {
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
   const [desc, setDesc] = useState("");
+  const [evidenceKind, setEvidenceKind] = useState<"photo" | "video">("photo");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [submitted, setSubmitted] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -85,8 +87,13 @@ export default function ReportPage() {
   async function onPickFile(file: File | undefined) {
     if (!file) return;
     setUploading(true); setErr(null);
-    try { setPhotoUrl(await uploadPhoto(file)); }
-    catch (e) { setErr(String(e)); }
+    try {
+      if (evidenceKind === "video") {
+        setVideoUrl(await uploadVideo(file));
+      } else {
+        setPhotoUrl(await uploadPhoto(file));
+      }
+    } catch (e) { setErr(String(e)); }
     finally { setUploading(false); }
   }
 
@@ -105,7 +112,11 @@ export default function ReportPage() {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ lat, lng, description: desc, before_photo_url: photoUrl }),
+        body: JSON.stringify({
+          lat, lng, description: desc,
+          before_photo_url: evidenceKind === "photo" ? photoUrl : null,
+          before_video_url: evidenceKind === "video" ? videoUrl : null,
+        }),
       });
       if (!r.ok) {
         const body = await r.text();
@@ -232,24 +243,69 @@ export default function ReportPage() {
         )}
 
         <div>
-          <span className="block text-xs uppercase tracking-wider text-ink-500">{t("report.photo_label")}</span>
+          <div className="flex items-center justify-between">
+            <span className="block text-xs uppercase tracking-wider text-ink-500">{t("report.photo_label")}</span>
+            {/* Photo|Video toggle — Gemini 2.5 Flash handles both natively */}
+            <div
+              role="tablist"
+              className="inline-flex rounded-lg p-0.5"
+              style={{
+                background: "rgb(var(--bg-surface-hover))",
+                border: "1px solid rgb(var(--border-light))",
+              }}
+            >
+              {(["photo", "video"] as const).map((kind) => {
+                const active = evidenceKind === kind;
+                const Icon = kind === "photo" ? Camera : Video;
+                return (
+                  <button
+                    key={kind}
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => setEvidenceKind(kind)}
+                    className="inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-medium uppercase tracking-wider transition"
+                    style={{
+                      background: active ? "rgb(var(--accent))" : "transparent",
+                      color: active ? "#fff" : "rgb(var(--text-secondary))",
+                    }}
+                  >
+                    <Icon className="h-3 w-3" /> {kind}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
           <label className="mt-1 flex cursor-pointer items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-ink-200 bg-ink-50/50 p-6 text-sm text-ink-600 transition hover:border-brand-400 hover:bg-brand-50/50">
             <Upload className="h-4 w-4" />
             {uploading
               ? t("common.uploading")
-              : photoUrl
-              ? t("report.photo_dropzone_replace")
-              : t("report.photo_dropzone_idle")}
+              : evidenceKind === "photo"
+              ? (photoUrl ? t("report.photo_dropzone_replace") : t("report.photo_dropzone_idle"))
+              : (videoUrl ? "Replace video" : "Tap to upload a video (≤30s recommended)")}
             <input
               type="file"
-              accept="image/*"
+              accept={evidenceKind === "photo" ? "image/*" : "video/*"}
               capture="environment"
               onChange={(e) => onPickFile(e.target.files?.[0])}
               className="hidden"
             />
           </label>
-          {photoUrl && (
+          {evidenceKind === "photo" && photoUrl && (
             <img src={photoUrl} alt="" className="mt-3 h-40 w-full rounded-xl border border-ink-200 object-cover" />
+          )}
+          {evidenceKind === "video" && videoUrl && (
+            <video
+              src={videoUrl}
+              controls
+              playsInline
+              className="mt-3 h-48 w-full rounded-xl border border-ink-200 bg-black object-contain"
+            />
+          )}
+          {evidenceKind === "video" && (
+            <p className="mt-2 text-[11px] text-ink-500">
+              Gemini 2.5 Flash samples frames from the clip — useful for moving water, traffic-blocking debris,
+              or anything a still photo can&apos;t convey.
+            </p>
           )}
         </div>
 

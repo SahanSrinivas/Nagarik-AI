@@ -1,0 +1,146 @@
+{
+  "model": "gemini-2.5-flash",
+  "prompt_version": "1.0",
+  "results": [
+    {
+      "category": "pothole",
+      "title": "Traffic Navigating Pothole on Busy Street",
+      "url": "https://videos.pexels.com/video-files/34218230/14505599_1920_1080_25fps.mp4",
+      "credit": "Christian Bardot \u00b7 Pexels",
+      "size_mb": 38.4,
+      "gemini_ms": 3521,
+      "gemini": {
+        "type": "pothole",
+        "severity": 4,
+        "confidence": 0.9,
+        "notes": "Large pothole filled with water on a busy road, causing traffic to slow down and vehicles to navigate carefully.",
+        "width_m": 3.0,
+        "depth_cm": 15.0,
+        "indoor": false,
+        "hazard_to": "vehicles"
+      },
+      "expected_type": "pothole",
+      "type_match": true
+    },
+    {
+      "category": "garbage",
+      "title": "Large Pile of Garbage in Outdoor Dump Site",
+      "url": "https://videos.pexels.com/video-files/28827625/12487566_1920_1080_30fps.mp4",
+      "credit": "Pexels (uncredited)",
+      "size_mb": 7.6,
+      "gemini_ms": 1434,
+      "gemini": {
+        "type": "garbage",
+        "severity": 4,
+        "confidence": 0.95,
+        "notes": "Large pile of mixed waste, including plastic bags and other refuse, creating a significant environmental and sanitation issue.",
+        "width_m": 10.0,
+        "depth_cm": null,
+        "indoor": false,
+        "hazard_to": "sanitation"
+      },
+      "expected_type": "garbage",
+      "type_match": true
+    },
+    {
+      "category": "streetlight",
+      "title": "Sparks from Damaged Streetlamp at Night",
+      "url": "https://videos.pexels.com/video-files/33942941/14403294_3840_2160_25fps.mp4",
+      "credit": "Pexels (uncredited)",
+      "size_mb": 116.1,
+      "gemini_ms": 1913,
+      "gemini": {
+        "type": "streetlight",
+        "severity": 2,
+        "confidence": 0.9,
+        "notes": "Streetlight is flickering, possibly due to a loose connection or faulty bulb. Needs inspection and repair.",
+        "width_m": null,
+        "depth_cm": null,
+        "indoor": false,
+        "hazard_to": "none"
+      },
+      "expected_type": "streetlight",
+      "type_match": true
+    },
+    {
+      "category": "water_leak",
+      "title": "Water Dripping on Welded Metal Pipes",
+      "url": "https://videos.pexels.com/video-files/5571839/5571839-hd_1920_1080_24fps.mp4",
+      "credit": "Pexels (uncredited)",
+      "size_mb": 6.4,
+      "gemini_ms": 2401,
+      "gemini": {
+        "type": "water_leak",
+        "severity": 2,
+        "confidence": 0.9,
+        "notes": "A water leak is visible on a white pipe against a brick wall, with rust-colored liquid dripping slowly.",
+        "width_m": null,
+        "depth_cm": null,
+        "indoor": true,
+        "hazard_to": "none"
+      },
+      "expected_type": "water_leak",
+      "type_match": true
+    },
+    {
+      "category": "sewage",
+      "title": "Sewer Pipes Releasing Water in the River",
+      "url": "https://videos.pexels.com/video-files/5535467/5535467-uhd_3840_2160_30fps.mp4",
+      "credit": "Pexels (uncredited)",
+      "size_mb": 84.5,
+      "gemini_ms": 2633,
+      "gemini": {
+        "type": "sewage",
+        "severity": 4,
+        "confidence": 0.9,
+        "notes": "There is a large amount of foamy discharge from multiple pipes into the water, indicating a significant sewage or industrial waste issue.",
+        "width_m": 5.0,
+        "depth_cm": null,
+        "indoor": false,
+        "hazard_to": "public_safety"
+      },
+      "expected_type": "sewage",
+      "type_match": true
+    },
+    {
+      "category": "tree_fall",
+      "title": "Fallen Tree Trunk Over a Creek",
+      "url": "https://videos.pexels.com/video-files/5764717/5764717-uhd_3840_2160_30fps.mp4",
+      "credit": "Pexels (uncredited)",
+      "size_mb": 33.2,
+      "gemini_ms": 1905,
+      "gemini": {
+        "type": "tree_fall",
+        "severity": 3,
+        "confidence": 0.9,
+        "notes": "A fallen tree is blocking a path in a forest area, potentially obstructing pedestrian access.",
+        "width_m": 0.5,
+        "depth_cm": null,
+        "indoor": false,
+        "hazard_to": "pedestrians"
+      },
+      "expected_type": "tree_fall",
+      "type_match": true
+    },
+    {
+      "category": "encroachment",
+      "title": "Busy Street Market Scene with Vendor and Traffic",
+      "url": "https://videos.pexels.com/video-files/36976482/15665030_3840_2160_60fps.mp4",
+      "credit": "Pexels (uncredited)",
+      "size_mb": 62.5,
+      "gemini_ms": 1475,
+      "gemini": {
+        "type": "encroachment",
+        "severity": 2,
+        "confidence": 0.8,
+        "notes": "Street vendors and parked motorcycles are encroaching on the sidewalk, obstructing pedestrian movement.",
+        "width_m": 1.5,
+        "depth_cm": null,
+        "indoor": false,
+        "hazard_to": "pedestrians"
+      },
+      "expected_type": "encroachment",
+      "type_match": true
+    }
+  ]
+}

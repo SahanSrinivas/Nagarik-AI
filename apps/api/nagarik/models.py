@@ -60,6 +60,14 @@ class Citizen(Base):
     xp: Mapped[int] = mapped_column(default=0)          # gamification
     badge: Mapped[str | None] = mapped_column(String(40))
     ward: Mapped[str | None] = mapped_column(String(40))
+
+    # Optional home location captured at signup. When present we flip
+    # is_verifier=True so the citizen can confirm/contest reports inside
+    # a ~500m radius of where they live — same trust mechanism Waze uses.
+    home_lat: Mapped[float | None] = mapped_column(Float, nullable=True)
+    home_lng: Mapped[float | None] = mapped_column(Float, nullable=True)
+    is_verifier: Mapped[bool] = mapped_column(default=False)
+
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     issues: Mapped[list[Issue]] = relationship(back_populates="reporter")
@@ -82,6 +90,11 @@ class Issue(Base):
     description: Mapped[str] = mapped_column(Text, default="")
     before_photo_url: Mapped[str | None] = mapped_column(String(500))
     after_photo_url: Mapped[str | None] = mapped_column(String(500))
+    # Short video clip (≤30s) supplied as an alternative or supplement to
+    # the photo. Vision agent uses Gemini 2.5 Flash Files API to extract
+    # the same classification JSON from frames.
+    before_video_url: Mapped[str | None] = mapped_column(String(500))
+    after_video_url: Mapped[str | None] = mapped_column(String(500))
 
     # Filled in by VisionAgent.
     ai_classification: Mapped[dict] = mapped_column(JSON, default=dict)
