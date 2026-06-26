@@ -228,6 +228,37 @@
 }
 
 /* ──────────────────────────────────────────────────────────────────────
+ * Hero-gradient text contrast.
+ *
+ * .bg-hero-gradient paints a NEAR-BLACK panel (linear-gradient #0a0a0a → #111111
+ * with a rust radial overlay) regardless of theme. So text on top must always
+ * be light/white. The legacy ink-300 / brand-200 utilities resolve to dark grey
+ * + rusty-brown in light mode → invisible on the gradient. Re-bind them inside
+ * the gradient scope so every hero block (marketing /, /home, /supervisor,
+ * /crew/[id], /tracking/[id], /wallet/[id], /milp, /architecture) reads cleanly
+ * in BOTH themes without having to chase every Tailwind class on every page.
+ * ────────────────────────────────────────────────────────────────────── */
+
+.bg-hero-gradient .text-ink-200,
+.bg-hero-gradient .text-ink-300,
+.bg-hero-gradient .text-ink-400,
+.bg-hero-gradient .text-ink-500 {
+  color: rgb(255 255 255 / 0.78);
+}
+.bg-hero-gradient .text-ink-600,
+.bg-hero-gradient .text-ink-700 {
+  color: rgb(255 255 255 / 0.88);
+}
+.bg-hero-gradient .text-brand-200,
+.bg-hero-gradient .text-brand-300 {
+  color: #fbbcab;                    /* warm pale-rust, ~AA on the gradient */
+}
+.bg-hero-gradient .text-brand-600,
+.bg-hero-gradient .text-brand-700 {
+  color: #fed7c5;                    /* even lighter — for accent eyebrows */
+}
+
+/* ──────────────────────────────────────────────────────────────────────
  * Dark-mode overrides for hard-coded light surfaces and tinted chips.
  *
  * Many pages were written before the theme system existed and use
