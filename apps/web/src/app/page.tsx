@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import {
   AlertTriangle,
+  ArrowDown,
   ArrowRight,
   Award,
   Brain,
@@ -17,11 +18,16 @@ import {
   Lightbulb,
   Lock,
   LogIn,
+  Mail,
   Medal,
+  MessageCircle,
   Construction,
+  RefreshCw,
+  Send,
   ShieldCheck,
   Shield,
   Shovel,
+  Siren,
   Sparkles,
   Star,
   Trash2,
@@ -31,6 +37,7 @@ import {
   Truck,
   UserCheck,
   Waves,
+  Webhook,
   Wrench,
   Zap,
 } from "lucide-react";
@@ -395,6 +402,184 @@ export default function MarketingHome() {
         </Stagger>
       </section>
 
+      {/* TWO SIDES ─ closed-loop ──────────────────────────────────────── */}
+      <section>
+        <header className="mb-6">
+          <div className="text-xs uppercase tracking-wider text-ink-500">Two sides · one loop</div>
+          <h2 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
+            Citizens report. Crews fix. AI keeps both honest.
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm text-ink-600">
+            NagarikAI isn&apos;t a parallel BBMP. It&apos;s the front door for citizens and the
+            inbox for departments — wired together so neither side can ghost the other.
+          </p>
+        </header>
+
+        {/* ──── Comparison table — For Citizens vs For Crew ──── */}
+        <div className="overflow-hidden rounded-2xl border"
+          style={{ borderColor: "rgb(var(--border-light))", background: "rgb(var(--bg-surface))" }}>
+          <table className="w-full text-sm">
+            <thead>
+              <tr style={{ background: "rgb(var(--bg-surface-hover))" }}>
+                <th className="w-44 p-3 text-left text-[10px] font-semibold uppercase tracking-wider"
+                  style={{ color: "rgb(var(--text-muted))" }}>
+                  Dimension
+                </th>
+                <th className="p-3 text-left">
+                  <div className="flex items-center gap-1.5">
+                    <span className="grid h-6 w-6 place-items-center rounded-md text-white"
+                      style={{ background: "rgb(var(--accent))" }}>
+                      <UserCheck className="h-3.5 w-3.5" strokeWidth={2.5} />
+                    </span>
+                    <span className="text-sm font-semibold">For Nagariks <span className="font-normal text-ink-500">(citizens)</span></span>
+                  </div>
+                </th>
+                <th className="p-3 text-left">
+                  <div className="flex items-center gap-1.5">
+                    <span className="grid h-6 w-6 place-items-center rounded-md text-white"
+                      style={{ background: "rgb(var(--ink-900))" }}>
+                      <Building2 className="h-3.5 w-3.5" strokeWidth={2.5} />
+                    </span>
+                    <span className="text-sm font-semibold">For Crew &amp; Supervisor <span className="font-normal text-ink-500">(BBMP/BWSSB/BESCOM)</span></span>
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { dim: "Who reports here",     citizen: "Anyone in BBMP wards — phone is enough", crew: "Dept supervisors + crew leads (seeded for 7 depts)" },
+                { dim: "Where they sign in",   citizen: "/login (citizen JWT)",                   crew: "/dept-login (dept JWT, role = supervisor | crew_lead)" },
+                { dim: "What they do",         citizen: "Snap a photo or video + share location", crew: "Acknowledge ticket → dispatch crew → upload after-photo" },
+                { dim: "What they see",        citizen: "Live tracking + agent timeline + status updates in EN/HI/KN", crew: "SLA-sorted queue, dispatch log, supervisor stats, today's MILP stops" },
+                { dim: "Trust mechanism",      citizen: "Verifier badge (home location at signup) + community confirms", crew: "JWT role-gated routes + CLIP+CNN audits the closure photo" },
+                { dim: "Reward",               citizen: "+5 XP submit · +5 verify · +10 fix verified · badges + soulbound NFT", crew: "Supervisor KPI: today's acked / resolved / SLA on-time %" },
+                { dim: "What closes the loop", citizen: "Notification: \"BBMP Roads acknowledged · crew on-site · resolved\"", crew: "Citizen sees status change in real time; +10 XP fires when CNN audit passes" },
+              ].map((row, idx) => (
+                <tr key={row.dim}
+                  style={{ borderTop: idx === 0 ? undefined : "1px solid rgb(var(--border-light))" }}>
+                  <td className="p-3 text-xs font-semibold uppercase tracking-wider"
+                    style={{ color: "rgb(var(--text-muted))" }}>
+                    {row.dim}
+                  </td>
+                  <td className="p-3 text-sm" style={{ color: "rgb(var(--text-primary))" }}>{row.citizen}</td>
+                  <td className="p-3 text-sm" style={{ color: "rgb(var(--text-primary))" }}>{row.crew}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* ──── Closed-loop arrow workflow ──── */}
+        <div className="mt-8 rounded-2xl p-6"
+          style={{
+            background: "linear-gradient(180deg, rgba(191,79,54,0.04) 0%, rgb(var(--bg-surface)) 100%)",
+            border: "1px solid rgba(191, 79, 54, 0.25)",
+          }}>
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-1.5 text-xs uppercase tracking-wider"
+                style={{ color: "rgb(var(--accent))" }}>
+                <RefreshCw className="h-3 w-3" /> The closed loop
+              </div>
+              <h3 className="mt-1 text-lg font-semibold">From snap to resolved — every step is acked or escalated</h3>
+            </div>
+            <span className="text-[11px]" style={{ color: "rgb(var(--text-muted))" }}>
+              ~10s pipeline · 60s SLA-watcher tick · citizen never has to follow up
+            </span>
+          </div>
+
+          {/* Main loop — 8 stages with arrows */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr] lg:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr_auto_1fr]">
+            <LoopStage step={1} icon={Camera} tone="citizen"
+              title="Citizen reports"
+              body="Photo or video, drop location. /report" />
+            <ArrowCell />
+            <LoopStage step={2} icon={Brain} tone="ai"
+              title="AI triages"
+              body="Vision · Dedup · Triage assign dept + SLA in ~10s" />
+            <ArrowCell />
+            <LoopStage step={3} icon={Send} tone="dept"
+              title="Hub dispatches"
+              body="WhatsApp · Email · Webhook · in-app — by dept channel" />
+            <ArrowCell />
+            <LoopStage step={4} icon={CheckCircle2} tone="dept"
+              title="Supervisor acks"
+              body="/supervisor — one tap. Citizen pinged instantly." />
+            <ArrowCell hide="lg" />
+          </div>
+
+          <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr] lg:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr_auto_1fr]">
+            <LoopStage step={5} icon={Truck} tone="crew"
+              title="MILP picks crew"
+              body="OR-Tools CVRPTW — shortest path + skill match" />
+            <ArrowCell />
+            <LoopStage step={6} icon={Wrench} tone="crew"
+              title="Crew fixes on-site"
+              body="/crew/[id] — Start · After-photo · Complete" />
+            <ArrowCell />
+            <LoopStage step={7} icon={ShieldCheck} tone="ai"
+              title="AI audits the fix"
+              body="CLIP scene match + custom pothole CNN catches fake closures" />
+            <ArrowCell />
+            <LoopStage step={8} icon={Award} tone="citizen"
+              title="Citizen +XP"
+              body="Notified in their language · badge progress · loop closed" />
+          </div>
+
+          {/* Escalation branch — bottom row */}
+          <div className="mt-6 rounded-xl p-4"
+            style={{ background: "rgba(220, 38, 38, 0.05)", border: "1px solid rgba(220, 38, 38, 0.25)" }}>
+            <div className="mb-3 flex items-center gap-1.5">
+              <Siren className="h-4 w-4" style={{ color: "#dc2626" }} />
+              <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#dc2626" }}>
+                If a department goes silent — the escalation ladder
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <EscalChip level="L0" body="Nominal · awaiting ack" tone="ink" />
+              <ArrowRight className="h-3.5 w-3.5" style={{ color: "rgb(var(--text-muted))" }} />
+              <EscalChip level="L1" body="SLA breach — re-ping supervisor" tone="amber" icon={AlertTriangle} />
+              <ArrowRight className="h-3.5 w-3.5" style={{ color: "rgb(var(--text-muted))" }} />
+              <EscalChip level="L2" body="+24h silent — ward councillor" tone="amber" />
+              <ArrowRight className="h-3.5 w-3.5" style={{ color: "rgb(var(--text-muted))" }} />
+              <EscalChip level="L3" body="+72h silent — RTI auto-draft" tone="red" icon={Siren} />
+            </div>
+            <p className="mt-3 text-[11px]" style={{ color: "rgb(var(--text-muted))" }}>
+              <code className="font-mono">apps/api/nagarik/jobs/sla_watcher.py</code> ticks every 60s.
+              Every escalation writes a citizen notification — citizens always know exactly where their ticket is.
+            </p>
+          </div>
+
+          {/* CTAs into both portals */}
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            <Link href="/login"
+              className="card-glow flex items-center gap-3 p-4 text-sm transition hover:opacity-90">
+              <span className="grid h-9 w-9 place-items-center rounded-xl text-white"
+                style={{ background: "rgb(var(--accent))" }}>
+                <UserCheck className="h-4 w-4" />
+              </span>
+              <div>
+                <div className="font-semibold">Try the citizen side</div>
+                <div className="text-xs text-ink-600">/login — demo account preloaded · earn +5 XP per report</div>
+              </div>
+              <ArrowRight className="ml-auto h-4 w-4 text-ink-400" />
+            </Link>
+            <Link href="/dept-login"
+              className="card-glow flex items-center gap-3 p-4 text-sm transition hover:opacity-90">
+              <span className="grid h-9 w-9 place-items-center rounded-xl text-white"
+                style={{ background: "rgb(var(--ink-900))" }}>
+                <Building2 className="h-4 w-4" />
+              </span>
+              <div>
+                <div className="font-semibold">Open the supervisor portal</div>
+                <div className="text-xs text-ink-600">/dept-login — 14 demo accounts · ack · escalate · dispatch log</div>
+              </div>
+              <ArrowRight className="ml-auto h-4 w-4 text-ink-400" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* FINAL CTA */}
       <section className="rounded-3xl border p-10 text-center"
         style={{ borderColor: "rgb(var(--border-light))", background: "rgb(var(--bg-surface))" }}>
@@ -415,5 +600,69 @@ export default function MarketingHome() {
         </div>
       </section>
     </div>
+  );
+}
+
+/* ─── helpers for the closed-loop section ─── */
+
+type Tone = "citizen" | "ai" | "dept" | "crew";
+
+function LoopStage({ step, icon: Icon, title, body, tone }:
+  { step: number; icon: typeof Camera; title: string; body: string; tone: Tone }) {
+  const palette: Record<Tone, { bg: string; ring: string; chip: string; pill: string }> = {
+    citizen: { bg: "rgba(191, 79, 54, 0.10)", ring: "rgba(191, 79, 54, 0.35)",
+               chip: "rgb(var(--accent))", pill: "Citizen" },
+    ai:      { bg: "rgba(59, 130, 246, 0.10)", ring: "rgba(59, 130, 246, 0.35)",
+               chip: "#2563eb", pill: "AI agent" },
+    dept:    { bg: "rgba(15, 23, 42, 0.06)", ring: "rgba(15, 23, 42, 0.25)",
+               chip: "rgb(var(--ink-900))", pill: "Department" },
+    crew:    { bg: "rgba(16, 185, 129, 0.10)", ring: "rgba(16, 185, 129, 0.35)",
+               chip: "#059669", pill: "Crew" },
+  };
+  const p = palette[tone];
+  return (
+    <div className="rounded-xl p-3"
+      style={{ background: p.bg, border: `1px solid ${p.ring}` }}>
+      <div className="flex items-center justify-between">
+        <span className="grid h-7 w-7 place-items-center rounded-lg text-white"
+          style={{ background: p.chip }}>
+          <Icon className="h-3.5 w-3.5" strokeWidth={2.25} />
+        </span>
+        <span className="rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider"
+          style={{ background: "rgba(255,255,255,0.6)", color: p.chip }}>
+          {p.pill} · {step}
+        </span>
+      </div>
+      <div className="mt-2 text-sm font-semibold" style={{ color: "rgb(var(--text-primary))" }}>{title}</div>
+      <div className="mt-0.5 text-[11px]" style={{ color: "rgb(var(--text-secondary))" }}>{body}</div>
+    </div>
+  );
+}
+
+function ArrowCell({ hide }: { hide?: "lg" }) {
+  // Horizontal arrow on ≥sm, vertical on mobile so the grid wraps cleanly.
+  return (
+    <div className={`flex items-center justify-center ${hide === "lg" ? "lg:hidden" : ""}`}>
+      <ArrowRight className="hidden h-4 w-4 sm:block" style={{ color: "rgb(var(--text-muted))" }} />
+      <ArrowDown className="h-4 w-4 sm:hidden" style={{ color: "rgb(var(--text-muted))" }} />
+    </div>
+  );
+}
+
+function EscalChip({ level, body, tone, icon: Icon }:
+  { level: string; body: string; tone: "ink" | "amber" | "red"; icon?: typeof Siren }) {
+  const tones: Record<string, { bg: string; border: string; text: string }> = {
+    ink:   { bg: "rgb(var(--bg-surface))",  border: "rgb(var(--border-light))",  text: "rgb(var(--text-primary))" },
+    amber: { bg: "rgba(245, 158, 11, 0.12)", border: "rgba(245, 158, 11, 0.40)", text: "#b45309" },
+    red:   { bg: "rgba(220, 38, 38, 0.12)",  border: "rgba(220, 38, 38, 0.40)",  text: "#b91c1c" },
+  };
+  const t = tones[tone];
+  return (
+    <span className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px]"
+      style={{ background: t.bg, border: `1px solid ${t.border}`, color: t.text }}>
+      {Icon && <Icon className="h-3 w-3" />}
+      <span className="font-mono font-semibold">{level}</span>
+      <span>{body}</span>
+    </span>
   );
 }
