@@ -106,7 +106,7 @@ export default function HomePage() {
             </div>
             <div className="mt-3 text-base font-semibold">Report an issue</div>
             <div className="mt-1 text-sm text-ink-600">
-              Snap a photo + drop your location. AI does the rest.
+              Snap a photo or video + drop your location. AI does the rest.
             </div>
             <div className="mt-3 inline-flex items-center gap-1 text-xs text-brand-700">
               Start <ArrowRight className="h-3 w-3" />

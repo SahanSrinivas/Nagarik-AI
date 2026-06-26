@@ -224,20 +224,43 @@ def solve_cvrptw(payload: CVRPTWInput) -> dict:
     for v, crew in enumerate(payload.crews):
         idx = routing.Start(v)
         sequence: list[str] = []
+        # Per-stop timing pulled from the Time dimension — arrival is minutes
+        # since the crew's shift start; clock time = shift_start_hour*60 + arrival.
+        stop_times: list[dict] = []
         route_distance = 0
+        prev_node = manager.IndexToNode(idx)
         while not routing.IsEnd(idx):
             node = manager.IndexToNode(idx)
+            arrival_min = int(solution.Min(time_dim.CumulVar(idx)))
             if node >= n_crews:
-                sequence.append(payload.issues[node - n_crews].id)
+                issue = payload.issues[node - n_crews]
+                sequence.append(issue.id)
+                stop_times.append({
+                    "issue_id": issue.id,
+                    "arrival_min": arrival_min,
+                    "depart_min": arrival_min + issue.service_minutes,
+                    "service_min": issue.service_minutes,
+                    "travel_min_from_prev": int(travel_min[prev_node][node]),
+                })
+                prev_node = node
             nxt = solution.Value(routing.NextVar(idx))
             route_distance += routing.GetArcCostForVehicle(idx, nxt, v)
             idx = nxt
         total_distance_m += route_distance
         served += len(sequence)
+        # Convert in-shift minutes → wall-clock minutes from midnight UTC.
+        shift_start_min = crew.shift_start_hour * 60
+        for s in stop_times:
+            s["arrival_clock_min"] = s["arrival_min"] + shift_start_min
+            s["depart_clock_min"]  = s["depart_min"]  + shift_start_min
+
         routes.append(
             {
                 "crew_id": crew.id,
                 "sequence": sequence,
+                "stop_times": stop_times,
+                "shift_start_hour": crew.shift_start_hour,
+                "shift_end_hour": crew.shift_end_hour,
                 "total_km": round(route_distance / 1000, 2),
                 "total_time_min": int(
                     sum(travel_min[i][j] for i, j in zip([v] + [n_crews + idx_ for idx_ in range(len(sequence) - 1)], [n_crews + idx_ for idx_ in range(len(sequence))], strict=False))

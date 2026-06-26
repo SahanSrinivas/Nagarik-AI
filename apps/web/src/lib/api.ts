@@ -37,6 +37,10 @@ export interface RouteStop {
   type: string;
   severity: number;
   address: string | null;
+  arrival_clock_min?: number | null;   // minutes from midnight, UTC
+  depart_clock_min?: number | null;
+  service_min?: number | null;
+  travel_min_from_prev?: number | null;
 }
 
 export interface CrewRoute {
@@ -47,6 +51,8 @@ export interface CrewRoute {
   stops: RouteStop[];
   total_km: number;
   total_time_min: number;
+  shift_start_hour?: number;
+  shift_end_hour?: number;
 }
 
 export interface ScheduleResponse {

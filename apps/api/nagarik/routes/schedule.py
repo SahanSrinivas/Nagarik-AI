@@ -16,7 +16,12 @@ router = APIRouter(prefix="/schedule", tags=["schedule"])
 
 
 def _enrich_routes(routes: list[dict], crews: list[Crew], issues: list[Issue]) -> list[dict]:
-    """Decorate solver output with lat/lng + crew name so the map can draw polylines."""
+    """Decorate solver output with lat/lng + crew name so the map can draw polylines.
+
+    Also merges the solver's per-stop ``stop_times`` (arrival_clock_min,
+    depart_clock_min, service_min, travel_min_from_prev) back onto the
+    matching stop so the schedule board can render an HH:MM timeline.
+    """
     crew_by_id = {str(c.id): c for c in crews}
     issue_by_id = {str(i.id): i for i in issues}
     enriched: list[dict] = []
@@ -25,12 +30,15 @@ def _enrich_routes(routes: list[dict], crews: list[Crew], issues: list[Issue]) -
         if crew is None:
             continue
         depot = to_shape(crew.depot_location)
+        # Index stop_times by issue_id so we can join in O(1).
+        time_by_id = {s["issue_id"]: s for s in r.get("stop_times", [])}
         stops = []
         for iid in r["sequence"]:
             iss = issue_by_id.get(iid)
             if iss is None:
                 continue
             p = to_shape(iss.location)
+            t = time_by_id.get(iid, {})
             stops.append({
                 "issue_id": iid,
                 "lat": p.y,
@@ -38,6 +46,10 @@ def _enrich_routes(routes: list[dict], crews: list[Crew], issues: list[Issue]) -
                 "type": getattr(iss.type, "value", str(iss.type)),
                 "severity": iss.severity,
                 "address": iss.address,
+                "arrival_clock_min": t.get("arrival_clock_min"),
+                "depart_clock_min":  t.get("depart_clock_min"),
+                "service_min":       t.get("service_min"),
+                "travel_min_from_prev": t.get("travel_min_from_prev"),
             })
         enriched.append({
             "crew_id": r["crew_id"],
@@ -47,6 +59,8 @@ def _enrich_routes(routes: list[dict], crews: list[Crew], issues: list[Issue]) -
             "stops": stops,
             "total_km": r["total_km"],
             "total_time_min": r.get("total_time_min", 0),
+            "shift_start_hour": r.get("shift_start_hour", crew.shift_start_hour),
+            "shift_end_hour":   r.get("shift_end_hour",   crew.shift_end_hour),
         })
     return enriched
 
