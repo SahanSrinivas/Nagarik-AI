@@ -11,6 +11,7 @@ import {
   Map,
   Network,
   Trophy,
+  Truck,
 } from "lucide-react";
 
 import { Brand } from "@/components/Brand";
@@ -34,11 +35,12 @@ export const metadata: Metadata = {
 // /architecture and from the report-success page. The marketing visitor
 // sees only the things they care about.
 const NAV = [
-  { href: "/report",        label: "Report",      icon: Camera },
-  { href: "/map",           label: "Map",         icon: Map },
-  { href: "/dashboard",     label: "Dashboard",   icon: LayoutDashboard },
-  { href: "/impact",        label: "Impact",      icon: Trophy },
-  { href: "/architecture",  label: "Architecture", icon: FileCode2 },
+  { href: "/report",        label: "Report",         icon: Camera },
+  { href: "/map",           label: "Map",            icon: Map },
+  { href: "/dashboard",     label: "Ward Dashboard", icon: LayoutDashboard },
+  { href: "/crew",          label: "Crew",           icon: Truck },
+  { href: "/impact",        label: "Impact",         icon: Trophy },
+  { href: "/architecture",  label: "Architecture",   icon: FileCode2 },
 ];
 
 // Tracking + wallet routes are linked from contextual surfaces (report

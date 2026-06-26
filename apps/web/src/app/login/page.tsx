@@ -115,11 +115,6 @@ export default function LoginPage() {
           {mode === "login" ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
         </button>
       </div>
-
-      <p className="text-center text-xs text-ink-500">
-        Tokens are JWT (HS256, 24-hour expiry). Passwords stored as PBKDF2-SHA256
-        with 200k iterations.
-      </p>
     </motion.div>
   );
 }
