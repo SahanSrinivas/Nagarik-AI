@@ -1,11 +1,20 @@
 "use client";
 
-import { ArrowRight, Camera, CheckCircle2, MapPin, Upload } from "lucide-react";
+import { ArrowRight, Camera, CheckCircle2, MapPin, ShieldAlert, Upload } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useT } from "@/i18n";
 import { api, uploadPhoto } from "@/lib/api";
+
+const BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+interface CoverageResult {
+  inside_bbmp: boolean;
+  ward?: string;
+  ward_no?: number;
+  message?: string;
+}
 
 export default function ReportPage() {
   const t = useT();
@@ -17,6 +26,7 @@ export default function ReportPage() {
   const [submitted, setSubmitted] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [coverage, setCoverage] = useState<CoverageResult | null>(null);
 
   function locate() {
     if (!navigator.geolocation) return setErr(t("report.err_geolocation_unsupported"));
@@ -24,10 +34,28 @@ export default function ReportPage() {
       (p) => {
         setLat(p.coords.latitude);
         setLng(p.coords.longitude);
+        setErr(null);
       },
       (e) => setErr(e.message),
     );
   }
+
+  // Whenever the coordinates change, probe the BBMP coverage endpoint so we
+  // can warn the citizen inline instead of letting them submit + see a 422.
+  useEffect(() => {
+    if (lat == null || lng == null) {
+      setCoverage(null);
+      return;
+    }
+    let cancelled = false;
+    fetch(`${BASE}/coverage/check?lat=${lat}&lng=${lng}`)
+      .then((r) => r.json())
+      .then((d: CoverageResult) => {
+        if (!cancelled) setCoverage(d);
+      })
+      .catch(() => { if (!cancelled) setCoverage(null); });
+    return () => { cancelled = true; };
+  }, [lat, lng]);
 
   async function onPickFile(file: File | undefined) {
     if (!file) return;
@@ -44,6 +72,9 @@ export default function ReportPage() {
 
   async function submit() {
     if (lat == null || lng == null) return setErr(t("report.err_share_location"));
+    if (coverage && coverage.inside_bbmp === false) {
+      return setErr(coverage.message ?? "This location is outside BBMP jurisdiction.");
+    }
     setBusy(true);
     setErr(null);
     try {
@@ -55,7 +86,19 @@ export default function ReportPage() {
       } as Parameters<typeof api.createIssue>[0]);
       setSubmitted(created.id);
     } catch (e) {
-      setErr(String(e));
+      // Surface FastAPI 422 detail.message if present.
+      const msg = String(e);
+      try {
+        const jsonStart = msg.indexOf("{");
+        if (jsonStart >= 0) {
+          const body = JSON.parse(msg.slice(jsonStart));
+          if (body?.detail?.message) {
+            setErr(body.detail.message);
+            return;
+          }
+        }
+      } catch {}
+      setErr(msg);
     } finally {
       setBusy(false);
     }
@@ -85,6 +128,8 @@ export default function ReportPage() {
     );
   }
 
+  const outsideBBMP = coverage?.inside_bbmp === false;
+
   return (
     <div className="mx-auto max-w-xl space-y-6 animate-fade-up">
       <header>
@@ -99,6 +144,40 @@ export default function ReportPage() {
             ? `${t("report.locate_button_located")} (${lat.toFixed(4)}, ${lng?.toFixed(4)})`
             : t("report.locate_button_idle")}
         </button>
+
+        {/* Coverage banner — shown once we have coords */}
+        {coverage && coverage.inside_bbmp && (
+          <div
+            className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm"
+            style={{
+              background: "rgba(191, 79, 54, 0.08)",
+              color: "rgb(var(--text-primary))",
+              border: "1px solid rgba(191, 79, 54, 0.30)",
+            }}
+          >
+            <CheckCircle2 className="h-4 w-4" style={{ color: "rgb(var(--accent))" }} />
+            <span>
+              Inside BBMP · <strong>{coverage.ward}</strong>
+              {coverage.ward_no ? ` (#${coverage.ward_no})` : ""}
+            </span>
+          </div>
+        )}
+        {outsideBBMP && (
+          <div
+            className="flex items-start gap-2 rounded-xl px-3 py-2 text-sm"
+            style={{
+              background: "rgba(244, 63, 94, 0.10)",
+              color: "rgb(var(--text-primary))",
+              border: "1px solid rgba(244, 63, 94, 0.40)",
+            }}
+          >
+            <ShieldAlert className="mt-0.5 h-4 w-4" style={{ color: "#f43f5e" }} />
+            <span>
+              <strong>Outside BBMP jurisdiction.</strong>{" "}
+              {coverage?.message ?? "NagarikAI only handles Bengaluru BBMP wards today."}
+            </span>
+          </div>
+        )}
 
         <div>
           <span className="block text-xs uppercase tracking-wider text-ink-500">{t("report.photo_label")}</span>
@@ -135,7 +214,11 @@ export default function ReportPage() {
 
         {err && <div className="rounded-xl bg-rose-50 p-3 text-sm text-rose-700">{err}</div>}
 
-        <button onClick={submit} disabled={busy || uploading} className="btn-dark w-full">
+        <button
+          onClick={submit}
+          disabled={busy || uploading || outsideBBMP}
+          className="btn-dark w-full"
+        >
           <Camera className="h-4 w-4" />
           {busy ? t("common.submitting") : t("common.submit")}
         </button>

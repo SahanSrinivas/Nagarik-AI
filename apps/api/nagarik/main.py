@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from nagarik.routes import chain, crew, insights, issues, ops, schedule, stream, tracking, uploads, verify
+from nagarik.routes import chain, coverage, crew, insights, issues, ops, schedule, stream, tracking, uploads, verify
 from nagarik.settings import get_settings
 
 
@@ -36,6 +36,7 @@ app.include_router(stream.router)
 app.include_router(chain.router)
 app.include_router(ops.router)
 app.include_router(crew.router)
+app.include_router(coverage.router)
 
 
 @app.get("/health")

@@ -70,6 +70,34 @@ def create_issue(
     final_lng = resolved.lng if resolved.lng is not None else payload.lng
     final_ward = resolved.ward or None
 
+    # BBMP-only gate: NagarikAI's jurisdiction is the 243 KGIS ward polygons
+    # in data/processed/wards.geojson. We re-check the *final* coordinates
+    # (which may differ from the raw browser GPS once EXIF / geocoder have
+    # had their say) against the polygon set. Outside → reject with a clear
+    # 422 so the citizen sees a useful error instead of a 500 on validation.
+    if final_lat is None or final_lng is None:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "error": "location_required",
+                "message": "We couldn't determine the report's location. "
+                           "Share your GPS or include a photo with EXIF location.",
+            },
+        )
+    if final_ward is None:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "error": "outside_bbmp_jurisdiction",
+                "message": "This location is outside the BBMP (Bengaluru) "
+                           "jurisdiction. NagarikAI only handles BBMP wards today.",
+                "resolved": {
+                    "lat": final_lat, "lng": final_lng,
+                    "source": resolved.source,
+                },
+            },
+        )
+
     issue = Issue(
         reporter_id=demo.id,
         type=payload.type or "other",
