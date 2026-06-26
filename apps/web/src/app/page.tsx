@@ -10,103 +10,100 @@ import {
   Cpu,
   Eye,
   GitBranch,
-  Layers,
-  Link2,
-  Map,
-  Network,
+  LogIn,
+  ShieldCheck,
   Sparkles,
   TrendingUp,
-  Trophy,
+  Truck,
   Wrench,
+  Zap,
 } from "lucide-react";
 
 import { Counter, Reveal, Stagger } from "@/components/Motion";
+import { Pill } from "@/components/Pill";
+import { useAuth } from "@/lib/auth";
 
 const AGENTS = [
-  { icon: Eye,          name: "Vision",       desc: "Gemini classifies type + severity from photo" },
-  { icon: GitBranch,    name: "Dedup",        desc: "pgvector + PostGIS merges within 50m" },
-  { icon: Brain,        name: "Triage",       desc: "Routes to BBMP / BWSSB / BESCOM with SLA" },
-  { icon: CheckCircle2, name: "Verification", desc: "Nearby citizens confirm, earn XP" },
-  { icon: Cpu,          name: "Scheduler",    desc: "OR-Tools MILP CVRPTW dispatch" },
-  { icon: Wrench,       name: "Resolution",   desc: "CLIP similarity verifies fix" },
-  { icon: TrendingUp,   name: "Insights",     desc: "LightGBM predicts next-30-day hotspots" },
-];
-
-const FEATURE_CARDS = [
-  { href: "/report",    title: "Report an issue",      body: "Snap a photo. The 7-agent loop handles the rest.", icon: Camera },
-  { href: "/map",       title: "Live issue map",       body: "Every issue, severity-colored, in real time.",     icon: Map },
-  { href: "/agents",    title: "Watch agents fire",    body: "Live pipeline visualization with timings.",        icon: Network },
-  { href: "/milp",      title: "MILP optimizer",       body: "Today's optimal crew dispatch vs. naive FIFO.",    icon: Cpu },
-  { href: "/dashboard", title: "Ward dashboard",       body: "Resolution rate, breach rate, throughput.",        icon: Layers },
-  { href: "/impact",    title: "Citizen leaderboard",  body: "Top contributors. Soulbound NFT badges.",          icon: Trophy },
-  { href: "/chain",     title: "On-chain proofs",      body: "Every agent decision Merkle-anchored to Polygon.", icon: Link2 },
+  { icon: Eye,          name: "Vision",       sub: "Gemini classifies the photo" },
+  { icon: GitBranch,    name: "Dedup",        sub: "Merge nearby duplicates" },
+  { icon: Brain,        name: "Triage",       sub: "LLM routes, gate verifies" },
+  { icon: CheckCircle2, name: "Verification", sub: "Citizens confirm" },
+  { icon: Cpu,          name: "Scheduler",    sub: "MILP picks the crew + slot" },
+  { icon: Wrench,       name: "Resolution",   sub: "CLIP + CNN audit the fix" },
+  { icon: TrendingUp,   name: "Insights",     sub: "Predict tomorrow's hotspots" },
 ];
 
 const STATS = [
-  { value: 38, suffix: "%", label: "faster resolution" },
-  { value: 59, suffix: "%", label: "fewer crew km" },
-  { value: 56, suffix: "%", label: "fewer SLA breaches" },
+  { value: 89.5,   suffix: "%", label: "MILP km reduction on real BBMP data" },
+  { value: 17481,  suffix: "",  label: "Real Bengaluru issues already loaded" },
+  { value: 16,     suffix: "/16", label: "Prompt-injection attempts caught by the gate" },
+  { value: 0.871,  suffix: "",    label: "R² on real rainfall + complaints panel", precise: true },
 ];
 
-export default function Home() {
+const PROBLEMS = [
+  { icon: Camera, k: "Fragmented reporting", v: "BBMP has half a dozen apps and a helpline. Citizens don't know which one to use." },
+  { icon: ShieldCheck, k: "Fake closures", v: "Crews mark tickets resolved with a photo of a different street. No one audits." },
+  { icon: Zap, k: "Slow + wasteful dispatch", v: "Crews drive 23% more km than they need to. Ambulances overturn in potholes that have been reported for weeks." },
+];
+
+const SOLUTIONS = [
+  { icon: Brain,        k: "AI does the work", v: "Snap a photo → Gemini classifies it · Claude routes it · OR-Tools schedules it · CLIP + CNN verify the fix." },
+  { icon: ShieldCheck,  k: "Gates keep AI honest", v: "Every LLM output passes through deterministic guardrails. Hallucinations and prompt injections fail closed to the canonical SOP." },
+  { icon: TrendingUp,   k: "Closed feedback loop", v: "Citizen sees every status change in real time (in EN / हि / ಕ). XP rewards verified contributions." },
+];
+
+export default function MarketingHome() {
+  const { me } = useAuth();
+  const primaryHref = me ? "/home" : "/login";
+  const primaryLabel = me ? "Open your dashboard" : "Sign in to report";
+
   return (
     <div className="space-y-24">
-      {/* ---------- HERO ---------- */}
-      <section className="relative overflow-hidden rounded-3xl bg-hero-gradient px-6 py-16 text-white sm:px-12 sm:py-24">
-        <motion.div
-          className="absolute inset-0 bg-mesh"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.6 }}
-          transition={{ duration: 1.4, ease: "easeOut" }}
-          aria-hidden
-        />
+      {/* HERO */}
+      <section className="relative overflow-hidden rounded-3xl bg-hero-gradient px-6 py-20 text-white sm:px-12 sm:py-28">
+        <motion.div className="absolute inset-0 bg-mesh"
+          initial={{ opacity: 0 }} animate={{ opacity: 0.6 }} transition={{ duration: 1.4, ease: "easeOut" }} aria-hidden />
         <Stagger className="relative mx-auto max-w-3xl text-center" step={0.08}>
           <Reveal>
             <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-medium text-brand-200 backdrop-blur">
-              <Sparkles className="h-3.5 w-3.5" />
-              Built for Coding Ninjas · Community Hero
+              <Sparkles className="h-3.5 w-3.5" /> Multi-agent civic OS for hyperlocal India
             </span>
           </Reveal>
           <Reveal>
             <h1 className="mt-6 text-4xl font-semibold tracking-tightest sm:text-6xl">
               Civic issues, solved at{" "}
-              <span className="bg-gradient-to-r from-brand-300 to-brand-500 bg-clip-text text-transparent">
-                city scale
-              </span>.
+              <span className="bg-gradient-to-r from-brand-300 to-brand-500 bg-clip-text text-transparent">city scale</span>.
             </h1>
           </Reveal>
           <Reveal>
             <p className="mx-auto mt-5 max-w-2xl text-base text-ink-300 sm:text-lg">
-              Citizens snap a photo. 7 specialized AI agents classify, dedup, triage, verify,
-              and route. An MILP solver dispatches crews along the optimal route, every day.
-              Every decision is hash-anchored to a public chain.
+              A photo. Seven specialized AI agents. A MILP solver. A public chain.
+              One Bengaluru pothole goes from "reported" to "verified-fixed" without
+              a helpline, without a 6-step app — and the citizen watches the system
+              work, live, in their own language.
             </p>
           </Reveal>
           <Reveal>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <Link href="/report" className="btn-primary">
-                <Camera className="h-4 w-4" /> Report an issue <ArrowRight className="h-4 w-4" />
+              <Link href={primaryHref} className="btn-primary">
+                <LogIn className="h-4 w-4" /> {primaryLabel} <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link
-                href="/agents"
-                className="btn border border-white/15 bg-white/5 text-white backdrop-blur hover:bg-white/10"
-              >
-                <Network className="h-4 w-4" /> Watch the agents
+              <Link href="/architecture"
+                className="btn border border-white/15 bg-white/5 text-white backdrop-blur hover:bg-white/10">
+                For builders → /architecture
               </Link>
             </div>
           </Reveal>
 
-          <Stagger delay={0.3} step={0.08} className="mx-auto mt-12 grid max-w-2xl grid-cols-3 gap-6 text-center">
+          <Stagger delay={0.3} step={0.08} className="mx-auto mt-12 grid max-w-2xl grid-cols-2 gap-4 text-center sm:grid-cols-4">
             {STATS.map((s) => (
               <Reveal key={s.label}>
-                <motion.div
-                  whileHover={{ y: -3 }}
-                  className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur"
-                >
+                <motion.div whileHover={{ y: -3 }}
+                  className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
                   <div className="text-2xl font-semibold text-brand-300 sm:text-3xl">
-                    <Counter to={s.value} suffix={s.suffix} />
+                    {s.precise ? s.value.toFixed(3) : <Counter to={s.value} suffix={s.suffix} />}
                   </div>
-                  <div className="mt-1 text-xs uppercase tracking-wider text-ink-400">{s.label}</div>
+                  <div className="mt-1 text-[11px] uppercase tracking-wider text-ink-400">{s.label}</div>
                 </motion.div>
               </Reveal>
             ))}
@@ -114,70 +111,105 @@ export default function Home() {
         </Stagger>
       </section>
 
-      {/* ---------- AGENT STRIP ---------- */}
+      {/* PROBLEM */}
       <section>
-        <div className="mb-8 flex items-end justify-between gap-4">
-          <div>
-            <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">The 7-agent loop</h2>
-            <p className="mt-1 text-sm text-ink-600">Each citizen report fires this pipeline in &lt; 10 seconds.</p>
-          </div>
-          <Link href="/agents" className="btn-ghost hidden sm:inline-flex">
-            See it live <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
-        <Stagger
-          step={0.05}
-          className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7"
-        >
-          {AGENTS.map((a, i) => (
-            <Reveal key={a.name}>
-              <motion.div
-                whileHover={{ y: -4, boxShadow: "0 4px 8px rgba(15,23,42,.06), 0 12px 32px rgba(15,23,42,.08)" }}
-                className="card h-full p-4"
-              >
-                <div className="grid h-9 w-9 place-items-center rounded-xl bg-brand-50 text-brand-700">
-                  <a.icon className="h-4 w-4" strokeWidth={2.25} />
+        <header className="mx-auto mb-8 max-w-2xl text-center">
+          <div className="text-xs uppercase tracking-wider text-ink-500">Why this matters</div>
+          <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
+            Bengaluru's BBMP gets ~127,000 complaints in six months. 15% stay open.
+          </h2>
+          <p className="mt-2 text-sm text-ink-600">
+            Citizens have learned to distrust the apps that exist. Crews close tickets without fixing them. The system rewards activity, not outcomes.
+          </p>
+        </header>
+        <Stagger step={0.05} className="grid gap-4 sm:grid-cols-3">
+          {PROBLEMS.map((p) => (
+            <Reveal key={p.k}>
+              <motion.div whileHover={{ y: -3 }} className="card h-full p-5">
+                <div className="grid h-10 w-10 place-items-center rounded-xl"
+                  style={{ background: "rgba(244, 63, 94, 0.15)", color: "#f43f5e" }}>
+                  <p.icon className="h-5 w-5" />
                 </div>
-                <div className="mt-3 text-xs font-mono text-ink-400">0{i + 1}</div>
-                <div className="mt-1 text-sm font-semibold text-ink-900">{a.name}</div>
-                <div className="mt-1 text-xs text-ink-600">{a.desc}</div>
+                <div className="mt-3 text-base font-semibold">{p.k}</div>
+                <p className="mt-1 text-sm text-ink-600">{p.v}</p>
               </motion.div>
             </Reveal>
           ))}
         </Stagger>
       </section>
 
-      {/* ---------- FEATURE GRID ---------- */}
+      {/* SOLUTION */}
       <section>
-        <div className="mb-8">
-          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">Explore the platform</h2>
-          <p className="mt-1 text-sm text-ink-600">Every surface a judge needs to see, in one click.</p>
-        </div>
-        <Stagger step={0.05} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {FEATURE_CARDS.map((f) => (
-            <Reveal key={f.href}>
-              <Link href={f.href} className="block h-full">
-                <motion.div
-                  whileHover={{ y: -4 }}
-                  whileTap={{ scale: 0.985 }}
-                  transition={{ type: "spring", stiffness: 320, damping: 22 }}
-                  className="card-glow h-full p-6"
-                >
-                  <div className="grid h-10 w-10 place-items-center rounded-xl bg-ink-900 text-white">
-                    <f.icon className="h-5 w-5" strokeWidth={2} />
-                  </div>
-                  <div className="mt-4 flex items-center justify-between">
-                    <div className="text-base font-semibold text-ink-900">{f.title}</div>
-                    <motion.span whileHover={{ x: 3 }} transition={{ type: "spring" }}>
-                      <ArrowRight className="h-4 w-4 text-ink-400" />
-                    </motion.span>
-                  </div>
-                  <p className="mt-1 text-sm text-ink-600">{f.body}</p>
-                </motion.div>
-              </Link>
+        <header className="mx-auto mb-8 max-w-2xl text-center">
+          <div className="text-xs uppercase tracking-wider text-ink-500">How NagarikAI works</div>
+          <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
+            The LLM proposes. The gate decides. The citizen sees every step.
+          </h2>
+        </header>
+        <Stagger step={0.05} className="grid gap-4 sm:grid-cols-3">
+          {SOLUTIONS.map((s) => (
+            <Reveal key={s.k}>
+              <motion.div whileHover={{ y: -3 }} className="card h-full p-5">
+                <div className="grid h-10 w-10 place-items-center rounded-xl"
+                  style={{ background: "rgba(191,79,54,0.15)", color: "rgb(var(--accent))" }}>
+                  <s.icon className="h-5 w-5" />
+                </div>
+                <div className="mt-3 text-base font-semibold">{s.k}</div>
+                <p className="mt-1 text-sm text-ink-600">{s.v}</p>
+              </motion.div>
             </Reveal>
           ))}
         </Stagger>
+      </section>
+
+      {/* AGENT STRIP */}
+      <section>
+        <header className="mb-6 flex items-end justify-between gap-3">
+          <div>
+            <div className="text-xs uppercase tracking-wider text-ink-500">The pipeline</div>
+            <h2 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">7 specialized agents · under 10 seconds end-to-end</h2>
+          </div>
+          <Link href="/architecture" className="btn-ghost hidden text-sm sm:inline-flex">
+            Full architecture <ArrowRight className="h-4 w-4" />
+          </Link>
+        </header>
+        <Stagger step={0.04} className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
+          {AGENTS.map((a, i) => (
+            <Reveal key={a.name}>
+              <motion.div whileHover={{ y: -3 }} className="card h-full p-4">
+                <div className="flex items-center gap-2">
+                  <span className="grid h-8 w-8 place-items-center rounded-xl text-white"
+                    style={{ background: "rgb(var(--accent))" }}>
+                    <a.icon className="h-4 w-4" strokeWidth={2.25} />
+                  </span>
+                  <span className="font-mono text-xs text-ink-400">0{i + 1}</span>
+                </div>
+                <div className="mt-2 text-sm font-semibold">{a.name}</div>
+                <p className="mt-1 text-xs text-ink-600">{a.sub}</p>
+              </motion.div>
+            </Reveal>
+          ))}
+        </Stagger>
+      </section>
+
+      {/* FINAL CTA */}
+      <section className="rounded-3xl border p-10 text-center"
+        style={{ borderColor: "rgb(var(--border-light))", background: "rgb(var(--bg-surface))" }}>
+        <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+          Try it — it takes 30 seconds.
+        </h2>
+        <p className="mx-auto mt-2 max-w-xl text-sm text-ink-600">
+          A hackathon demo account is preloaded. Sign in, pick a Bengaluru ward, snap a photo,
+          and watch all 7 agents fire in real time.
+        </p>
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+          <Link href={primaryHref} className="btn-primary">
+            <LogIn className="h-4 w-4" /> {primaryLabel}
+          </Link>
+          <Link href="/test-photos" className="btn-ghost">
+            Browse the test photos
+          </Link>
+        </div>
       </section>
     </div>
   );

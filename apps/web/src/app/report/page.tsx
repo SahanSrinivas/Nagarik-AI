@@ -2,10 +2,12 @@
 
 import { ArrowRight, Camera, CheckCircle2, FlaskConical, MapPin, ShieldAlert, Upload } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { useT } from "@/i18n";
-import { api, uploadPhoto } from "@/lib/api";
+import { uploadPhoto } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -16,13 +18,6 @@ interface CoverageResult {
   message?: string;
 }
 
-/**
- * Hackathon location presets. Each is a real KGIS ward centroid lifted from
- * community-hero/data/ward_backlog.json — the same wards the MILP scheduler,
- * dashboard and heatmap already know about. Lets a judge in another city
- * complete the /report flow without faking GPS in DevTools, while the
- * server-side BBMP gate stays strict (these coords pass it for real).
- */
 // Each preset is verified to fall inside a real KGIS BBMP ward polygon
 // (the same set the gate uses). Whitefield + Horamavu centroids sit on
 // the BBMP boundary and miss the polygon — dropped from this list.
@@ -41,6 +36,22 @@ const DEMO_LOCATIONS: { label: string; lat: number; lng: number }[] = [
 
 export default function ReportPage() {
   const t = useT();
+  const router = useRouter();
+  const { token } = useAuth();
+  const [authChecked, setAuthChecked] = useState(false);
+
+  // Login wall — if no JWT in localStorage, bounce to /login with a return path.
+  useEffect(() => {
+    const id = setTimeout(() => {
+      if (!token) {
+        router.replace(`/login?next=${encodeURIComponent("/report")}`);
+      } else {
+        setAuthChecked(true);
+      }
+    }, 250); // small grace for AuthProvider to hydrate
+    return () => clearTimeout(id);
+  }, [token, router]);
+
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
   const [desc, setDesc] = useState("");
@@ -54,43 +65,29 @@ export default function ReportPage() {
   function locate() {
     if (!navigator.geolocation) return setErr(t("report.err_geolocation_unsupported"));
     navigator.geolocation.getCurrentPosition(
-      (p) => {
-        setLat(p.coords.latitude);
-        setLng(p.coords.longitude);
-        setErr(null);
-      },
+      (p) => { setLat(p.coords.latitude); setLng(p.coords.longitude); setErr(null); },
       (e) => setErr(e.message),
     );
   }
 
-  // Whenever the coordinates change, probe the BBMP coverage endpoint so we
-  // can warn the citizen inline instead of letting them submit + see a 422.
+  // Whenever coords change, probe BBMP coverage so we don't let the user submit
+  // an out-of-jurisdiction report and see a 422 they can't read.
   useEffect(() => {
-    if (lat == null || lng == null) {
-      setCoverage(null);
-      return;
-    }
+    if (lat == null || lng == null) { setCoverage(null); return; }
     let cancelled = false;
     fetch(`${BASE}/coverage/check?lat=${lat}&lng=${lng}`)
       .then((r) => r.json())
-      .then((d: CoverageResult) => {
-        if (!cancelled) setCoverage(d);
-      })
+      .then((d: CoverageResult) => { if (!cancelled) setCoverage(d); })
       .catch(() => { if (!cancelled) setCoverage(null); });
     return () => { cancelled = true; };
   }, [lat, lng]);
 
   async function onPickFile(file: File | undefined) {
     if (!file) return;
-    setUploading(true);
-    setErr(null);
-    try {
-      setPhotoUrl(await uploadPhoto(file));
-    } catch (e) {
-      setErr(String(e));
-    } finally {
-      setUploading(false);
-    }
+    setUploading(true); setErr(null);
+    try { setPhotoUrl(await uploadPhoto(file)); }
+    catch (e) { setErr(String(e)); }
+    finally { setUploading(false); }
   }
 
   async function submit() {
@@ -98,33 +95,37 @@ export default function ReportPage() {
     if (coverage && coverage.inside_bbmp === false) {
       return setErr(coverage.message ?? "This location is outside BBMP jurisdiction.");
     }
-    setBusy(true);
-    setErr(null);
+    setBusy(true); setErr(null);
     try {
-      const created = await api.createIssue({
-        lat,
-        lng,
-        description: desc,
-        before_photo_url: photoUrl,
-      } as Parameters<typeof api.createIssue>[0]);
+      // Send Authorization so the server attributes the report to the
+      // logged-in citizen and awards XP.
+      const r = await fetch(`${BASE}/issues`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ lat, lng, description: desc, before_photo_url: photoUrl }),
+      });
+      if (!r.ok) {
+        const body = await r.text();
+        try {
+          const parsed = JSON.parse(body);
+          if (parsed?.detail?.message) { setErr(parsed.detail.message); return; }
+        } catch {}
+        throw new Error(`${r.status} ${body}`);
+      }
+      const created = await r.json();
       setSubmitted(created.id);
     } catch (e) {
-      // Surface FastAPI 422 detail.message if present.
-      const msg = String(e);
-      try {
-        const jsonStart = msg.indexOf("{");
-        if (jsonStart >= 0) {
-          const body = JSON.parse(msg.slice(jsonStart));
-          if (body?.detail?.message) {
-            setErr(body.detail.message);
-            return;
-          }
-        }
-      } catch {}
-      setErr(msg);
+      setErr(String(e));
     } finally {
       setBusy(false);
     }
+  }
+
+  if (!authChecked) {
+    return <div className="card animate-pulse p-6 text-sm text-ink-500">Checking your session…</div>;
   }
 
   if (submitted) {
@@ -136,16 +137,19 @@ export default function ReportPage() {
           </div>
           <h1 className="mt-4 text-2xl font-semibold tracking-tight">{t("report.success.title")}</h1>
           <p className="mt-2 text-sm text-ink-600">
-            {t("report.success.subtitle_prefix")} <code className="font-mono">{submitted.slice(0, 8)}…</code> {t("report.success.subtitle_suffix")}
+            {t("report.success.subtitle_prefix")} <code className="font-mono">{submitted.slice(0, 8)}…</code>{" "}
+            {t("report.success.subtitle_suffix")}
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-            <Link href={`/tracking/${submitted}`} className="btn-primary">
-              {t("common.track_report")} <ArrowRight className="h-4 w-4" />
+            {/* Default action: watch the 7 agents fire one-by-one in real time. */}
+            <Link href={`/agents?issue=${submitted}`} className="btn-primary">
+              {t("common.watch_agents")} <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link href={`/agents?issue=${submitted}`} className="btn-ghost">
-              {t("common.watch_agents")}
+            <Link href={`/tracking/${submitted}`} className="btn-ghost">
+              {t("common.track_report")}
             </Link>
           </div>
+          <p className="mt-3 text-xs text-ink-500">+5 XP earned for this submission.</p>
         </div>
       </div>
     );
@@ -168,17 +172,12 @@ export default function ReportPage() {
             : t("report.locate_button_idle")}
         </button>
 
-        {/* Hackathon-mode location presets — real Bengaluru ward centroids
-            so a judge anywhere in the world can complete the flow without
-            tricking the browser. The server-side BBMP gate stays strict. */}
         <div
           className="rounded-xl border px-3 py-2.5"
-          style={{
-            background: "rgb(var(--bg-surface-hover))",
-            borderColor: "rgb(var(--border-light))",
-          }}
+          style={{ background: "rgb(var(--bg-surface-hover))", borderColor: "rgb(var(--border-light))" }}
         >
-          <div className="mb-2 flex items-center gap-1.5 text-[11px] uppercase tracking-wider" style={{ color: "rgb(var(--text-muted))" }}>
+          <div className="mb-2 flex items-center gap-1.5 text-[11px] uppercase tracking-wider"
+            style={{ color: "rgb(var(--text-muted))" }}>
             <FlaskConical className="h-3 w-3" /> Demo · pick a Bengaluru ward
           </div>
           <div className="flex flex-wrap gap-1.5">
@@ -199,7 +198,6 @@ export default function ReportPage() {
           </div>
         </div>
 
-        {/* Coverage banner — shown once we have coords */}
         {coverage && coverage.inside_bbmp && (
           <div
             className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm"

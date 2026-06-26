@@ -24,7 +24,7 @@ from sqlalchemy import update
 
 from nagarik.agents.state import AgentState
 from nagarik.db import SessionLocal
-from nagarik.models import Issue, IssueStatus
+from nagarik.models import Citizen, Issue, IssueStatus
 
 log = logging.getLogger(__name__)
 
@@ -32,6 +32,7 @@ log = logging.getLogger(__name__)
 SCENE_MATCH_FLOOR = 0.40       # below this we don't trust the photo at all
 DEFECT_REJECT_ABOVE = 0.55     # CNN says "still a defect" — REJECT
 DEFECT_REVIEW_ABOVE = 0.30     # in-between → flag for human review
+XP_PER_RESOLVED_REPORT = 10    # reporter gets +10 when their issue is verified resolved
 
 
 def _scene_similarity(before_url: str, after_url: str) -> float | None:
@@ -88,6 +89,12 @@ def run_resolution(state: AgentState) -> AgentState:
                 .where(Issue.id == state["issue_id"])
                 .values(status=IssueStatus.RESOLVED, resolved_at=datetime.now(timezone.utc))
             )
+            # Award reporter +10 XP for a verified-resolved fix.
+            issue_row = db.get(Issue, state["issue_id"])
+            if issue_row is not None:
+                reporter = db.get(Citizen, issue_row.reporter_id)
+                if reporter is not None:
+                    reporter.xp = (reporter.xp or 0) + XP_PER_RESOLVED_REPORT
             db.commit()
             # Close the loop for the citizen.
             from nagarik.notifications import emit
@@ -96,7 +103,7 @@ def run_resolution(state: AgentState) -> AgentState:
                 "resolved",
                 extras={
                     "sim": round(100 * (scene or 0.0)),
-                    "xp": 5,
+                    "xp": XP_PER_RESOLVED_REPORT,
                 },
             )
         elif verdict.startswith("rejected"):
