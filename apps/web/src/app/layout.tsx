@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 
 import { Brand } from "@/components/Brand";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { Providers } from "./providers";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
@@ -43,32 +45,37 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${inter.variable} ${mono.variable}`}>
       <body className="font-sans">
-        <header className="sticky top-0 z-40 border-b border-ink-200/60 bg-white/70 backdrop-blur-xl">
-          <div className="container flex h-16 items-center justify-between">
-            <Link href="/" aria-label="NagarikAI home">
-              <Brand />
-            </Link>
-            <nav className="hidden gap-1 md:flex">
-              {NAV.map((n) => (
-                <Link
-                  key={n.href}
-                  href={n.href}
-                  className="group flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-ink-600 transition hover:bg-ink-100 hover:text-ink-900"
-                >
-                  <n.icon className="h-4 w-4 text-ink-400 transition group-hover:text-brand-600" strokeWidth={2.25} />
-                  {n.label}
-                </Link>
-              ))}
-            </nav>
-            <div className="md:hidden">
-              <MobileNav />
+        <Providers>
+          <header className="sticky top-0 z-40 border-b border-ink-200/60 bg-white/70 backdrop-blur-xl">
+            <div className="container flex h-16 items-center justify-between gap-3">
+              <Link href="/" aria-label="NagarikAI home">
+                <Brand />
+              </Link>
+              <nav className="hidden gap-1 md:flex">
+                {NAV.map((n) => (
+                  <Link
+                    key={n.href}
+                    href={n.href}
+                    className="group flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-ink-600 transition hover:bg-ink-100 hover:text-ink-900"
+                  >
+                    <n.icon className="h-4 w-4 text-ink-400 transition group-hover:text-brand-600" strokeWidth={2.25} />
+                    {n.label}
+                  </Link>
+                ))}
+              </nav>
+              <div className="flex items-center gap-2">
+                <LanguageSwitcher />
+                <div className="md:hidden">
+                  <MobileNav />
+                </div>
+              </div>
             </div>
-          </div>
-        </header>
-        <main className="container py-8 md:py-12">{children}</main>
-        <footer className="border-t border-ink-200/60 bg-white/70 py-8 text-center text-xs text-ink-500">
-          NagarikAI · multi-agent civic OS for hyperlocal India · {new Date().getFullYear()}
-        </footer>
+          </header>
+          <main className="container py-8 md:py-12">{children}</main>
+          <footer className="border-t border-ink-200/60 bg-white/70 py-8 text-center text-xs text-ink-500">
+            NagarikAI · multi-agent civic OS for hyperlocal India · {new Date().getFullYear()}
+          </footer>
+        </Providers>
       </body>
     </html>
   );

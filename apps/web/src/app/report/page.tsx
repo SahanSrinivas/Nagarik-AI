@@ -4,9 +4,11 @@ import { ArrowRight, Camera, CheckCircle2, MapPin, Upload } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
+import { useT } from "@/i18n";
 import { api, uploadPhoto } from "@/lib/api";
 
 export default function ReportPage() {
+  const t = useT();
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
   const [desc, setDesc] = useState("");
@@ -17,7 +19,7 @@ export default function ReportPage() {
   const [err, setErr] = useState<string | null>(null);
 
   function locate() {
-    if (!navigator.geolocation) return setErr("geolocation not supported");
+    if (!navigator.geolocation) return setErr(t("report.err_geolocation_unsupported"));
     navigator.geolocation.getCurrentPosition(
       (p) => {
         setLat(p.coords.latitude);
@@ -41,7 +43,7 @@ export default function ReportPage() {
   }
 
   async function submit() {
-    if (lat == null || lng == null) return setErr("share your location first");
+    if (lat == null || lng == null) return setErr(t("report.err_share_location"));
     setBusy(true);
     setErr(null);
     try {
@@ -66,16 +68,16 @@ export default function ReportPage() {
           <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-brand-50 text-brand-700">
             <CheckCircle2 className="h-7 w-7" />
           </div>
-          <h1 className="mt-4 text-2xl font-semibold tracking-tight">Reported</h1>
+          <h1 className="mt-4 text-2xl font-semibold tracking-tight">{t("report.success.title")}</h1>
           <p className="mt-2 text-sm text-ink-600">
-            Issue <code className="font-mono">{submitted.slice(0, 8)}…</code> is flowing through the agent pipeline.
+            {t("report.success.subtitle_prefix")} <code className="font-mono">{submitted.slice(0, 8)}…</code> {t("report.success.subtitle_suffix")}
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <Link href={`/tracking/${submitted}`} className="btn-primary">
-              Track your report <ArrowRight className="h-4 w-4" />
+              {t("common.track_report")} <ArrowRight className="h-4 w-4" />
             </Link>
             <Link href={`/agents?issue=${submitted}`} className="btn-ghost">
-              Watch the agents
+              {t("common.watch_agents")}
             </Link>
           </div>
         </div>
@@ -86,21 +88,27 @@ export default function ReportPage() {
   return (
     <div className="mx-auto max-w-xl space-y-6 animate-fade-up">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Report a civic issue</h1>
-        <p className="mt-1 text-sm text-ink-600">Snap a photo. Drop your location. We handle the rest.</p>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("report.title")}</h1>
+        <p className="mt-1 text-sm text-ink-600">{t("report.subtitle")}</p>
       </header>
 
       <div className="card space-y-5 p-6">
         <button onClick={locate} className={lat != null ? "btn-ghost w-full" : "btn-primary w-full"}>
           <MapPin className="h-4 w-4" />
-          {lat != null ? `Located ✓ (${lat.toFixed(4)}, ${lng?.toFixed(4)})` : "Use my location"}
+          {lat != null
+            ? `${t("report.locate_button_located")} (${lat.toFixed(4)}, ${lng?.toFixed(4)})`
+            : t("report.locate_button_idle")}
         </button>
 
         <div>
-          <span className="block text-xs uppercase tracking-wider text-ink-500">Photo</span>
+          <span className="block text-xs uppercase tracking-wider text-ink-500">{t("report.photo_label")}</span>
           <label className="mt-1 flex cursor-pointer items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-ink-200 bg-ink-50/50 p-6 text-sm text-ink-600 transition hover:border-brand-400 hover:bg-brand-50/50">
             <Upload className="h-4 w-4" />
-            {uploading ? "Uploading..." : photoUrl ? "Replace photo" : "Tap to choose or capture"}
+            {uploading
+              ? t("common.uploading")
+              : photoUrl
+              ? t("report.photo_dropzone_replace")
+              : t("report.photo_dropzone_idle")}
             <input
               type="file"
               accept="image/*"
@@ -115,13 +123,13 @@ export default function ReportPage() {
         </div>
 
         <label className="block">
-          <span className="block text-xs uppercase tracking-wider text-ink-500">What did you see?</span>
+          <span className="block text-xs uppercase tracking-wider text-ink-500">{t("report.description_label")}</span>
           <textarea
             value={desc}
             onChange={(e) => setDesc(e.target.value)}
             rows={3}
             className="input mt-1"
-            placeholder="Big pothole near 14th Cross, water collects after rain..."
+            placeholder={t("report.description_placeholder")}
           />
         </label>
 
@@ -129,7 +137,7 @@ export default function ReportPage() {
 
         <button onClick={submit} disabled={busy || uploading} className="btn-dark w-full">
           <Camera className="h-4 w-4" />
-          {busy ? "Submitting..." : "Submit report"}
+          {busy ? t("common.submitting") : t("common.submit")}
         </button>
       </div>
     </div>
