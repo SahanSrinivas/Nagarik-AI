@@ -33,6 +33,7 @@ interface Ctx {
   lang: Lang;
   setLang: (l: Lang) => void;
   t: (key: string, fallback?: string) => string;
+  ready: boolean;            // false until client-side hydration completes
 }
 
 const I18nContext = createContext<Ctx | null>(null);
@@ -49,11 +50,18 @@ function readInitial(): Lang {
 }
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  // SSR-safe: server renders English first, client hydrates with stored preference.
+  // SSR-safe two-phase hydration: server renders English, client's FIRST
+  // render also serves English (ready=false), so React hydrates cleanly.
+  // A useEffect then flips ready=true and the page re-renders with the
+  // stored preference — no text-content mismatch warnings.
   const [lang, setLangState] = useState<Lang>(DEFAULT);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    setLangState(readInitial());
+    const next = readInitial();
+    setLangState(next);
+    setReady(true);
+    try { document.documentElement.lang = next; } catch {}
   }, []);
 
   const setLang = useCallback((next: Lang) => {
@@ -66,17 +74,18 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   const t = useCallback(
     (key: string, fallback?: string) => {
-      // Strict lookup, then English fallback, then literal key (during dev).
-      const bundle = BUNDLES[lang] as Record<string, string>;
+      // Before hydration, always serve English to match SSR output.
+      const active = ready ? lang : DEFAULT;
+      const bundle = BUNDLES[active] as Record<string, string>;
       if (key in bundle) return bundle[key];
-      const en = BUNDLES.en as Record<string, string>;
-      if (key in en) return en[key];
+      const enBundle = BUNDLES.en as Record<string, string>;
+      if (key in enBundle) return enBundle[key];
       return fallback ?? key;
     },
-    [lang],
+    [lang, ready],
   );
 
-  const value = useMemo(() => ({ lang, setLang, t }), [lang, setLang, t]);
+  const value = useMemo(() => ({ lang, setLang, t, ready }), [lang, setLang, t, ready]);
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
 
@@ -88,6 +97,7 @@ export function useI18n(): Ctx {
       lang: DEFAULT,
       setLang: () => {},
       t: (key, fallback) => fallback ?? key,
+      ready: false,
     };
   }
   return ctx;

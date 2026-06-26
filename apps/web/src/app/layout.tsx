@@ -29,15 +29,15 @@ export const metadata: Metadata = {
   },
 };
 
+// Marketing-friendly top nav. Operator/builder pages (/agents, /milp,
+// /chain, /ops, /test-photos) are still reachable — they're linked from
+// /architecture and from the report-success page. The marketing visitor
+// sees only the things they care about.
 const NAV = [
   { href: "/report",        label: "Report",      icon: Camera },
   { href: "/map",           label: "Map",         icon: Map },
-  { href: "/agents",        label: "Agents",      icon: Network },
-  { href: "/milp",          label: "Optimizer",   icon: Activity },
   { href: "/dashboard",     label: "Dashboard",   icon: LayoutDashboard },
   { href: "/impact",        label: "Impact",      icon: Trophy },
-  { href: "/chain",         label: "Chain",       icon: Link2 },
-  { href: "/ops/flagged",   label: "Ops",         icon: AlertTriangle },
   { href: "/architecture",  label: "Architecture", icon: FileCode2 },
 ];
 
