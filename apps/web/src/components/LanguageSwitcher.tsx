@@ -14,10 +14,10 @@ export function LanguageSwitcher({ className }: { className?: string }) {
     <div className={`relative ${className ?? ""}`}>
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-ink-700 ring-1 ring-inset ring-ink-200 hover:bg-ink-50"
+        className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-ink-700 ring-1 ring-inset ring-ink-200 hover:bg-ink-50"
         aria-label={t("common.choose_language", "Choose language")}
       >
-        <Languages className="h-3.5 w-3.5 text-ink-500" />
+        <Languages className="h-4 w-4 text-ink-500" />
         <span className="font-mono">{LANGS.find((l) => l.code === lang)?.native ?? "EN"}</span>
       </button>
       {open && (
