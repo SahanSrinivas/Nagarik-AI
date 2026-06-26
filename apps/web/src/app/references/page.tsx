@@ -591,6 +591,7 @@ interface OptimizationData {
   status: string;
   objective: number;
   budget: number;
+  crews_deployed?: number;
   total_open_backlog: number;
   backlog_cleared: number;
   pct_open_cleared: number;

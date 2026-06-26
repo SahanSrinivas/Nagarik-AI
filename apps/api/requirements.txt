@@ -59,3 +59,4 @@ py-solc-x>=2.0,<3
 Pillow>=10.0,<12
 pillow-heif>=1.0,<2
 shapely>=2.0,<3
+slowapi>=0.1.9,<1

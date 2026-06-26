@@ -61,3 +61,6 @@ logs/
 # Database
 *.sqlite
 *.db
+
+# Duplicated data tree for Docker build context (do not edit; source = /data/)
+apps/api/data/

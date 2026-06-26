@@ -1,0 +1,28 @@
+# Don't ship the local venv, caches, or env files into the image.
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+.mypy_cache
+.ruff_cache
+*.egg-info
+
+# Local-only files
+.env
+.env.*
+!.env.example
+
+# Logs / artefacts
+*.log
+/tmp/
+
+# Editor + VCS noise
+.git
+.gitignore
+.idea
+.vscode
+*.swp
+
+# Docs / dev-only scripts the runtime doesn't need
+docs/
+README.md

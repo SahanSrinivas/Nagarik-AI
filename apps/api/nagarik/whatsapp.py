@@ -48,13 +48,14 @@ from nagarik.models import Issue
 log = logging.getLogger(__name__)
 
 # Tail consumed by /tracking and /agents to show 'forwarded to WhatsApp at HH:MM'.
-_LOG_PATH = Path(__file__).resolve().parents[3] / "data" / "whatsapp_log.jsonl"
+from nagarik.paths import repo_root as _repo_root  # noqa: E402
+_LOG_PATH = _repo_root() / "data" / "whatsapp_log.jsonl"
 
 # Tracker for the /admin/whatsapp page — one row per unique recipient number,
 # updated every time we attempt a send. Meta doesn't expose a list-test-
 # recipients endpoint, so this is our local source of truth for 'is this
 # number actually registered in the Meta sandbox?'.
-_TRACKER_PATH = Path(__file__).resolve().parents[3] / "data" / "whatsapp_recipients.json"
+_TRACKER_PATH = _repo_root() / "data" / "whatsapp_recipients.json"
 META_SANDBOX_SLOTS = 5  # Meta caps unverified WhatsApp apps at 5 test recipients
 
 

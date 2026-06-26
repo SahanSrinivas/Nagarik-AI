@@ -76,9 +76,9 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     (key: string, fallback?: string) => {
       // Before hydration, always serve English to match SSR output.
       const active = ready ? lang : DEFAULT;
-      const bundle = BUNDLES[active] as Record<string, string>;
+      const bundle = BUNDLES[active] as unknown as Record<string, string>;
       if (key in bundle) return bundle[key];
-      const enBundle = BUNDLES.en as Record<string, string>;
+      const enBundle = BUNDLES.en as unknown as Record<string, string>;
       if (key in enBundle) return enBundle[key];
       return fallback ?? key;
     },

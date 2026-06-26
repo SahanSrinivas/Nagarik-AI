@@ -33,8 +33,8 @@ from nagarik.models import Department, Issue
 log = logging.getLogger(__name__)
 
 # Where simulated sends go so /supervisor can replay the timeline.
-# apps/api/nagarik/delivery.py → repo root is parents[3]
-_LOG_PATH = Path(__file__).resolve().parents[3] / "data" / "delivery_log.jsonl"
+from nagarik.paths import repo_root as _repo_root  # noqa: E402
+_LOG_PATH = _repo_root() / "data" / "delivery_log.jsonl"
 
 
 def _append_log(record: dict[str, Any]) -> None:

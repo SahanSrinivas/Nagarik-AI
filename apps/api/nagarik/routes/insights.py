@@ -1,7 +1,6 @@
 """Predictive insights — risk heatmap, top wards, leaderboard."""
 
 import json
-from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import desc, func, select
@@ -9,11 +8,11 @@ from sqlalchemy.orm import Session
 
 from nagarik.db import get_db
 from nagarik.models import Citizen, Issue, IssueStatus
+from nagarik.paths import data_root
 
 router = APIRouter(prefix="/insights", tags=["insights"])
 
-# apps/api/nagarik/routes/insights.py → parents[4] = repo root.
-HOTSPOTS_PATH = Path(__file__).resolve().parents[4] / "data" / "processed" / "hotspots.geojson"
+HOTSPOTS_PATH = data_root() / "processed" / "hotspots.geojson"
 
 
 @router.get("/ward-stats")

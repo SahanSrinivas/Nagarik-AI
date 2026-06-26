@@ -24,7 +24,13 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-config.set_main_option("sqlalchemy.url", get_settings().database_url)
+# Reuse the live SQLAlchemy engine from nagarik/db.py so we don't have to
+# round-trip the URL through alembic's configparser — configparser does
+# %-interpolation, which corrupts URL-encoded passwords (e.g. M%40inCoffee
+# would error on '%40'). Reusing the engine also picks up our pgBouncer
+# settings (prepare_threshold=None) without duplication.
+from nagarik.db import engine as _live_engine
+
 target_metadata = Base.metadata
 
 
@@ -37,7 +43,7 @@ def _include_object(obj, name: str, type_: str, reflected: bool, compare_to) -> 
 
 def run_migrations_offline() -> None:
     context.configure(
-        url=config.get_main_option("sqlalchemy.url"),
+        url=str(_live_engine.url),
         target_metadata=target_metadata,
         literal_binds=True,
         include_object=_include_object,
@@ -47,12 +53,7 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
-    )
-    with connectable.connect() as connection:
+    with _live_engine.connect() as connection:
         context.configure(
             connection=connection,
             target_metadata=target_metadata,

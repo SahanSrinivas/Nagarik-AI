@@ -71,9 +71,9 @@ export function RoutingCard({ meta }: { meta: RoutingMeta }) {
           dept={llm?.department ?? "(no proposal)"}
           sla={llm?.sla_hours}
           sev={llm?.severity}
-          deptDimmed={deptDisagreement}
-          slaDimmed={slaDisagreement}
-          sevDimmed={sevDisagreement}
+          deptDimmed={!!deptDisagreement}
+          slaDimmed={!!slaDisagreement}
+          sevDimmed={!!sevDisagreement}
         />
         <div className="hidden self-center sm:block">
           <ArrowRight className="h-5 w-5 text-ink-300" />

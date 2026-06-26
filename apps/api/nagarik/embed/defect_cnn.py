@@ -24,9 +24,8 @@ import httpx
 
 log = logging.getLogger(__name__)
 
-# apps/api/nagarik/embed/defect_cnn.py → parents[4] = repo root
-REPO_ROOT = Path(__file__).resolve().parents[4]
-DEFAULT_CKPT = REPO_ROOT / "data" / "processed" / "defect_cnn.pt"
+from nagarik.paths import data_root as _data_root
+DEFAULT_CKPT = _data_root() / "processed" / "defect_cnn.pt"
 INPUT_SIZE = 64
 
 

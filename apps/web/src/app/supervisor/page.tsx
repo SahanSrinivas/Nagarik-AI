@@ -16,7 +16,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 
 import { deptFetch, deptLogout, getDeptSession, type DeptUser } from "@/lib/auth";
 
@@ -88,6 +88,15 @@ function fmtSlaRemaining(min: number | null): string {
 }
 
 export default function SupervisorPage() {
+  // Suspense boundary required by Next 14 around useSearchParams during SSG.
+  return (
+    <Suspense fallback={<div className="card animate-pulse p-6 text-sm">Loading supervisor dashboard…</div>}>
+      <SupervisorPageInner />
+    </Suspense>
+  );
+}
+
+function SupervisorPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const focusId = searchParams.get("focus");

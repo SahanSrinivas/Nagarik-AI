@@ -30,8 +30,19 @@ import httpx
 
 log = logging.getLogger(__name__)
 
-REPO_ROOT = Path(__file__).resolve().parents[4]
-WARDS_PATH = REPO_ROOT / "data" / "processed" / "wards.geojson"
+# Walk up from this file looking for the data tree. In local dev the repo
+# root lives 4 levels up; in the Cloud Run container the data is bundled
+# inside /app (parents[2]). This walker handles both without an env var.
+def _find_wards_geojson() -> Path:
+    here = Path(__file__).resolve()
+    for parent in [here, *here.parents]:
+        candidate = parent / "data" / "processed" / "wards.geojson"
+        if candidate.exists():
+            return candidate
+    return here.parents[2] / "data" / "processed" / "wards.geojson"  # fallback
+
+WARDS_PATH = _find_wards_geojson()
+REPO_ROOT = WARDS_PATH.parents[2] if WARDS_PATH.parents else Path("/")
 
 CROSS_CHECK_KM = 5.0  # EXIF vs browser disagreement threshold
 
