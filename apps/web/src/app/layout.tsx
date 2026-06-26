@@ -6,6 +6,7 @@ import {
   AlertTriangle,
   BarChart3,
   Camera,
+  FileCode2,
   LayoutDashboard,
   Link2,
   Map,
@@ -28,14 +29,15 @@ export const metadata: Metadata = {
 };
 
 const NAV = [
-  { href: "/report",       label: "Report",    icon: Camera },
-  { href: "/map",          label: "Map",       icon: Map },
-  { href: "/agents",       label: "Agents",    icon: Network },
-  { href: "/milp",         label: "Optimizer", icon: Activity },
-  { href: "/dashboard",    label: "Dashboard", icon: LayoutDashboard },
-  { href: "/impact",       label: "Impact",    icon: Trophy },
-  { href: "/chain",        label: "Chain",     icon: Link2 },
-  { href: "/ops/flagged",  label: "Ops",       icon: AlertTriangle },
+  { href: "/report",        label: "Report",      icon: Camera },
+  { href: "/map",           label: "Map",         icon: Map },
+  { href: "/agents",        label: "Agents",      icon: Network },
+  { href: "/milp",          label: "Optimizer",   icon: Activity },
+  { href: "/dashboard",     label: "Dashboard",   icon: LayoutDashboard },
+  { href: "/impact",        label: "Impact",      icon: Trophy },
+  { href: "/chain",         label: "Chain",       icon: Link2 },
+  { href: "/ops/flagged",   label: "Ops",         icon: AlertTriangle },
+  { href: "/architecture",  label: "Architecture", icon: FileCode2 },
 ];
 
 // Tracking + wallet routes are linked from contextual surfaces (report
