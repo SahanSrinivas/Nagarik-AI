@@ -29,7 +29,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from nagarik.db import get_db
-from nagarik.models import Citizen
+from nagarik.models import Citizen, Department, DepartmentUser
 
 log = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -203,6 +203,126 @@ def me(citizen: Annotated[Citizen, Depends(current_citizen)]) -> dict:
 def demo_credentials() -> dict:
     """Surface the seeded demo credentials on the login page. Hackathon-only."""
     return {"username": DEMO_USERNAME, "password": DEMO_PASSWORD}
+
+
+# ─── Department-side auth ────────────────────────────────────────────────
+# Supervisors + crew leads live in department_users (see models.py). Their
+# JWT carries `role` and `department_id` claims so /supervisor and /crew
+# routes can gate by both authentication AND department membership.
+
+DEPT_DEMO_PASSWORD = "supervisor2026"
+
+
+class DeptLoginIn(BaseModel):
+    username: str
+    password: str
+
+
+class DeptTokenOut(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: dict
+
+
+def _dept_user_dict(u: DepartmentUser, dept: Department | None) -> dict:
+    return {
+        "id": str(u.id),
+        "username": u.username,
+        "name": u.name,
+        "role": u.role,
+        "phone": u.phone,
+        "department_id": str(u.department_id),
+        "department_name": dept.name if dept else None,
+        "department_code": dept.code if dept else None,
+        "primary_channel": dept.primary_channel if dept else None,
+    }
+
+
+@router.post("/dept-login", response_model=DeptTokenOut)
+def dept_login(payload: DeptLoginIn, db: Session = Depends(get_db)) -> DeptTokenOut:
+    user = db.scalar(select(DepartmentUser).where(DepartmentUser.username == payload.username))
+    if user is None or not verify_password(payload.password, user.password_hash):
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "invalid username or password")
+    if not user.is_active:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "account is disabled")
+    dept = db.get(Department, user.department_id)
+    token = issue_jwt(
+        str(user.id),
+        extra={"role": user.role, "dept": str(user.department_id), "scope": "dept"},
+    )
+    return DeptTokenOut(access_token=token, user=_dept_user_dict(user, dept))
+
+
+@router.get("/dept-me", response_model=dict)
+def dept_me(
+    creds: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer)],
+    db: Session = Depends(get_db),
+) -> dict:
+    user = _current_dept_user(creds, db)
+    dept = db.get(Department, user.department_id)
+    return _dept_user_dict(user, dept)
+
+
+@router.get("/dept-demo-credentials")
+def dept_demo_credentials(db: Session = Depends(get_db)) -> dict:
+    """Surface a couple of dept logins on the /dept-login page."""
+    examples = []
+    for code in ("BBMP_ROADS", "BWSSB", "BESCOM_STREETLIGHT", "BBMP_SWM"):
+        dept = db.scalar(select(Department).where(Department.code == code))
+        if dept is None:
+            continue
+        user = db.scalar(
+            select(DepartmentUser).where(
+                DepartmentUser.department_id == dept.id,
+                DepartmentUser.role == "supervisor",
+            )
+        )
+        if user is None:
+            continue
+        examples.append({"department": dept.name, "username": user.username, "role": "supervisor"})
+    return {"password": DEPT_DEMO_PASSWORD, "accounts": examples}
+
+
+def _current_dept_user(
+    creds: HTTPAuthorizationCredentials | None,
+    db: Session,
+) -> DepartmentUser:
+    if creds is None:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "missing bearer token")
+    try:
+        payload = decode_jwt(creds.credentials)
+    except JWTError as exc:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, f"invalid token: {exc}") from exc
+    if payload.get("scope") != "dept":
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "token is not a department token")
+    try:
+        uid = uuid.UUID(payload["sub"])
+    except (KeyError, ValueError) as exc:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "malformed token") from exc
+    user = db.get(DepartmentUser, uid)
+    if user is None or not user.is_active:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "user no longer exists")
+    return user
+
+
+def current_dept_user(
+    creds: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer)],
+    db: Session = Depends(get_db),
+) -> DepartmentUser:
+    """FastAPI dependency — yields the DepartmentUser for the bearer token."""
+    return _current_dept_user(creds, db)
+
+
+def require_role(*roles: str):
+    """Returns a dependency that 403s unless the user has one of the given roles."""
+    def _dep(user: Annotated[DepartmentUser, Depends(current_dept_user)]) -> DepartmentUser:
+        if user.role not in roles:
+            raise HTTPException(
+                status.HTTP_403_FORBIDDEN,
+                f"role {user.role!r} not allowed; need one of {list(roles)}",
+            )
+        return user
+    return _dep
 
 
 def ensure_demo_user_exists(db: Session) -> None:

@@ -40,6 +40,11 @@ class IssueRead(BaseModel):
     duplicate_of_id: uuid.UUID | None
     ai_confidence: float
     resolved_at: datetime | None
+    delivered_at: datetime | None = None
+    delivered_channel: str | None = None
+    acked_at: datetime | None = None
+    escalation_level: int = 0
+    escalated_at: datetime | None = None
     created_at: datetime
 
     model_config = {"from_attributes": True}

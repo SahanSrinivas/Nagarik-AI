@@ -38,14 +38,19 @@ class Notification(Base):
 # ---- Human-friendly copy per status transition ----------------------------
 
 TEMPLATES: dict[str, tuple[str, str]] = {
-    "classified":  ("AI saw your photo",        "We classified it as {type} (severity {severity}/5). Routing to the right department now."),
-    "deduped":     ("Matched an existing report", "Looks like {original_id} flagged this nearby first. We've merged your report and you'll get its updates too."),
-    "triaged":     ("Routed to {dept}",         "Filed with {dept}. SLA: by {sla}."),
-    "verified":    ("Verified by your neighbours", "{count} nearby citizens confirmed. The crew dispatcher just picked it up."),
-    "scheduled":   ("Crew assigned",            "Crew {crew} will visit on {when}. Optimized via our MILP route solver."),
-    "in_progress": ("Crew on-site",             "The team is at the location right now."),
-    "resolved":    ("Marked resolved",          "{dept} reported the fix. After-photo verified by CLIP at {sim}% similarity. +{xp} XP earned."),
-    "rejected":    ("Couldn't proceed",         "We had to reject this report — usually a duplicate or out of scope."),
+    "classified":      ("AI saw your photo",          "We classified it as {type} (severity {severity}/5). Routing to the right department now."),
+    "deduped":         ("Matched an existing report", "Looks like {original_id} flagged this nearby first. We've merged your report and you'll get its updates too."),
+    "triaged":         ("Routed to {dept}",           "Filed with {dept}. SLA: by {sla}."),
+    "verified":        ("Verified by your neighbours","{count} nearby citizens confirmed. The crew dispatcher just picked it up."),
+    "scheduled":       ("Crew assigned",              "Crew {crew} will visit on {when}. Optimized via our MILP route solver."),
+    "in_progress":     ("Crew on-site",               "The team is at the location right now."),
+    "resolved":        ("Marked resolved",            "{dept} reported the fix. After-photo verified by CLIP at {sim}% similarity. +{xp} XP earned."),
+    "rejected":        ("Couldn't proceed",           "We had to reject this report — usually a duplicate or out of scope."),
+    "acked_by_dept":   ("{dept} acknowledged",        "A supervisor at {dept} opened your ticket. They have your details and the SLA clock continues to run."),
+    "blocked_by_crew": ("Crew flagged a problem",     "The assigned crew couldn't complete this on first attempt ({reason}). Supervisor has been notified."),
+    "escalated_lvl1":  ("Missed SLA — escalated",     "{dept} didn't act in time. We've re-pinged the dept supervisor directly."),
+    "escalated_lvl2":  ("Escalated to councillor",    "{dept} still silent 24h on. Ward councillor has been looped in."),
+    "escalated_lvl3":  ("RTI draft prepared",         "72h with no movement. We've drafted an RTI you can file in one tap from your dashboard."),
 }
 
 

@@ -192,6 +192,13 @@ export default function LoginPage() {
           {mode === "login" ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
         </button>
       </div>
+
+      <p className="text-center text-[11px]" style={{ color: "rgb(var(--text-muted))" }}>
+        BBMP / BWSSB / BESCOM staff?{" "}
+        <a href="/dept-login" className="font-semibold underline" style={{ color: "rgb(var(--accent))" }}>
+          Sign in to the department dashboard →
+        </a>
+      </p>
     </motion.div>
   );
 }

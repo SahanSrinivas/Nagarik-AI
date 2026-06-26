@@ -10,10 +10,11 @@ from slowapi.errors import RateLimitExceeded
 
 from nagarik import auth as auth_mod
 from nagarik.db import SessionLocal
+from nagarik.jobs.sla_watcher import start_sla_watcher
 from nagarik.ratelimit import limiter
 from nagarik.routes import (
     chain, coverage, crew, insights, issues, ops, schedule, stream,
-    tracking, uploads, verify,
+    supervisor, tracking, uploads, verify,
 )
 from nagarik.settings import get_settings
 
@@ -26,6 +27,8 @@ async def lifespan(app: FastAPI):
             auth_mod.ensure_demo_user_exists(db)
     except Exception as exc:  # noqa: BLE001 — never block startup on seed
         logging.getLogger(__name__).warning("demo user seed failed: %s", exc)
+    # Kick off the SLA escalation watcher (runs every 60s).
+    start_sla_watcher()
     yield
 
 
@@ -54,6 +57,7 @@ app.include_router(stream.router)
 app.include_router(chain.router)
 app.include_router(ops.router)
 app.include_router(crew.router)
+app.include_router(supervisor.router)
 app.include_router(coverage.router)
 app.include_router(auth_mod.router)
 

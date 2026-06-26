@@ -22,14 +22,14 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth";
 
 const PUBLIC_NAV = [
-  { href: "/report",        label: "Report",         icon: Camera },
-  { href: "/map",           label: "Map",            icon: Map },
-  { href: "/dashboard",     label: "Ward Dashboard", icon: LayoutDashboard },
-  { href: "/crew",          label: "Crew",           icon: Truck },
-  { href: "/milp",          label: "Schedule",       icon: Activity },
-  { href: "/impact",        label: "Impact",         icon: Trophy },
-  { href: "/architecture",  label: "Architecture",   icon: FileCode2 },
-  { href: "/references",    label: "References",     icon: BookOpen },
+  { href: "/report",        label: "Report",       icon: Camera },
+  { href: "/map",           label: "Map",          icon: Map },
+  { href: "/dashboard",     label: "Wards",        icon: LayoutDashboard },
+  { href: "/crew",          label: "Crew",         icon: Truck },
+  { href: "/milp",          label: "Schedule",     icon: Activity },
+  { href: "/impact",        label: "Impact",       icon: Trophy },
+  { href: "/references",    label: "Datasets",     icon: BookOpen },
+  { href: "/architecture",  label: "Architecture", icon: FileCode2 },
 ];
 
 export function NavBar() {
@@ -51,29 +51,22 @@ export function NavBar() {
 
   return (
     <>
-      {/* Desktop public nav */}
+      {/* Desktop public nav — whitespace-nowrap on each link so labels can never wrap.
+          The "My Dashboard" entry used to live here too but it caused the header
+          to overflow when signed in. It's still reachable from the user avatar
+          dropdown on the right, plus the avatar gets a "Go to dashboard" tooltip. */}
       <nav className="hidden gap-1 md:flex">
         {PUBLIC_NAV.map((n) => (
           <Link
             key={n.href}
             href={n.href}
-            className="group flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm transition hover:bg-surface-hover"
+            className="group flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-sm transition hover:bg-surface-hover"
             style={{ color: "rgb(var(--text-secondary))" }}
           >
             <n.icon className="h-4 w-4 transition group-hover:text-accent" strokeWidth={2.25} />
             {n.label}
           </Link>
         ))}
-        {token && me && (
-          <Link
-            href="/home"
-            className="group flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm transition hover:bg-surface-hover"
-            style={{ color: "rgb(var(--accent))", fontWeight: 600 }}
-          >
-            <Activity className="h-4 w-4" strokeWidth={2.25} />
-            My Dashboard
-          </Link>
-        )}
       </nav>
 
       {/* Right-side auth pill — sign in OR user menu */}
@@ -89,13 +82,14 @@ export function NavBar() {
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setOpen((o) => !o)}
-            className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium transition"
+            className="flex items-center gap-2 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs font-medium transition"
             style={{
               background: "rgb(var(--bg-surface))",
               border: "1px solid rgb(var(--border-color))",
               color: "rgb(var(--text-primary))",
             }}
-            aria-label="User menu"
+            aria-label="User menu — opens dashboard, wallet, sign out"
+            title="My Dashboard · wallet · sign out"
           >
             <span
               className="relative grid h-5 w-5 place-items-center rounded-full text-[10px] font-semibold text-white"
@@ -195,15 +189,15 @@ export function MobileNavBar() {
         <Link
           key={n.href}
           href={n.href}
-          className="rounded-full bg-ink-100 px-3 py-1.5 text-xs text-ink-700"
+          className="whitespace-nowrap rounded-full bg-ink-100 px-3 py-1.5 text-xs text-ink-700"
         >
           {n.label}
         </Link>
       ))}
       {token && (
-        <Link href="/home" className="rounded-full px-3 py-1.5 text-xs font-semibold text-white"
+        <Link href="/home" className="whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold text-white"
               style={{ background: "rgb(var(--accent))" }}>
-          My Dashboard
+          Dashboard
         </Link>
       )}
     </div>

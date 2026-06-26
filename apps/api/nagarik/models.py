@@ -10,7 +10,7 @@ from datetime import datetime
 from enum import Enum
 
 from geoalchemy2 import Geography
-from sqlalchemy import JSON, DateTime, Float, ForeignKey, Index, String, Text, func
+from sqlalchemy import JSON, Boolean, DateTime, Float, ForeignKey, Index, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -114,6 +114,16 @@ class Issue(Base):
     assigned_crew_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("crews.id"))
     scheduled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
+    # Department workflow — when we dispatched to the dept's external channel,
+    # whether they acknowledged, and which escalation level we've reached.
+    # delivered_channel ∈ {whatsapp, email, webhook, inapp_only}
+    # escalation_level: 0 = nominal, 1 = dept-head, 2 = councillor, 3 = RTI auto-draft
+    delivered_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    delivered_channel: Mapped[str | None] = mapped_column(String(20))
+    acked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    escalation_level: Mapped[int] = mapped_column(Integer, default=0)
+    escalated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
     resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
@@ -157,6 +167,50 @@ class Crew(Base):
     shift_start_hour: Mapped[int] = mapped_column(default=9)
     shift_end_hour: Mapped[int] = mapped_column(default=18)
     is_active: Mapped[bool] = mapped_column(default=True)
+
+
+class Department(Base):
+    """The 7 BBMP/BWSSB/BESCOM departments NagarikAI dispatches tickets to.
+
+    Seeded from agents/guardrails.py SOP_TABLE by scripts/seed_departments.py.
+    primary_channel decides how delivery.py routes new tickets — whatsapp →
+    AiSensy/Gupshup, email → SMTP, webhook → signed POST, inapp_only → no-op
+    (the dept logs in via /dept-login and watches their queue instead).
+    """
+
+    __tablename__ = "departments"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    code: Mapped[str] = mapped_column(String(40), unique=True, index=True)        # e.g. "BBMP_ROADS"
+    name: Mapped[str] = mapped_column(String(80), unique=True)                    # "BBMP Roads"
+    primary_channel: Mapped[str] = mapped_column(String(20), default="inapp_only")
+    whatsapp_number: Mapped[str | None] = mapped_column(String(20))
+    email: Mapped[str | None] = mapped_column(String(120))
+    webhook_url: Mapped[str | None] = mapped_column(String(300))
+    supervisor_name: Mapped[str | None] = mapped_column(String(80))
+    supervisor_phone: Mapped[str | None] = mapped_column(String(20))
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+
+class DepartmentUser(Base):
+    """Login record for a department supervisor or crew lead.
+
+    role ∈ {supervisor, crew_lead}. JWT issued by /auth/dept-login carries
+    role + department_id claims so /supervisor and /crew routes can gate by
+    both authentication AND department.
+    """
+
+    __tablename__ = "department_users"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    username: Mapped[str] = mapped_column(String(60), unique=True, index=True)
+    password_hash: Mapped[str] = mapped_column(String(200))
+    department_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("departments.id"), index=True)
+    role: Mapped[str] = mapped_column(String(20), default="supervisor")
+    name: Mapped[str | None] = mapped_column(String(80))
+    phone: Mapped[str | None] = mapped_column(String(20))
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
 class AgentEvent(Base):

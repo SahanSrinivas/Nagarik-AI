@@ -86,6 +86,15 @@ def run_triage(state: AgentState) -> AgentState:
     emit(state["issue_id"], "classified")
     emit(state["issue_id"], "triaged")
 
+    # Push to the destination department via their primary channel
+    # (whatsapp / email / webhook / inapp_only). Fire-and-forget — never
+    # raises out of the agent loop. See nagarik/delivery.py.
+    try:
+        from nagarik.delivery import dispatch_to_department
+        dispatch_to_department(state["issue_id"])
+    except Exception as exc:  # noqa: BLE001 — same swallow pattern as the rest of the loop
+        log.warning("delivery: dispatch failed for %s: %s", state["issue_id"], exc)
+
     # Bubble up routing telemetry — the /agents view shows this per-issue.
     routing_meta = {
         "gate_verdict": gate.verdict.value,

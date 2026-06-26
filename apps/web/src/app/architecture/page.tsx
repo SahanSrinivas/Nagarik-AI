@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import {
   ArrowRight,
   Brain,
+  Building2,
   Camera,
   CheckCircle2,
   Cpu,
@@ -12,9 +13,14 @@ import {
   FileCode2,
   GitBranch,
   Layers,
+  Mail,
+  MessageCircle,
+  Send,
   ShieldCheck,
+  Siren,
   Sparkles,
   TrendingUp,
+  Webhook,
   Wrench,
 } from "lucide-react";
 
@@ -255,6 +261,87 @@ export default function ArchitecturePage() {
         </div>
       </section>
 
+      {/* HUB-AND-SPOKE — how a triaged ticket actually reaches BBMP */}
+      <section className="card p-6">
+        <div className="flex items-center gap-2">
+          <Send className="h-5 w-5" style={{ color: "rgb(var(--accent))" }} />
+          <h2 className="text-lg font-semibold tracking-tight">
+            Hub &amp; spoke — how a ticket leaves NagarikAI
+          </h2>
+        </div>
+        <p className="mt-1 text-sm text-ink-600">
+          We aren&apos;t a parallel BBMP. NagarikAI is the citizen front door + AI triage; each
+          department keeps using whatever software they already have. Once Triage picks a
+          department, <code className="font-mono">delivery.py</code> pushes the ticket
+          out via that department&apos;s preferred channel. The supervisor dashboard is the
+          fallback for departments that don&apos;t have their own system.
+        </p>
+
+        {/* ASCII-style hub-and-spoke map */}
+        <div className="mt-5 rounded-2xl p-5"
+          style={{ background: "rgb(var(--bg-canvas))", border: "1px solid rgb(var(--border-light))" }}>
+          <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-[1fr_60px_1fr]">
+            {/* LEFT — NagarikAI hub */}
+            <div className="rounded-xl p-4 text-center"
+              style={{ background: "rgba(191, 79, 54, 0.08)", border: "1px solid rgba(191, 79, 54, 0.30)" }}>
+              <div className="text-[10px] uppercase tracking-wider"
+                style={{ color: "rgb(var(--accent))" }}>The hub (us)</div>
+              <div className="mt-1 text-sm font-semibold">NagarikAI</div>
+              <ul className="mt-2 space-y-1 text-left text-[11px]" style={{ color: "rgb(var(--text-secondary))" }}>
+                <li>· Citizen submit (photo / video / location)</li>
+                <li>· 7-agent triage loop</li>
+                <li>· MILP scheduler</li>
+                <li>· delivery.py dispatches to spoke</li>
+                <li>· sla_watcher.py escalates on silence</li>
+              </ul>
+            </div>
+
+            {/* MIDDLE — arrow + channel labels */}
+            <div className="flex flex-col items-center justify-center gap-2 py-2">
+              <ArrowRight className="hidden h-6 w-6 lg:block" style={{ color: "rgb(var(--text-muted))" }} />
+              <div className="text-[10px] uppercase tracking-wider"
+                style={{ color: "rgb(var(--text-muted))" }}>
+                primary_channel
+              </div>
+            </div>
+
+            {/* RIGHT — 4 spokes */}
+            <div className="grid grid-cols-1 gap-2">
+              <SpokeRow icon={MessageCircle} channel="WhatsApp"
+                depts="BBMP Roads · BBMP SWM"
+                note="AiSensy / Gupshup Business API → supervisor's phone" />
+              <SpokeRow icon={Mail} channel="Email"
+                depts="BWSSB · BESCOM Streetlight"
+                note="SMTP → complaints@ inbox the dept already monitors" />
+              <SpokeRow icon={Webhook} channel="Webhook"
+                depts="BBMP Horticulture"
+                note="POST signed JSON to dept's existing complaint API" />
+              <SpokeRow icon={Building2} channel="In-app only"
+                depts="BBMP Helpdesk · Town Planning"
+                note="No external system — supervisor watches /supervisor" />
+            </div>
+          </div>
+        </div>
+
+        {/* Escalation ladder */}
+        <div className="mt-5">
+          <div className="flex items-center gap-2">
+            <Siren className="h-4 w-4" style={{ color: "rgb(var(--accent))" }} />
+            <h3 className="text-sm font-semibold">Escalation ladder — what happens when the dept goes silent</h3>
+          </div>
+          <div className="mt-3 grid gap-2 sm:grid-cols-4">
+            <Step label="Level 0" body="Nominal. Sent via primary_channel. Acked_at expected within SLA." />
+            <Step label="Level 1" body="SLA breached. Re-dispatch to supervisor's personal phone. Citizen notified." tone="amber" />
+            <Step label="Level 2" body="24h after L1 with no ack. Ward councillor looped in." tone="amber" />
+            <Step label="Level 3" body="72h after L2. RTI auto-draft generated; citizen one-tap-files." tone="red" />
+          </div>
+          <p className="mt-3 text-[11px]" style={{ color: "rgb(var(--text-muted))" }}>
+            Runs every 60s in <code className="font-mono">apps/api/nagarik/jobs/sla_watcher.py</code>.
+            Every state change writes a citizen notification — they always know where their ticket stands.
+          </p>
+        </div>
+      </section>
+
       {/* TECH STACK */}
       <section className="card p-6">
         <div className="flex items-center gap-2">
@@ -300,5 +387,44 @@ export default function ArchitecturePage() {
         and <code className="font-mono"> INBOUND_CHANNELS.md</code>.
       </div>
     </motion.div>
+  );
+}
+
+/* ─── helpers used by the Hub & Spoke section ─── */
+
+function SpokeRow({ icon: Icon, channel, depts, note }:
+  { icon: typeof Send; channel: string; depts: string; note: string }) {
+  return (
+    <div className="flex items-start gap-3 rounded-xl p-3"
+      style={{ background: "rgb(var(--bg-surface))", border: "1px solid rgb(var(--border-light))" }}>
+      <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg"
+        style={{ background: "rgba(191, 79, 54, 0.10)", color: "rgb(var(--accent))" }}>
+        <Icon className="h-3.5 w-3.5" />
+      </span>
+      <div className="min-w-0">
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs font-semibold">{channel}</span>
+          <span className="text-[10px]" style={{ color: "rgb(var(--text-muted))" }}>→</span>
+          <span className="truncate text-[10px]" style={{ color: "rgb(var(--text-secondary))" }}>{depts}</span>
+        </div>
+        <div className="mt-0.5 text-[11px]" style={{ color: "rgb(var(--text-muted))" }}>{note}</div>
+      </div>
+    </div>
+  );
+}
+
+function Step({ label, body, tone = "ink" }:
+  { label: string; body: string; tone?: "ink" | "amber" | "red" }) {
+  const tones: Record<string, { bg: string; border: string; pill: string }> = {
+    ink:   { bg: "rgb(var(--bg-surface))",            border: "rgb(var(--border-light))",       pill: "rgb(var(--text-secondary))" },
+    amber: { bg: "rgba(245, 158, 11, 0.08)",          border: "rgba(245, 158, 11, 0.30)",       pill: "#b45309" },
+    red:   { bg: "rgba(220, 38, 38, 0.08)",           border: "rgba(220, 38, 38, 0.30)",        pill: "#b91c1c" },
+  };
+  const t = tones[tone];
+  return (
+    <div className="rounded-xl p-3" style={{ background: t.bg, border: `1px solid ${t.border}` }}>
+      <div className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: t.pill }}>{label}</div>
+      <div className="mt-1 text-xs" style={{ color: "rgb(var(--text-primary))" }}>{body}</div>
+    </div>
   );
 }

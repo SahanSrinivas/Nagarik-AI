@@ -44,6 +44,11 @@ def _to_read(issue: Issue) -> IssueRead:
         duplicate_of_id=issue.duplicate_of_id,
         ai_confidence=issue.ai_confidence,
         resolved_at=issue.resolved_at,
+        delivered_at=getattr(issue, "delivered_at", None),
+        delivered_channel=getattr(issue, "delivered_channel", None),
+        acked_at=getattr(issue, "acked_at", None),
+        escalation_level=int(getattr(issue, "escalation_level", 0) or 0),
+        escalated_at=getattr(issue, "escalated_at", None),
         created_at=issue.created_at,
     )
 

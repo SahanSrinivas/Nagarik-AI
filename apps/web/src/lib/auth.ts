@@ -6,6 +6,63 @@ import React from "react";
 const BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const TOKEN_KEY = "nagarik.token";
 const USER_KEY = "nagarik.user";
+const DEPT_TOKEN_KEY = "nagarik.dept.token";
+const DEPT_USER_KEY = "nagarik.dept.user";
+
+export interface DeptUser {
+  id: string;
+  username: string;
+  name: string | null;
+  role: "supervisor" | "crew_lead";
+  phone: string | null;
+  department_id: string;
+  department_name: string | null;
+  department_code: string | null;
+  primary_channel: string | null;
+}
+
+/** Department-side login. Stored separately from citizen JWT so a tester
+ *  can have BOTH a citizen and a supervisor session in the same browser. */
+export async function deptLogin(username: string, password: string): Promise<DeptUser> {
+  const r = await fetch(`${BASE}/auth/dept-login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password }),
+  });
+  if (!r.ok) {
+    const body = await r.json().catch(() => ({}));
+    throw new Error(body.detail ?? r.statusText);
+  }
+  const d = await r.json();
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem(DEPT_TOKEN_KEY, d.access_token);
+    window.localStorage.setItem(DEPT_USER_KEY, JSON.stringify(d.user));
+  }
+  return d.user as DeptUser;
+}
+
+export function deptLogout(): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(DEPT_TOKEN_KEY);
+  window.localStorage.removeItem(DEPT_USER_KEY);
+}
+
+export function getDeptSession(): { token: string | null; user: DeptUser | null } {
+  if (typeof window === "undefined") return { token: null, user: null };
+  const token = window.localStorage.getItem(DEPT_TOKEN_KEY);
+  const raw = window.localStorage.getItem(DEPT_USER_KEY);
+  let user: DeptUser | null = null;
+  try { user = raw ? JSON.parse(raw) as DeptUser : null; } catch { user = null; }
+  return { token, user };
+}
+
+/** Authorized fetch for dept routes — sends the dept JWT, not the citizen one. */
+export async function deptFetch(path: string, init: RequestInit = {}): Promise<Response> {
+  const { token } = getDeptSession();
+  const headers = new Headers(init.headers);
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+  return fetch(`${BASE}${path}`, { ...init, headers });
+}
 
 export interface Me {
   id: string;
