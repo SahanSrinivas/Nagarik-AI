@@ -18,6 +18,7 @@ import { useEffect, useState } from "react";
 
 import { Reveal, Stagger } from "@/components/Motion";
 import { Pill, SeverityPill, StatusPill } from "@/components/Pill";
+import { useI18n } from "@/i18n";
 
 interface LocationResolver {
   source: string;
@@ -58,13 +59,13 @@ interface Tracking {
   timeline: { id: string; kind: string; title: string; body: string; channel: string; created_at: string; read_at: string | null }[];
 }
 
-const SOURCE_COPY: Record<string, { label: string; tone: "brand" | "amber" | "rose" | "ink" }> = {
-  exif_and_browser_agree:           { label: "Located via your photo (verified)", tone: "brand" },
-  exif_only:                        { label: "Located via your photo's EXIF",     tone: "brand" },
-  browser_only:                     { label: "Browser GPS only — please confirm", tone: "amber" },
-  exif_preferred_browser_disagrees: { label: "Photo & GPS disagreed — flagged",   tone: "rose"  },
-  geocoded_from_address:            { label: "Located from your address",         tone: "amber" },
-  unknown:                          { label: "Location unknown — ops will reach out", tone: "rose" },
+const SOURCE_TONE: Record<string, "brand" | "amber" | "rose" | "ink"> = {
+  exif_and_browser_agree:           "brand",
+  exif_only:                        "brand",
+  browser_only:                     "amber",
+  exif_preferred_browser_disagrees: "rose",
+  geocoded_from_address:            "amber",
+  unknown:                          "rose",
 };
 
 const KIND_ICON: Record<string, typeof Bell> = {
@@ -93,6 +94,7 @@ const BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export default function TrackingPage() {
   const { id } = useParams<{ id: string }>();
+  const { lang, t } = useI18n();
   const [data, setData] = useState<Tracking | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
@@ -104,16 +106,19 @@ export default function TrackingPage() {
 
   useEffect(() => {
     if (!id) return;
-    fetch(`${BASE}/tracking/${id}`)
+    // Pass lang so the backend translates notification title/body via Gemini.
+    fetch(`${BASE}/tracking/${id}?lang=${encodeURIComponent(lang)}`)
       .then((r) => (r.ok ? r.json() : Promise.reject(r.statusText)))
       .then(setData)
       .catch((e) => setErr(String(e)));
-  }, [id, tick]);
+  }, [id, tick, lang]);
 
   if (err) return <div className="card p-6 text-sm text-rose-700">{err}</div>;
   if (!data) {
     return (
-      <div className="card animate-pulse p-6 text-sm text-ink-400">Loading your report…</div>
+      <div className="card animate-pulse p-6 text-sm text-ink-400">
+        {t("common.uploading", "Loading…")}
+      </div>
     );
   }
 
@@ -127,12 +132,12 @@ export default function TrackingPage() {
         <div className="bg-hero-gradient p-6 text-white">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <div className="text-xs uppercase tracking-wider text-brand-200">Your report</div>
+              <div className="text-xs uppercase tracking-wider text-brand-200">{t("tracking.your_report")}</div>
               <h1 className="mt-1 text-2xl font-semibold tracking-tight">
-                {issue.address ?? issue.type}
+                {issue.address ?? t(`issue.type.${issue.type}`, issue.type)}
               </h1>
               <p className="mt-1 text-sm text-ink-300">
-                Opened {opened.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
+                {t("tracking.opened")} {opened.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -143,11 +148,11 @@ export default function TrackingPage() {
           </div>
         </div>
         <div className="grid gap-4 p-6 sm:grid-cols-3">
-          <Meta icon={MapPin} label="Location" value={`${issue.lat.toFixed(4)}, ${issue.lng.toFixed(4)}`} />
-          <Meta icon={Truck} label="Department" value={issue.routed_department ?? "Routing…"} />
+          <Meta icon={MapPin} label={t("tracking.location")} value={`${issue.lat.toFixed(4)}, ${issue.lng.toFixed(4)}`} />
+          <Meta icon={Truck} label={t("tracking.department")} value={issue.routed_department ?? t("tracking.routing")} />
           <Meta
             icon={Clock}
-            label="SLA"
+            label={t("tracking.sla")}
             value={issue.sla_deadline ? new Date(issue.sla_deadline).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "—"}
           />
         </div>
@@ -162,7 +167,7 @@ export default function TrackingPage() {
       {/* ---- TIMELINE ---- */}
       <section>
         <div className="mb-3 flex items-center gap-2">
-          <h2 className="text-sm font-semibold text-ink-700">Status updates</h2>
+          <h2 className="text-sm font-semibold text-ink-700">{t("tracking.status_updates")}</h2>
           <Pill tone="ink">{timeline.length}</Pill>
         </div>
 
@@ -173,8 +178,8 @@ export default function TrackingPage() {
               <TimelineRow
                 icon={Camera}
                 tone="brand"
-                title="You reported this"
-                body={issue.description || "No description provided"}
+                title={t("tracking.you_reported_this")}
+                body={issue.description || t("tracking.no_description")}
                 at={opened}
               />
             </Reveal>
@@ -203,8 +208,8 @@ export default function TrackingPage() {
                   icon={Clock}
                   tone="ink"
                   pending
-                  title="Awaiting next update"
-                  body="The agent pipeline pushes the next status here automatically."
+                  title={t("tracking.awaiting_next")}
+                  body={t("tracking.awaiting_body")}
                 />
               </Reveal>
             )}
@@ -217,13 +222,13 @@ export default function TrackingPage() {
         {crew && (
           <div className="card p-5">
             <div className="flex items-center gap-2 text-sm font-semibold text-ink-900">
-              <Truck className="h-4 w-4 text-brand-600" /> Assigned crew
+              <Truck className="h-4 w-4 text-brand-600" /> {t("tracking.assigned_crew")}
             </div>
             <div className="mt-2 text-lg font-semibold">{crew.name}</div>
             <div className="text-xs text-ink-500">{crew.department}</div>
             {issue.scheduled_at && (
               <div className="mt-3 text-xs text-ink-600">
-                Scheduled · {new Date(issue.scheduled_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
+                {t("tracking.scheduled")} · {new Date(issue.scheduled_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
               </div>
             )}
           </div>
@@ -231,12 +236,12 @@ export default function TrackingPage() {
         {reporter && (
           <div className="card p-5">
             <div className="flex items-center gap-2 text-sm font-semibold text-ink-900">
-              <Award className="h-4 w-4 text-brand-600" /> Your contribution
+              <Award className="h-4 w-4 text-brand-600" /> {t("tracking.your_contribution")}
             </div>
             <div className="mt-2 text-lg font-semibold">{reporter.name ?? "Anonymous"}</div>
             <div className="mt-1 font-mono text-2xl text-brand-700">{reporter.xp} XP</div>
             <div className="mt-3 text-xs text-ink-500">
-              Hit the next badge tier to mint your soulbound NFT.
+              {t("tracking.next_badge_hint")}
             </div>
           </div>
         )}
@@ -283,20 +288,22 @@ function LocationProvenance({ loc, ward }: { loc: LocationResolver; ward: string
 }
 
 function LocationProvenance({ loc, ward }: { loc: LocationResolver; ward: string | null }) {
-  const copy = SOURCE_COPY[loc.source] ?? SOURCE_COPY.unknown;
+  const { t } = useI18n();
+  const tone = SOURCE_TONE[loc.source] ?? "ink";
+  const label = t(`loc.${loc.source}`, loc.source);
   return (
     <div className="flex flex-wrap items-center gap-2 text-xs">
-      <Pill tone={copy.tone}>
-        <MapPin className="h-3 w-3" /> {copy.label}{ward ? ` · ${ward}` : ""}
+      <Pill tone={tone}>
+        <MapPin className="h-3 w-3" /> {label}{ward ? ` · ${ward}` : ""}
       </Pill>
       {loc.cross_check_km != null && (
         <span className="font-mono text-ink-500">EXIF ↔ browser: {loc.cross_check_km.toFixed(1)} km</span>
       )}
       {loc.flagged_for_review && (
-        <Pill tone="rose">flagged for ops review</Pill>
+        <Pill tone="rose">{t("loc.flagged_for_review")}</Pill>
       )}
       {loc.geocoded_display && (
-        <span className="text-ink-500 truncate">geocoded: “{loc.geocoded_display.slice(0, 80)}”</span>
+        <span className="text-ink-500 truncate">{loc.geocoded_display.slice(0, 80)}</span>
       )}
     </div>
   );
