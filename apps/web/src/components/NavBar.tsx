@@ -60,7 +60,7 @@ export function NavBar() {
           <Link
             key={n.href}
             href={n.href}
-            className="group flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-sm transition hover:bg-surface-hover"
+            className="group flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-[15px] transition hover:bg-surface-hover"
             style={{ color: "rgb(var(--text-secondary))" }}
           >
             <n.icon className="h-4 w-4 transition group-hover:text-accent" strokeWidth={2.25} />
@@ -73,16 +73,16 @@ export function NavBar() {
       {!token || !me ? (
         <Link
           href="/login"
-          className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-white"
+          className="flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-medium text-white"
           style={{ background: "rgb(var(--accent))" }}
         >
-          <LogIn className="h-3.5 w-3.5" /> Sign in
+          <LogIn className="h-4 w-4" /> Sign in
         </Link>
       ) : (
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setOpen((o) => !o)}
-            className="flex items-center gap-2 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs font-medium transition"
+            className="flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition"
             style={{
               background: "rgb(var(--bg-surface))",
               border: "1px solid rgb(var(--border-color))",
@@ -92,13 +92,13 @@ export function NavBar() {
             title="My Dashboard · wallet · sign out"
           >
             <span
-              className="relative grid h-5 w-5 place-items-center rounded-full text-[10px] font-semibold text-white"
+              className="relative grid h-6 w-6 place-items-center rounded-full text-[11px] font-semibold text-white"
               style={{ background: "rgb(var(--accent))" }}
             >
               {(me.name ?? me.username ?? "?")[0].toUpperCase()}
               {me.is_verifier && (
                 <Star
-                  className="absolute -right-1.5 -top-1.5 h-3 w-3 fill-amber-400 text-amber-500"
+                  className="absolute -right-1.5 -top-1.5 h-3.5 w-3.5 fill-amber-400 text-amber-500"
                   strokeWidth={2}
                   aria-label="Verifier"
                 />
