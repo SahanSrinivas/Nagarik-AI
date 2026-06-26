@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Community symbol: three people in a circle, joined at the centre.
+       Uses the rust accent (#bf4f36) over a transparent square so it
+       reads on both light and dark browser chrome. -->
+  <rect width="64" height="64" rx="14" fill="#bf4f36"/>
+
+  <!-- Centre dot — the shared anchor (the "civic" centre) -->
+  <circle cx="32" cy="32" r="3.2" fill="#ffffff"/>
+
+  <!-- Three figures, evenly spaced around the centre (0°, 120°, 240°) -->
+  <!-- Top figure (0°) -->
+  <circle cx="32" cy="14" r="5" fill="#ffffff"/>
+  <path d="M22 30c0-5.523 4.477-10 10-10s10 4.477 10 10" stroke="#ffffff" stroke-width="3" stroke-linecap="round" fill="none"/>
+
+  <!-- Bottom-left figure (240°) -->
+  <circle cx="16.4" cy="40.8" r="5" fill="#ffffff"/>
+  <path d="M9.4 51.3c1.43-4.96 6.04-8.66 11.39-9.06" stroke="#ffffff" stroke-width="3" stroke-linecap="round" fill="none"/>
+
+  <!-- Bottom-right figure (120°) -->
+  <circle cx="47.6" cy="40.8" r="5" fill="#ffffff"/>
+  <path d="M54.6 51.3c-1.43-4.96-6.04-8.66-11.39-9.06" stroke="#ffffff" stroke-width="3" stroke-linecap="round" fill="none"/>
+</svg>

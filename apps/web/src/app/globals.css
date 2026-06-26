@@ -1,11 +1,12 @@
+/* @import url('https://fonts.cdnfonts.com/css/neutra-text-alt');
+   ^ moved to <link rel="stylesheet"> in layout.tsx — PostCSS was stripping
+     this when it came after @tailwind. Loading via <head> is more reliable. */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @import "mapbox-gl/dist/mapbox-gl.css";
-
-/* Neutra Text Alt — same font as srinivassahankolluri.com */
-@import url('https://fonts.cdnfonts.com/css/neutra-text-alt');
 
 /* ──────────────────────────────────────────────────────────────────────
  * Theme system — light + dark, driven by the .dark class on <html>.

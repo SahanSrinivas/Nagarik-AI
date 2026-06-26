@@ -23,6 +23,10 @@ export const metadata: Metadata = {
   title: "NagarikAI — Hyperlocal Civic Problem Solver",
   description:
     "Multi-agent AI + MILP optimization for hyperlocal civic issues. Citizens report, 7 agents triage, an optimizer dispatches, a chain proves it.",
+  icons: {
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+    apple: "/favicon.svg",
+  },
 };
 
 const NAV = [
@@ -46,6 +50,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         {/* Set .dark BEFORE first paint to prevent theme FOUC. */}
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
+        {/* Neutra Text Alt — same font family as srinivassahankolluri.com.
+            Loading via <link> rather than CSS @import because Tailwind's
+            PostCSS pipeline silently dropped the @import after @tailwind. */}
+        <link
+          rel="stylesheet"
+          href="https://fonts.cdnfonts.com/css/neutra-text-alt"
+        />
       </head>
       <body className="font-sans">
         <Providers>
