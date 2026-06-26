@@ -141,7 +141,7 @@ export default function MarketingHome() {
             </h1>
           </Reveal>
           <Reveal>
-            <p className="mx-auto mt-5 max-w-2xl text-base text-ink-300 sm:text-lg">
+            <p className="mx-auto mt-5 max-w-2xl text-lg text-ink-300 sm:text-xl">
               A photo. Seven specialized AI agents. A MILP solver. A public chain.
               One Bengaluru pothole goes from "reported" to "verified-fixed" without
               a helpline, without a 6-step app — and the citizen watches the system
@@ -183,7 +183,7 @@ export default function MarketingHome() {
           <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
             Bengaluru's BBMP gets ~127,000 complaints in six months. 15% stay open.
           </h2>
-          <p className="mt-2 text-sm text-ink-600">
+          <p className="mt-3 text-base text-ink-600 sm:text-lg">
             Citizens have learned to distrust the apps that exist. Crews close tickets without fixing them. The system rewards activity, not outcomes.
           </p>
         </header>
@@ -195,8 +195,8 @@ export default function MarketingHome() {
                   style={{ background: "rgba(244, 63, 94, 0.15)", color: "#f43f5e" }}>
                   <p.icon className="h-5 w-5" />
                 </div>
-                <div className="mt-3 text-base font-semibold">{p.k}</div>
-                <p className="mt-1 text-sm text-ink-600">{p.v}</p>
+                <div className="mt-3 text-lg font-semibold">{p.k}</div>
+                <p className="mt-1 text-base text-ink-600">{p.v}</p>
               </motion.div>
             </Reveal>
           ))}
@@ -219,8 +219,8 @@ export default function MarketingHome() {
                   style={{ background: "rgba(191,79,54,0.15)", color: "rgb(var(--accent))" }}>
                   <s.icon className="h-5 w-5" />
                 </div>
-                <div className="mt-3 text-base font-semibold">{s.k}</div>
-                <p className="mt-1 text-sm text-ink-600">{s.v}</p>
+                <div className="mt-3 text-lg font-semibold">{s.k}</div>
+                <p className="mt-1 text-base text-ink-600">{s.v}</p>
               </motion.div>
             </Reveal>
           ))}
@@ -234,7 +234,7 @@ export default function MarketingHome() {
           <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
             8 issue types · 7 departments · 1 deterministic gate
           </h2>
-          <p className="mt-2 text-sm text-ink-600">
+          <p className="mt-3 text-base text-ink-600 sm:text-lg">
             Vision (Gemini 2.5 Flash) classifies your <strong>photo or short video</strong>
             into one of these 8 categories. The Triage agent&apos;s SOP table routes each
             to the right BBMP / BWSSB / BESCOM department with a default SLA. The
@@ -279,22 +279,22 @@ export default function MarketingHome() {
                 </span>
                 {/* Type name */}
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-semibold">{r.label}</div>
-                  <div className="font-mono text-[10px] text-ink-500">{r.type}</div>
+                  <div className="text-base font-semibold">{r.label}</div>
+                  <div className="font-mono text-[11px] text-ink-500">{r.type}</div>
                 </div>
                 {/* Arrow */}
                 <ArrowRight className="h-4 w-4 shrink-0 text-ink-300" />
                 {/* Department + SLA */}
                 <div className="min-w-0 flex-1 text-right">
-                  <div className="text-sm font-semibold">{r.dept}</div>
-                  <div className="text-[10px] text-ink-500">SLA · {r.sla}</div>
+                  <div className="text-base font-semibold">{r.dept}</div>
+                  <div className="text-[11px] text-ink-500">SLA · {r.sla}</div>
                 </div>
               </motion.div>
             </Reveal>
           ))}
         </Stagger>
 
-        <p className="mt-4 text-center text-xs text-ink-500">
+        <p className="mt-4 text-center text-sm text-ink-500">
           High-severity (≥ 4) reports auto-halve the SLA at runtime. e.g. a sev-4 pothole
           becomes 36h instead of 72h. See <Link href="/architecture" className="underline">/architecture</Link> for the gate's full decision tree.
         </p>
@@ -307,7 +307,7 @@ export default function MarketingHome() {
           <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
             Earn XP for every verified contribution
           </h2>
-          <p className="mt-2 text-sm text-ink-600">
+          <p className="mt-3 text-base text-ink-600 sm:text-lg">
             Reporting civic issues is a public good. NagarikAI rewards citizens who show up
             consistently — every submitted report, every neighbour-verification, every
             crew-verified fix bumps your XP. Hit a tier and a soulbound NFT badge lands in
@@ -328,8 +328,8 @@ export default function MarketingHome() {
                   style={{ background: "rgba(191,79,54,0.10)", color: "rgb(var(--accent))" }}>
                   <a.icon className="h-5 w-5" />
                 </div>
-                <div className="mt-3 text-base font-semibold">{a.k}</div>
-                <p className="mt-1 text-xs text-ink-600">{a.note}</p>
+                <div className="mt-3 text-lg font-semibold">{a.k}</div>
+                <p className="mt-1 text-sm text-ink-600">{a.note}</p>
               </motion.div>
             </Reveal>
           ))}
@@ -338,8 +338,8 @@ export default function MarketingHome() {
         {/* Badge ladder — Reporter → Civic Hero */}
         <div className="mt-8">
           <div className="mb-3 flex items-center justify-between gap-2">
-            <h3 className="text-sm font-semibold text-ink-700">Badge tiers — climb the ladder</h3>
-            <span className="text-xs text-ink-500">Each badge is a soulbound NFT (ERC-721, non-transferable)</span>
+            <h3 className="text-base font-semibold text-ink-700">Badge tiers — climb the ladder</h3>
+            <span className="text-sm text-ink-500">Each badge is a soulbound NFT (ERC-721, non-transferable)</span>
           </div>
           <Stagger step={0.04} className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
             {BADGE_TIERS.map((b, i) => (
@@ -356,16 +356,16 @@ export default function MarketingHome() {
                     }}>
                     <b.icon className="h-6 w-6" />
                   </div>
-                  <div className="mt-3 text-base font-semibold">{b.tier}</div>
-                  <div className="font-mono text-xs" style={{ color: "rgb(var(--accent))" }}>
+                  <div className="mt-3 text-lg font-semibold">{b.tier}</div>
+                  <div className="font-mono text-sm" style={{ color: "rgb(var(--accent))" }}>
                     {b.xp.toLocaleString("en-IN")} XP
                   </div>
-                  <p className="mt-1 text-[11px] text-ink-600">{b.desc}</p>
+                  <p className="mt-1 text-xs text-ink-600">{b.desc}</p>
                 </motion.div>
               </Reveal>
             ))}
           </Stagger>
-          <p className="mt-3 text-center text-xs text-ink-500">
+          <p className="mt-3 text-center text-sm text-ink-500">
             Demo account starts at <strong>125 XP</strong> — log in and you're already past your first milestone.
             See the live leaderboard on <Link href="/impact" className="underline">/impact</Link>.
           </p>
@@ -394,8 +394,8 @@ export default function MarketingHome() {
                   </span>
                   <span className="font-mono text-xs text-ink-400">0{i + 1}</span>
                 </div>
-                <div className="mt-2 text-sm font-semibold">{a.name}</div>
-                <p className="mt-1 text-xs text-ink-600">{a.sub}</p>
+                <div className="mt-2 text-base font-semibold">{a.name}</div>
+                <p className="mt-1 text-sm text-ink-600">{a.sub}</p>
               </motion.div>
             </Reveal>
           ))}
@@ -409,7 +409,7 @@ export default function MarketingHome() {
           <h2 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
             Citizens report. Crews fix. AI keeps both honest.
           </h2>
-          <p className="mt-2 max-w-2xl text-sm text-ink-600">
+          <p className="mt-3 max-w-2xl text-base text-ink-600 sm:text-lg">
             NagarikAI isn&apos;t a parallel BBMP. It&apos;s the front door for citizens and the
             inbox for departments — wired together so neither side can ghost the other.
           </p>
@@ -418,7 +418,7 @@ export default function MarketingHome() {
         {/* ──── Comparison table — For Citizens vs For Crew ──── */}
         <div className="overflow-hidden rounded-2xl border"
           style={{ borderColor: "rgb(var(--border-light))", background: "rgb(var(--bg-surface))" }}>
-          <table className="w-full text-sm">
+          <table className="w-full text-base">
             <thead>
               <tr style={{ background: "rgb(var(--bg-surface-hover))" }}>
                 <th className="w-44 p-3 text-left text-[10px] font-semibold uppercase tracking-wider"
@@ -457,12 +457,12 @@ export default function MarketingHome() {
               ].map((row, idx) => (
                 <tr key={row.dim}
                   style={{ borderTop: idx === 0 ? undefined : "1px solid rgb(var(--border-light))" }}>
-                  <td className="p-3 text-xs font-semibold uppercase tracking-wider"
+                  <td className="p-3 text-[11px] font-semibold uppercase tracking-wider"
                     style={{ color: "rgb(var(--text-muted))" }}>
                     {row.dim}
                   </td>
-                  <td className="p-3 text-sm" style={{ color: "rgb(var(--text-primary))" }}>{row.citizen}</td>
-                  <td className="p-3 text-sm" style={{ color: "rgb(var(--text-primary))" }}>{row.crew}</td>
+                  <td className="p-3 text-base" style={{ color: "rgb(var(--text-primary))" }}>{row.citizen}</td>
+                  <td className="p-3 text-base" style={{ color: "rgb(var(--text-primary))" }}>{row.crew}</td>
                 </tr>
               ))}
             </tbody>
@@ -481,7 +481,7 @@ export default function MarketingHome() {
                 style={{ color: "rgb(var(--accent))" }}>
                 <RefreshCw className="h-3 w-3" /> The closed loop
               </div>
-              <h3 className="mt-1 text-lg font-semibold">From snap to resolved — every step is acked or escalated</h3>
+              <h3 className="mt-1 text-xl font-semibold">From snap to resolved — every step is acked or escalated</h3>
             </div>
             <span className="text-[11px]" style={{ color: "rgb(var(--text-muted))" }}>
               ~10s pipeline · 60s SLA-watcher tick · citizen never has to follow up
@@ -544,7 +544,7 @@ export default function MarketingHome() {
               <ArrowRight className="h-3.5 w-3.5" style={{ color: "rgb(var(--text-muted))" }} />
               <EscalChip level="L3" body="+72h silent — RTI auto-draft" tone="red" icon={Siren} />
             </div>
-            <p className="mt-3 text-[11px]" style={{ color: "rgb(var(--text-muted))" }}>
+            <p className="mt-3 text-sm" style={{ color: "rgb(var(--text-muted))" }}>
               <code className="font-mono">apps/api/nagarik/jobs/sla_watcher.py</code> ticks every 60s.
               Every escalation writes a citizen notification — citizens always know exactly where their ticket is.
             </p>
@@ -553,26 +553,26 @@ export default function MarketingHome() {
           {/* CTAs into both portals */}
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
             <Link href="/login"
-              className="card-glow flex items-center gap-3 p-4 text-sm transition hover:opacity-90">
-              <span className="grid h-9 w-9 place-items-center rounded-xl text-white"
+              className="card-glow flex items-center gap-3 p-4 text-base transition hover:opacity-90">
+              <span className="grid h-10 w-10 place-items-center rounded-xl text-white"
                 style={{ background: "rgb(var(--accent))" }}>
-                <UserCheck className="h-4 w-4" />
+                <UserCheck className="h-5 w-5" />
               </span>
               <div>
                 <div className="font-semibold">Try the citizen side</div>
-                <div className="text-xs text-ink-600">/login — demo account preloaded · earn +5 XP per report</div>
+                <div className="text-sm text-ink-600">/login — demo account preloaded · earn +5 XP per report</div>
               </div>
               <ArrowRight className="ml-auto h-4 w-4 text-ink-400" />
             </Link>
             <Link href="/dept-login"
-              className="card-glow flex items-center gap-3 p-4 text-sm transition hover:opacity-90">
-              <span className="grid h-9 w-9 place-items-center rounded-xl text-white"
+              className="card-glow flex items-center gap-3 p-4 text-base transition hover:opacity-90">
+              <span className="grid h-10 w-10 place-items-center rounded-xl text-white"
                 style={{ background: "rgb(var(--accent))" }}>
-                <Building2 className="h-4 w-4" />
+                <Building2 className="h-5 w-5" />
               </span>
               <div>
                 <div className="font-semibold">Open the supervisor portal</div>
-                <div className="text-xs text-ink-600">/dept-login — 14 demo accounts · ack · escalate · dispatch log</div>
+                <div className="text-sm text-ink-600">/dept-login — 14 demo accounts · ack · escalate · dispatch log</div>
               </div>
               <ArrowRight className="ml-auto h-4 w-4 text-ink-400" />
             </Link>
@@ -586,7 +586,7 @@ export default function MarketingHome() {
         <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
           Try it — it takes 30 seconds.
         </h2>
-        <p className="mx-auto mt-2 max-w-xl text-sm text-ink-600">
+        <p className="mx-auto mt-3 max-w-xl text-base text-ink-600 sm:text-lg">
           A hackathon demo account is preloaded. Sign in, pick a Bengaluru ward, snap a photo,
           and watch all 7 agents fire in real time.
         </p>
