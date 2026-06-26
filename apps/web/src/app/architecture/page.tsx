@@ -85,7 +85,7 @@ export default function ArchitecturePage() {
           <h1 className="mt-3 text-3xl font-semibold tracking-tightest sm:text-4xl">
             One photo. Seven agents. Under ten seconds.
           </h1>
-          <p className="mx-auto mt-2 max-w-2xl text-sm text-ink-300">
+          <p className="mx-auto mt-3 max-w-2xl text-base text-ink-300 sm:text-lg">
             A citizen reports a civic issue. Specialised AI agents classify, dedup, route,
             verify, schedule (MILP), audit the fix, and forecast tomorrow's hotspots. Every
             agent's decision is auditable; an LLM never makes a load-bearing call without a
@@ -98,7 +98,7 @@ export default function ArchitecturePage() {
                   <div className="text-2xl font-semibold text-brand-300">
                     {s.precise ? s.value.toFixed(3) : <Counter to={s.value} suffix={s.suffix} />}
                   </div>
-                  <div className="mt-1 text-[10px] uppercase tracking-wider text-ink-400">{s.label}</div>
+                  <div className="mt-1 text-xs uppercase tracking-wider text-ink-400">{s.label}</div>
                 </div>
               </Reveal>
             ))}
@@ -109,7 +109,7 @@ export default function ArchitecturePage() {
       {/* CITIZEN FLOW */}
       <section className="card p-6">
         <h2 className="text-lg font-semibold tracking-tight">The citizen flow, end-to-end</h2>
-        <p className="mt-1 text-sm text-ink-600">What happens between "snap a photo" and "crew shows up".</p>
+        <p className="mt-2 text-base text-ink-600 sm:text-lg">What happens between &ldquo;snap a photo&rdquo; and &ldquo;crew shows up&rdquo;.</p>
         <div className="mt-4 grid gap-2 sm:grid-cols-5">
           {[
             { ic: Camera,       k: "1 · Report",   sub: "/report — photo + tap" },
@@ -122,8 +122,8 @@ export default function ArchitecturePage() {
                  style={s.k ? { borderColor: "rgb(var(--border-light))" } : undefined}>
               <s.ic className={`mx-auto ${s.k ? "h-5 w-5" : "h-4 w-4"}`}
                 style={{ color: s.k ? "rgb(var(--accent))" : "rgb(var(--text-muted))" }} />
-              {s.k && <div className="mt-2 text-xs font-semibold">{s.k}</div>}
-              {s.sub && <div className="mt-0.5 text-[11px] text-ink-500">{s.sub}</div>}
+              {s.k && <div className="mt-2 text-sm font-semibold">{s.k}</div>}
+              {s.sub && <div className="mt-0.5 text-xs text-ink-500">{s.sub}</div>}
             </div>
           ))}
         </div>
@@ -143,9 +143,9 @@ export default function ArchitecturePage() {
                   </span>
                   <span className="font-mono text-xs text-ink-400">0{a.n}</span>
                 </div>
-                <div className="mt-3 text-sm font-semibold">{a.name}</div>
-                <div className="mt-0.5 text-[11px] text-brand-700">{a.model}</div>
-                <p className="mt-2 text-xs text-ink-600">{a.desc}</p>
+                <div className="mt-3 text-base font-semibold">{a.name}</div>
+                <div className="mt-0.5 text-xs font-medium text-brand-700">{a.model}</div>
+                <p className="mt-2 text-sm text-ink-600">{a.desc}</p>
               </motion.div>
             </Reveal>
           ))}
@@ -158,11 +158,11 @@ export default function ArchitecturePage() {
           <Cpu className="h-5 w-5" style={{ color: "rgb(var(--accent))" }} />
           <h2 className="text-lg font-semibold tracking-tight">How MILP actually solves dispatch</h2>
         </div>
-        <p className="mt-1 text-sm text-ink-600">
+        <p className="mt-2 text-base text-ink-600 sm:text-lg">
           The single most important agent — and the easiest to misunderstand.
         </p>
         <div className="mt-4 grid gap-4 lg:grid-cols-[1.2fr_1fr]">
-          <div className="space-y-3 text-sm text-ink-700">
+          <div className="space-y-3 text-base text-ink-700">
             <p>
               At any moment Bengaluru has hundreds of open civic issues and a dozen BBMP
               crews. The naive answer is FIFO — assign each new issue to the first crew with
@@ -172,7 +172,7 @@ export default function ArchitecturePage() {
               <strong>MILP rearranges the day every time a new issue lands.</strong> It picks
               which crew visits which issues in what order, weighing the cost of:
             </p>
-            <ul className="ml-5 list-disc space-y-1 text-xs">
+            <ul className="ml-5 list-disc space-y-1 text-sm">
               <li><strong>Severity × lateness</strong> — a sev-5 sewage overflow is penalised 5× more than a sev-1 garbage report when running past SLA</li>
               <li><strong>Total km driven</strong> — bunches geographically close stops into one route</li>
               <li><strong>Unserved issues</strong> — pays a heavy penalty for tickets the day can't fit</li>
@@ -182,7 +182,7 @@ export default function ArchitecturePage() {
               shift hours. Solver: <strong>Google OR-Tools</strong>, branch-and-cut + guided
               local search, 15-second cap.
             </p>
-            <p className="text-xs italic text-ink-600">
+            <p className="text-sm italic text-ink-600">
               That's why your Hongasandra report showed{" "}
               <code className="font-mono">scheduled_for: ('7cae7e1c…', 0)</code> — crew 7cae,
               <strong> stop position 0</strong>. The MILP literally moved your high-severity
@@ -190,8 +190,8 @@ export default function ArchitecturePage() {
             </p>
           </div>
           <div className="rounded-2xl border p-4" style={{ borderColor: "rgb(var(--border-light))" }}>
-            <div className="text-xs uppercase tracking-wider text-ink-500">Real BBMP backtest</div>
-            <table className="mt-2 w-full text-xs">
+            <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "rgb(var(--accent))" }}>Real BBMP backtest</div>
+            <table className="mt-2 w-full text-sm">
               <thead className="text-ink-500">
                 <tr><th className="text-left">Load</th><th className="text-right">FIFO km</th><th className="text-right">MILP km</th><th className="text-right">Δ</th></tr>
               </thead>
@@ -201,7 +201,7 @@ export default function ArchitecturePage() {
                 <tr><td>800 / 12 crews</td><td className="text-right">1,019</td><td className="text-right">107</td><td className="text-right text-brand-700">−89.5%</td></tr>
               </tbody>
             </table>
-            <div className="mt-3 text-[11px] text-ink-500">
+            <div className="mt-3 text-xs text-ink-500">
               Same crews, same budget, smarter ordering. Reproducible via
               <code className="font-mono"> scripts/run_real_backtest.py</code>.
             </div>
@@ -215,17 +215,17 @@ export default function ArchitecturePage() {
           <TrendingUp className="h-5 w-5" style={{ color: "rgb(var(--accent))" }} />
           <h2 className="text-lg font-semibold tracking-tight">Predictive insights — forecasting tomorrow's hotspots</h2>
         </div>
-        <p className="mt-1 text-sm text-ink-600">
+        <p className="mt-2 text-base text-ink-600 sm:text-lg">
           What the 7th agent feeds, and how it closes the loop back to MILP.
         </p>
         <div className="mt-4 grid gap-4 lg:grid-cols-[1.2fr_1fr]">
-          <div className="space-y-3 text-sm text-ink-700">
+          <div className="space-y-3 text-base text-ink-700">
             <p>
               Every report logged into a panel of <strong>ward × month × rainfall_mm ×
               rainfall_lag1</strong>. We trained a HistGradientBoosting regressor on{" "}
               <strong>14,580 real ward-months</strong> of Bengaluru data (2021–2025):
             </p>
-            <pre className="overflow-auto rounded-xl bg-ink-950 p-3 font-mono text-[11px] text-brand-200">
+            <pre className="overflow-auto rounded-xl bg-ink-950 p-4 font-mono text-sm text-brand-200">
 {`log(road_complaints + 1) ~
    ward_FE + month_FE + rainfall_mm + rainfall_mm_lag1`}
             </pre>
@@ -238,21 +238,21 @@ export default function ArchitecturePage() {
               hotspot heatmap is its output — wards in red are predicted to spike, so the
               dispatcher pre-positions crews there instead of waiting for the citizen flood.
             </p>
-            <p className="text-xs italic text-ink-600">
+            <p className="text-sm italic text-ink-600">
               Closes the loop: <strong>your report</strong> nudges its ward's count up →{" "}
               <strong>predictor</strong> raises the heatmap there → <strong>MILP</strong> weights
               that ward heavier in tomorrow's solve — even before more reports come in.
             </p>
           </div>
           <div className="rounded-2xl border p-4" style={{ borderColor: "rgb(var(--border-light))" }}>
-            <div className="text-xs uppercase tracking-wider text-ink-500">What feeds the model</div>
-            <ul className="mt-2 space-y-2 text-xs">
+            <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "rgb(var(--accent))" }}>What feeds the model</div>
+            <ul className="mt-2 space-y-2 text-sm">
               <li><strong>14,580</strong> ward-month observations (real)</li>
               <li><strong>60</strong> months of Bengaluru rainfall (real IMD-style panel)</li>
               <li><strong>243</strong> KGIS ward polygons</li>
               <li>Every new report appended live by the Insights agent</li>
             </ul>
-            <div className="mt-3 text-[11px] text-ink-500">
+            <div className="mt-3 text-xs text-ink-500">
               Reproducible via <code className="font-mono">scripts/build_hotspots.py</code> →
               writes <code className="font-mono">data/processed/hotspots.geojson</code>{" "}
               consumed by <code className="font-mono">/map</code>.
@@ -269,7 +269,7 @@ export default function ArchitecturePage() {
             Hub &amp; spoke — how a ticket leaves NagarikAI
           </h2>
         </div>
-        <p className="mt-1 text-sm text-ink-600">
+        <p className="mt-2 text-base text-ink-600 sm:text-lg">
           We aren&apos;t a parallel BBMP. NagarikAI is the citizen front door + AI triage; each
           department keeps using whatever software they already have. Once Triage picks a
           department, <code className="font-mono">delivery.py</code> pushes the ticket
@@ -284,10 +284,10 @@ export default function ArchitecturePage() {
             {/* LEFT — NagarikAI hub */}
             <div className="rounded-xl p-4 text-center"
               style={{ background: "rgba(191, 79, 54, 0.08)", border: "1px solid rgba(191, 79, 54, 0.30)" }}>
-              <div className="text-[10px] uppercase tracking-wider"
+              <div className="text-xs font-semibold uppercase tracking-wider"
                 style={{ color: "rgb(var(--accent))" }}>The hub (us)</div>
-              <div className="mt-1 text-sm font-semibold">NagarikAI</div>
-              <ul className="mt-2 space-y-1 text-left text-[11px]" style={{ color: "rgb(var(--text-secondary))" }}>
+              <div className="mt-1 text-base font-semibold">NagarikAI</div>
+              <ul className="mt-2 space-y-1 text-left text-sm" style={{ color: "rgb(var(--text-secondary))" }}>
                 <li>· Citizen submit (photo / video / location)</li>
                 <li>· 7-agent triage loop</li>
                 <li>· MILP scheduler</li>
@@ -299,7 +299,7 @@ export default function ArchitecturePage() {
             {/* MIDDLE — arrow + channel labels */}
             <div className="flex flex-col items-center justify-center gap-2 py-2">
               <ArrowRight className="hidden h-6 w-6 lg:block" style={{ color: "rgb(var(--text-muted))" }} />
-              <div className="text-[10px] uppercase tracking-wider"
+              <div className="text-xs font-semibold uppercase tracking-wider"
                 style={{ color: "rgb(var(--text-muted))" }}>
                 primary_channel
               </div>
@@ -327,7 +327,7 @@ export default function ArchitecturePage() {
         <div className="mt-5">
           <div className="flex items-center gap-2">
             <Siren className="h-4 w-4" style={{ color: "rgb(var(--accent))" }} />
-            <h3 className="text-sm font-semibold">Escalation ladder — what happens when the dept goes silent</h3>
+            <h3 className="text-base font-semibold sm:text-lg">Escalation ladder — what happens when the dept goes silent</h3>
           </div>
           <div className="mt-3 grid gap-2 sm:grid-cols-4">
             <Step label="Level 0" body="Nominal. Sent via primary_channel. Acked_at expected within SLA." />
@@ -335,7 +335,7 @@ export default function ArchitecturePage() {
             <Step label="Level 2" body="24h after L1 with no ack. Ward councillor looped in." tone="amber" />
             <Step label="Level 3" body="72h after L2. RTI auto-draft generated; citizen one-tap-files." tone="red" />
           </div>
-          <p className="mt-3 text-[11px]" style={{ color: "rgb(var(--text-muted))" }}>
+          <p className="mt-3 text-sm" style={{ color: "rgb(var(--text-muted))" }}>
             Runs every 60s in <code className="font-mono">apps/api/nagarik/jobs/sla_watcher.py</code>.
             Every state change writes a citizen notification — they always know where their ticket stands.
           </p>
@@ -351,9 +351,9 @@ export default function ArchitecturePage() {
         <Stagger step={0.03} className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {STACK.map((s) => (
             <Reveal key={s.layer}>
-              <div className="rounded-xl border p-3 text-xs"
+              <div className="rounded-xl border p-4 text-sm"
                 style={{ borderColor: "rgb(var(--border-light))" }}>
-                <div className="text-[10px] uppercase tracking-wider text-ink-500">{s.layer}</div>
+                <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "rgb(var(--accent))" }}>{s.layer}</div>
                 <div className="mt-1 font-mono text-ink-800">{s.items}</div>
               </div>
             </Reveal>
@@ -363,24 +363,24 @@ export default function ArchitecturePage() {
 
       {/* CTAs */}
       <div className="grid gap-3 sm:grid-cols-3">
-        <a href="/agents" className="card-glow block p-4 text-sm">
+        <a href="/agents" className="card-glow block p-5 text-base">
           <Database className="mb-2 h-4 w-4" style={{ color: "rgb(var(--accent))" }} />
           <div className="font-semibold">Live agent pipeline</div>
-          <div className="mt-0.5 text-xs text-ink-600">/agents — SSE stream with citizen-friendly cards</div>
+          <div className="mt-1 text-sm text-ink-600">/agents — SSE stream with citizen-friendly cards</div>
         </a>
-        <a href="/milp" className="card-glow block p-4 text-sm">
+        <a href="/milp" className="card-glow block p-5 text-base">
           <Cpu className="mb-2 h-4 w-4" style={{ color: "rgb(var(--accent))" }} />
           <div className="font-semibold">MILP optimizer</div>
-          <div className="mt-0.5 text-xs text-ink-600">/milp — solve a day · compare vs FIFO</div>
+          <div className="mt-1 text-sm text-ink-600">/milp — solve a day · compare vs FIFO</div>
         </a>
-        <a href="/test-photos" className="card-glow block p-4 text-sm">
+        <a href="/test-photos" className="card-glow block p-5 text-base">
           <Sparkles className="mb-2 h-4 w-4" style={{ color: "rgb(var(--accent))" }} />
           <div className="font-semibold">Test photos</div>
-          <div className="mt-0.5 text-xs text-ink-600">/test-photos — real pothole pairs + 6 category cards</div>
+          <div className="mt-1 text-sm text-ink-600">/test-photos — real pothole pairs + 6 category cards</div>
         </a>
       </div>
 
-      <div className="border-t pt-6 text-center text-xs text-ink-500"
+      <div className="border-t pt-6 text-center text-sm text-ink-500"
         style={{ borderColor: "rgb(var(--border-light))" }}>
         Built for the Coding Ninjas Community Hero challenge. Full implementation provenance
         in <code className="font-mono">docs/PITCH.md</code>, <code className="font-mono"> REAL_DATA.md</code>,
@@ -403,11 +403,11 @@ function SpokeRow({ icon: Icon, channel, depts, note }:
       </span>
       <div className="min-w-0">
         <div className="flex items-center gap-1.5">
-          <span className="text-xs font-semibold">{channel}</span>
-          <span className="text-[10px]" style={{ color: "rgb(var(--text-muted))" }}>→</span>
-          <span className="truncate text-[10px]" style={{ color: "rgb(var(--text-secondary))" }}>{depts}</span>
+          <span className="text-sm font-semibold">{channel}</span>
+          <span className="text-xs" style={{ color: "rgb(var(--text-muted))" }}>→</span>
+          <span className="truncate text-xs" style={{ color: "rgb(var(--text-secondary))" }}>{depts}</span>
         </div>
-        <div className="mt-0.5 text-[11px]" style={{ color: "rgb(var(--text-muted))" }}>{note}</div>
+        <div className="mt-1 text-sm" style={{ color: "rgb(var(--text-muted))" }}>{note}</div>
       </div>
     </div>
   );
@@ -423,8 +423,8 @@ function Step({ label, body, tone = "ink" }:
   const t = tones[tone];
   return (
     <div className="rounded-xl p-3" style={{ background: t.bg, border: `1px solid ${t.border}` }}>
-      <div className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: t.pill }}>{label}</div>
-      <div className="mt-1 text-xs" style={{ color: "rgb(var(--text-primary))" }}>{body}</div>
+      <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: t.pill }}>{label}</div>
+      <div className="mt-1.5 text-sm" style={{ color: "rgb(var(--text-primary))" }}>{body}</div>
     </div>
   );
 }

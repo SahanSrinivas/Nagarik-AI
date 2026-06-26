@@ -41,8 +41,7 @@ export default function ImpactPage() {
               <Link href={`/wallet/${c.id}`} className="block">
                 <motion.div
                   whileHover={{ y: -3 }}
-                  className="card p-6 text-center"
-                  style={{ background: i === 0 ? "linear-gradient(180deg, #ecfdf5 0%, #ffffff 60%)" : undefined }}
+                  className={`card p-6 text-center ${i === 0 ? "podium-leader" : ""}`}
                 >
                   <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-glow">
                     <Award className="h-6 w-6" />

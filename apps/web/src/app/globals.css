@@ -311,6 +311,20 @@
   border-color: rgb(var(--border-color));
 }
 
+/* /impact podium leader card — theme-aware glow.
+ * Previous version hard-coded #ecfdf5 → #ffffff which turned the
+ * dark-mode card into a white slab with invisible white text. */
+.podium-leader {
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.10) 0%, rgb(var(--bg-surface)) 60%);
+  border-color: rgba(16, 185, 129, 0.40);
+  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.18), 0 8px 32px rgba(16, 185, 129, 0.10);
+}
+.dark .podium-leader {
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.22) 0%, rgb(var(--bg-surface)) 60%);
+  border-color: rgba(16, 185, 129, 0.55);
+  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.35), 0 8px 32px rgba(16, 185, 129, 0.20);
+}
+
 /* Scrollbar — match the theme so it doesn't pop out as a bright bar. */
 .dark ::-webkit-scrollbar          { width: 10px; height: 10px; }
 .dark ::-webkit-scrollbar-track    { background: rgb(var(--bg-canvas)); }
