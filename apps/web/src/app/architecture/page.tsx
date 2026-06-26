@@ -125,7 +125,7 @@ export default function ArchitecturePage() {
 
       {/* 7 AGENTS */}
       <section>
-        <h2 className="mb-3 text-lg font-semibold tracking-tight">The 7 agents (in plain language)</h2>
+        <h2 className="mb-3 text-lg font-semibold tracking-tight">The 7 agents</h2>
         <Stagger step={0.05} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {AGENTS.map((a) => (
             <Reveal key={a.n}>

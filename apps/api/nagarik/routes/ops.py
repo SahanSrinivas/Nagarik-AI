@@ -26,6 +26,43 @@ from nagarik.models import Issue, IssueStatus
 router = APIRouter(prefix="/ops", tags=["ops"])
 
 
+@router.get("/crews-summary")
+def crews_summary(db: Session = Depends(get_db)) -> dict:
+    """Crew index for /crew — every active crew with today's open count."""
+    from datetime import date, datetime, time, timezone
+    from sqlalchemy import func
+
+    from nagarik.models import Crew
+
+    today = date.today()
+    start = datetime.combine(today, time(0, 0), tzinfo=timezone.utc)
+    end = datetime.combine(today, time(23, 59, 59), tzinfo=timezone.utc)
+
+    counts_q = (
+        select(Issue.assigned_crew_id, func.count(Issue.id))
+        .where(
+            Issue.status.in_([IssueStatus.SCHEDULED, IssueStatus.IN_PROGRESS]),
+            Issue.scheduled_at.between(start, end),
+        )
+        .group_by(Issue.assigned_crew_id)
+    )
+    counts = {r[0]: r[1] for r in db.execute(counts_q).all()}
+
+    crews = db.scalars(select(Crew).where(Crew.is_active.is_(True)).order_by(Crew.name)).all()
+    return {
+        "crews": [
+            {
+                "id": str(c.id),
+                "name": c.name,
+                "department": c.department,
+                "skills": list(c.skills or []),
+                "open_today": int(counts.get(c.id, 0)),
+            }
+            for c in crews
+        ],
+    }
+
+
 @router.get("/flagged")
 def list_flagged(
     limit: int = Query(50, le=200),
