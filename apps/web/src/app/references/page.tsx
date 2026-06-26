@@ -13,11 +13,13 @@ import {
   Image as ImageIcon,
   MapPinned,
   Play,
+  ShieldCheck,
   Sparkles,
   Target,
   TrendingUp,
   Truck,
   Video,
+  XCircle,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -596,11 +598,39 @@ interface OptimizationData {
   cleared_by_department: Record<string, number>;
 }
 
+interface PhotoCasesData {
+  cnn: {
+    arch: string;
+    n_train: number; n_val: number; n_test: number;
+    train_acc: number; val_acc: number; test_acc: number;
+    data: string;
+  };
+  cases: {
+    id: string; title: string; ward: string;
+    defect_reported: number; defect_resolved: number;
+    scene_similarity: number; verdict: string; distance_m: number;
+  }[];
+}
+
+interface ValidationMetrics {
+  source: string;
+  n_rows: number;
+  gate_actions: { APPROVE: number; CLAMP: number; BLOCK: number };
+  gate_action_pct: { APPROVE: number; CLAMP: number; BLOCK: number };
+  false_closures: { reopened: number; reopened_pct: number };
+  misroute: { rate_pct: number; count: number; vs_known: { precision: number; recall: number; f1: number } };
+  clamp_breakdown: Record<string, number>;
+  pii_flagged: number;
+  geo_out_of_bounds: number;
+}
+
 function DatasetCharts() {
   const [monthly, setMonthly] = useState<MonthlyData | null>(null);
   const [backlog, setBacklog] = useState<BacklogData | null>(null);
   const [forecast, setForecast] = useState<ForecastData | null>(null);
   const [optz, setOptz] = useState<OptimizationData | null>(null);
+  const [cnn, setCnn] = useState<PhotoCasesData | null>(null);
+  const [gate, setGate] = useState<ValidationMetrics | null>(null);
   const [year, setYear] = useState<string>("all");
 
   useEffect(() => {
@@ -608,6 +638,8 @@ function DatasetCharts() {
     fetch("/data/ward_backlog.json").then((r) => r.json()).then(setBacklog).catch(() => {});
     fetch("/data/forecast.json").then((r) => r.json()).then(setForecast).catch(() => {});
     fetch("/data/optimization.json").then((r) => r.json()).then(setOptz).catch(() => {});
+    fetch("/data/photo_cases.json").then((r) => r.json()).then(setCnn).catch(() => {});
+    fetch("/data/validation_metrics.json").then((r) => r.json()).then(setGate).catch(() => {});
   }, []);
 
   // List of years derived from the monthly data — for the dropdown.
@@ -794,7 +826,143 @@ function DatasetCharts() {
           </ChartCard>
         </div>
       )}
+
+      {/* ─── CNN closure verification — proves Agent 6 actually catches fake fixes ─── */}
+      {cnn && (
+        <div className="mt-5 grid gap-5 lg:grid-cols-2">
+          <ChartCard
+            icon={ShieldCheck}
+            title="Pothole CNN — closure verification accuracy"
+            subtitle={`3-conv + GAP + FC · ${cnn.cnn.n_train + cnn.cnn.n_val + cnn.cnn.n_test} images split ${cnn.cnn.n_train}/${cnn.cnn.n_val}/${cnn.cnn.n_test}`}
+            source="photo_cases.json"
+          >
+            <div className="space-y-4">
+              {/* Train / val / test accuracy bars */}
+              <div className="space-y-2">
+                {[
+                  { name: "train", acc: cnn.cnn.train_acc, n: cnn.cnn.n_train, color: "#2563eb" },
+                  { name: "val",   acc: cnn.cnn.val_acc,   n: cnn.cnn.n_val,   color: "rgb(var(--accent))" },
+                  { name: "test",  acc: cnn.cnn.test_acc,  n: cnn.cnn.n_test,  color: "#10b981" },
+                ].map((row) => (
+                  <div key={row.name}>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-mono uppercase tracking-wider" style={{ color: "rgb(var(--text-muted))" }}>
+                        {row.name} · n={row.n.toLocaleString()}
+                      </span>
+                      <span className="font-mono font-semibold">{(row.acc * 100).toFixed(1)}%</span>
+                    </div>
+                    <div className="mt-1 h-3 overflow-hidden rounded-md"
+                      style={{ background: "rgb(var(--bg-surface-hover))" }}>
+                      <div className="h-full rounded-md" style={{ width: `${row.acc * 100}%`, background: row.color }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Real case outcomes — defect score: reported (red) → resolved (green) */}
+              <div>
+                <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider"
+                  style={{ color: "rgb(var(--accent))" }}>
+                  Live cases · before-photo defect score → after-photo defect score
+                </div>
+                <div className="space-y-1.5">
+                  {cnn.cases.map((c) => {
+                    const verdictOk = c.verdict === "VERIFIED";
+                    return (
+                      <div key={c.id}
+                        className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs"
+                        style={{
+                          background: verdictOk ? "rgba(16, 185, 129, 0.08)" : "rgba(220, 38, 38, 0.08)",
+                          border: `1px solid ${verdictOk ? "rgba(16, 185, 129, 0.30)" : "rgba(220, 38, 38, 0.30)"}`,
+                        }}>
+                        {verdictOk
+                          ? <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
+                          : <XCircle className="h-3.5 w-3.5 shrink-0 text-rose-600" />}
+                        <span className="min-w-0 flex-1 truncate font-medium">{c.title}</span>
+                        <span className="hidden font-mono tabular-nums sm:inline" style={{ color: "rgb(var(--text-muted))" }}>
+                          {c.ward}
+                        </span>
+                        <span className="flex items-center gap-1 font-mono tabular-nums">
+                          <span className="rounded bg-rose-100 px-1 text-rose-700">{c.defect_reported.toFixed(2)}</span>
+                          →
+                          <span className={`rounded px-1 ${c.defect_resolved < 0.35 ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
+                            {c.defect_resolved.toFixed(2)}
+                          </span>
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="mt-2 text-[11px]" style={{ color: "rgb(var(--text-muted))" }}>
+                  Threshold: defect &lt; 0.35 = fix verified · ≥ 0.60 = closure rejected. Scene-similarity gate (CLIP) runs first.
+                </p>
+              </div>
+            </div>
+          </ChartCard>
+
+          {/* Guardrail gate actions — APPROVE / CLAMP / BLOCK from 126,974 real complaints */}
+          {gate && (
+            <ChartCard
+              icon={Target}
+              title="Guardrail gate · 126,974 real complaints replayed"
+              subtitle={`${gate.gate_action_pct.APPROVE}% approved · ${gate.gate_action_pct.CLAMP}% clamped · ${gate.gate_action_pct.BLOCK}% blocked`}
+              source="validation_metrics.json"
+            >
+              <div className="space-y-4">
+                <div>
+                  <div className="flex h-8 w-full overflow-hidden rounded-lg">
+                    <div title={`APPROVE ${gate.gate_action_pct.APPROVE}%`}
+                      style={{ width: `${gate.gate_action_pct.APPROVE}%`, background: "#10b981" }} />
+                    <div title={`CLAMP ${gate.gate_action_pct.CLAMP}%`}
+                      style={{ width: `${gate.gate_action_pct.CLAMP}%`, background: "#f59e0b" }} />
+                    <div title={`BLOCK ${gate.gate_action_pct.BLOCK}%`}
+                      style={{ width: `${gate.gate_action_pct.BLOCK}%`, background: "#dc2626" }} />
+                  </div>
+                  <div className="mt-3 grid grid-cols-3 gap-3 text-xs">
+                    {[
+                      { name: "Approved", n: gate.gate_actions.APPROVE, pct: gate.gate_action_pct.APPROVE, color: "#10b981" },
+                      { name: "Clamped",  n: gate.gate_actions.CLAMP,   pct: gate.gate_action_pct.CLAMP,   color: "#f59e0b" },
+                      { name: "Blocked",  n: gate.gate_actions.BLOCK,   pct: gate.gate_action_pct.BLOCK,   color: "#dc2626" },
+                    ].map((a) => (
+                      <div key={a.name} className="rounded-lg p-2.5"
+                        style={{ background: "rgb(var(--bg-surface-hover))", border: "1px solid rgb(var(--border-light))" }}>
+                        <div className="flex items-center gap-1.5">
+                          <span className="h-2 w-2 rounded-full" style={{ background: a.color }} />
+                          <span className="text-[11px] uppercase tracking-wider" style={{ color: "rgb(var(--text-muted))" }}>{a.name}</span>
+                        </div>
+                        <div className="mt-1 font-mono text-base font-semibold">{a.n.toLocaleString()}</div>
+                        <div className="font-mono text-[11px]" style={{ color: "rgb(var(--text-muted))" }}>{a.pct.toFixed(2)}%</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Extra small KPIs row */}
+                <div className="grid grid-cols-2 gap-3 text-xs sm:grid-cols-3">
+                  <KPISmall label="Misroute rate" value={`${gate.misroute.rate_pct.toFixed(2)}%`}
+                    sub={`F1 ${gate.misroute.vs_known.f1.toFixed(2)} vs known`} />
+                  <KPISmall label="Reopened (false fixes)" value={gate.false_closures.reopened.toLocaleString()}
+                    sub={`${gate.false_closures.reopened_pct.toFixed(1)}% of closed`} />
+                  <KPISmall label="PII flagged" value={gate.pii_flagged.toLocaleString()}
+                    sub={`${gate.geo_out_of_bounds} out-of-bounds`} />
+                </div>
+              </div>
+            </ChartCard>
+          )}
+        </div>
+      )}
     </section>
+  );
+}
+
+function KPISmall({ label, value, sub }: { label: string; value: string; sub?: string }) {
+  return (
+    <div className="rounded-lg p-2.5"
+      style={{ background: "rgb(var(--bg-surface-hover))", border: "1px solid rgb(var(--border-light))" }}>
+      <div className="text-[10px] uppercase tracking-wider" style={{ color: "rgb(var(--text-muted))" }}>{label}</div>
+      <div className="mt-0.5 font-mono text-base font-semibold">{value}</div>
+      {sub && <div className="font-mono text-[10px]" style={{ color: "rgb(var(--text-muted))" }}>{sub}</div>}
+    </div>
   );
 }
 
