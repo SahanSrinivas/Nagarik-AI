@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
 import Link from "next/link";
 import {
   Activity,
@@ -16,11 +15,9 @@ import {
 
 import { Brand } from "@/components/Brand";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { THEME_BOOT_SCRIPT, ThemeToggle } from "@/components/ThemeToggle";
 import { Providers } from "./providers";
 import "./globals.css";
-
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
-const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", display: "swap" });
 
 export const metadata: Metadata = {
   title: "NagarikAI — Hyperlocal Civic Problem Solver",
@@ -45,10 +42,20 @@ const NAV = [
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${mono.variable}`}>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Set .dark BEFORE first paint to prevent theme FOUC. */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
+      </head>
       <body className="font-sans">
         <Providers>
-          <header className="sticky top-0 z-40 border-b border-ink-200/60 bg-white/70 backdrop-blur-xl">
+          <header
+            className="sticky top-0 z-40 border-b backdrop-blur-xl"
+            style={{
+              borderColor: "rgb(var(--border-light))",
+              backgroundColor: "rgb(var(--bg-canvas) / 0.72)",
+            }}
+          >
             <div className="container flex h-16 items-center justify-between gap-3">
               <Link href="/" aria-label="NagarikAI home">
                 <Brand />
@@ -58,14 +65,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <Link
                     key={n.href}
                     href={n.href}
-                    className="group flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-ink-600 transition hover:bg-ink-100 hover:text-ink-900"
+                    className="group flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm transition hover:bg-surface-hover"
+                    style={{ color: "rgb(var(--text-secondary))" }}
                   >
-                    <n.icon className="h-4 w-4 text-ink-400 transition group-hover:text-brand-600" strokeWidth={2.25} />
+                    <n.icon className="h-4 w-4 transition group-hover:text-accent" strokeWidth={2.25} />
                     {n.label}
                   </Link>
                 ))}
               </nav>
               <div className="flex items-center gap-2">
+                <ThemeToggle />
                 <LanguageSwitcher />
                 <div className="md:hidden">
                   <MobileNav />
@@ -74,7 +83,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
           </header>
           <main className="container py-8 md:py-12">{children}</main>
-          <footer className="border-t border-ink-200/60 bg-white/70 py-8 text-center text-xs text-ink-500">
+          <footer
+            className="border-t py-8 text-center text-xs"
+            style={{
+              borderColor: "rgb(var(--border-light))",
+              color: "rgb(var(--text-muted))",
+              backgroundColor: "rgb(var(--bg-surface) / 0.5)",
+            }}
+          >
             NagarikAI · multi-agent civic OS for hyperlocal India · {new Date().getFullYear()}
           </footer>
         </Providers>
