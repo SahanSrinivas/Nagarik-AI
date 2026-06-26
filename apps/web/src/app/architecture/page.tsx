@@ -280,7 +280,7 @@ export default function ArchitecturePage() {
         {/* ASCII-style hub-and-spoke map */}
         <div className="mt-5 rounded-2xl p-5"
           style={{ background: "rgb(var(--bg-canvas))", border: "1px solid rgb(var(--border-light))" }}>
-          <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-[1fr_60px_1fr]">
+          <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-[1fr_120px_1fr]">
             {/* LEFT — NagarikAI hub */}
             <div className="rounded-xl p-4 text-center"
               style={{ background: "rgba(191, 79, 54, 0.08)", border: "1px solid rgba(191, 79, 54, 0.30)" }}>
@@ -299,9 +299,9 @@ export default function ArchitecturePage() {
             {/* MIDDLE — arrow + channel labels */}
             <div className="flex flex-col items-center justify-center gap-2 py-2">
               <ArrowRight className="hidden h-6 w-6 lg:block" style={{ color: "rgb(var(--text-muted))" }} />
-              <div className="text-xs font-semibold uppercase tracking-wider"
-                style={{ color: "rgb(var(--text-muted))" }}>
-                primary_channel
+              <div className="whitespace-nowrap text-xs font-semibold uppercase tracking-wider"
+                style={{ color: "rgb(var(--accent))" }}>
+                routes via
               </div>
             </div>
 
@@ -330,7 +330,7 @@ export default function ArchitecturePage() {
             <h3 className="text-base font-semibold sm:text-lg">Escalation ladder — what happens when the dept goes silent</h3>
           </div>
           <div className="mt-3 grid gap-2 sm:grid-cols-4">
-            <Step label="Level 0" body="Nominal. Sent via primary_channel. Acked_at expected within SLA." />
+            <Step label="Level 0" body="Nominal. Sent via the dept's primary channel. Acknowledgement expected within SLA." />
             <Step label="Level 1" body="SLA breached. Re-dispatch to supervisor's personal phone. Citizen notified." tone="amber" />
             <Step label="Level 2" body="24h after L1 with no ack. Ward councillor looped in." tone="amber" />
             <Step label="Level 3" body="72h after L2. RTI auto-draft generated; citizen one-tap-files." tone="red" />

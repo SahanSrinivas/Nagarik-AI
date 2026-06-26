@@ -41,6 +41,13 @@
   }
 
   html, body { height: 100%; }
+  /* Base font-size — Tailwind's defaults are rem-relative, so bumping html
+   * from 16px to 17px enlarges every text-xs/sm/base/lg etc. by ~6%
+   * proportionally. Keeps layout intact while making the whole app feel
+   * a notch more readable. */
+  html {
+    font-size: 17px;
+  }
   body {
     font-family: 'Neutra Text Alt', system-ui, -apple-system, sans-serif;
     background-color: rgb(var(--bg-canvas));
