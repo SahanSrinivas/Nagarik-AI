@@ -19,6 +19,7 @@ class IssueCreate(BaseModel):
     description: str = ""
     before_photo_url: str | None = None  # client uploads to Supabase, then sends URL
     before_video_url: str | None = None  # short clip — Gemini Files API
+    whatsapp_number: str | None = Field(default=None, max_length=20)  # optional WhatsApp opt-in
 
 
 class IssueRead(BaseModel):

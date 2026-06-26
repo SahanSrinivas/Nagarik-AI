@@ -71,7 +71,24 @@ def tracking(
         except (TypeError, ValueError):
             bbox = None
 
+    # WhatsApp fanout markers for this issue — let the UI render
+    # 'forwarded to WhatsApp at HH:MM' next to each timeline event.
+    from nagarik.whatsapp import recent_log_for_issue
+    wa_log = recent_log_for_issue(str(issue.id), limit=50)
+    wa_by_kind: dict[str, dict] = {}
+    for entry in wa_log:
+        k = entry.get("kind")
+        if k:
+            wa_by_kind[k] = {
+                "logged_at": entry.get("logged_at"),
+                "status": entry.get("status"),
+                "to": entry.get("to"),
+            }
+
     return {
+        "whatsapp_opt_in": bool(getattr(issue, "whatsapp_number", None)),
+        "whatsapp_to": getattr(issue, "whatsapp_number", None),
+        "whatsapp_by_kind": wa_by_kind,
         "issue": {
             "id": str(issue.id),
             "type": getattr(issue.type, "value", str(issue.type)),

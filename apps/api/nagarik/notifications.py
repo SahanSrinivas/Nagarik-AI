@@ -96,7 +96,22 @@ def emit(
         db.add(n)
         db.commit()
         db.refresh(n)
-        return n
+        # Cache the id as a plain string BEFORE the session closes — otherwise
+        # accessing issue.id after the with-block triggers a lazy refresh on a
+        # detached instance and crashes the fanout (sqlalchemy.exc.DetachedInstanceError).
+        issue_id_str = str(issue.id)
+
+    # Fan out the same kind to WhatsApp if the citizen opted in on /report.
+    # Imported lazily + wrapped in try/except so a misconfigured provider
+    # never blocks the in-DB notification (which the UI polls anyway).
+    try:
+        from nagarik.whatsapp import send_citizen_update
+        send_citizen_update(issue_id_str, kind, extras=ctx)
+    except Exception as exc:  # noqa: BLE001
+        import logging
+        logging.getLogger(__name__).warning("whatsapp fanout failed for %s: %s", kind, exc)
+
+    return n
 
 
 def _safe_format(template: str, ctx: dict[str, Any]) -> str:

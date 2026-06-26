@@ -138,6 +138,7 @@ def create_issue(
         description=payload.description,
         before_photo_url=payload.before_photo_url,
         before_video_url=payload.before_video_url,
+        whatsapp_number=(payload.whatsapp_number or "").strip() or None,
         ai_classification={
             "location_resolver": {
                 "source": resolved.source,

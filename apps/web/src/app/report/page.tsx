@@ -1,6 +1,7 @@
 "use client";
 
-import { ArrowRight, Camera, CheckCircle2, FlaskConical, MapPin, ShieldAlert, Upload, Video } from "lucide-react";
+import { motion } from "framer-motion";
+import { ArrowRight, Camera, CheckCircle2, FlaskConical, MapPin, MessageCircle, ShieldAlert, Upload, Video } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -64,6 +65,9 @@ export default function ReportPage() {
   const [err, setErr] = useState<string | null>(null);
   const [coverage, setCoverage] = useState<CoverageResult | null>(null);
 
+  // Optional WhatsApp opt-in. Stored per-issue so anonymous citizens work too.
+  const [whatsapp, setWhatsapp] = useState("");
+
   function locate() {
     if (!navigator.geolocation) return setErr(t("report.err_geolocation_unsupported"));
     navigator.geolocation.getCurrentPosition(
@@ -116,6 +120,7 @@ export default function ReportPage() {
           lat, lng, description: desc,
           before_photo_url: evidenceKind === "photo" ? photoUrl : null,
           before_video_url: evidenceKind === "video" ? videoUrl : null,
+          whatsapp_number: whatsapp.trim() || null,
         }),
       });
       if (!r.ok) {
@@ -161,6 +166,21 @@ export default function ReportPage() {
             </Link>
           </div>
           <p className="mt-3 text-xs text-ink-500">+5 XP earned for this submission.</p>
+
+          {whatsapp.trim() && (
+            <div
+              className="mt-4 mx-auto inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs"
+              style={{
+                background: "rgba(37, 211, 102, 0.10)",
+                border: "1px solid rgba(37, 211, 102, 0.45)",
+                color: "#15803d",
+              }}
+            >
+              <MessageCircle className="h-3.5 w-3.5" />
+              WhatsApp updates will land at{" "}
+              <code className="font-mono">{whatsapp.trim()}</code> at every step.
+            </div>
+          )}
         </div>
       </div>
     );
@@ -319,6 +339,55 @@ export default function ReportPage() {
             placeholder={t("report.description_placeholder")}
           />
         </label>
+
+        {/* WhatsApp opt-in — animated 'shaky bump' on mount to draw the eye.
+            Captures the citizen's number per-issue so anonymous reports work
+            too. The backend fans every status notification out to WhatsApp
+            via nagarik/whatsapp.py (Meta / AiSensy / Gupshup). */}
+        <motion.div
+          initial={{ x: 0 }}
+          animate={{ x: [0, -6, 6, -4, 4, -2, 0] }}
+          transition={{ delay: 0.6, duration: 0.7, ease: "easeInOut" }}
+          className="rounded-2xl p-4"
+          style={{
+            background: "linear-gradient(135deg, rgba(37, 211, 102, 0.10) 0%, rgba(37, 211, 102, 0.04) 100%)",
+            border: "1px solid rgba(37, 211, 102, 0.45)",
+          }}
+        >
+          <div className="mb-2 flex items-start gap-2">
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl text-white"
+              style={{ background: "#25D366" /* WhatsApp green */ }}>
+              <MessageCircle className="h-4 w-4" />
+            </span>
+            <div className="min-w-0">
+              <div className="text-sm font-semibold" style={{ color: "rgb(var(--text-primary))" }}>
+                Want live updates on WhatsApp?
+              </div>
+              <div className="mt-0.5 text-xs" style={{ color: "rgb(var(--text-secondary))" }}>
+                Add your number and we&apos;ll DM you every step: <em>First</em> AI saw your photo →{" "}
+                <em>next</em> forwarded to BBMP → <em>next</em> crew on-site →{" "}
+                <em>next</em> resolved with after-photo. Optional, never shown publicly.
+              </div>
+            </div>
+          </div>
+          <input
+            type="tel"
+            inputMode="tel"
+            value={whatsapp}
+            onChange={(e) => setWhatsapp(e.target.value)}
+            placeholder="+91 98xxx xxxxx"
+            className="input w-full"
+            style={{
+              borderColor: whatsapp ? "rgba(37, 211, 102, 0.6)" : undefined,
+            }}
+          />
+          {whatsapp && (
+            <div className="mt-1.5 flex items-center gap-1 text-[11px]" style={{ color: "#15803d" }}>
+              <CheckCircle2 className="h-3 w-3" />
+              You&apos;ll get updates at <code className="font-mono">{whatsapp}</code>
+            </div>
+          )}
+        </motion.div>
 
         {err && <div className="rounded-xl bg-rose-50 p-3 text-sm text-rose-700">{err}</div>}
 

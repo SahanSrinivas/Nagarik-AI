@@ -34,7 +34,16 @@ interface LocationResolver {
   geocoder_confidence: number | null;
 }
 
+interface WhatsAppMark {
+  logged_at: string;
+  status: string;
+  to: string;
+}
+
 interface Tracking {
+  whatsapp_opt_in?: boolean;
+  whatsapp_to?: string | null;
+  whatsapp_by_kind?: Record<string, WhatsAppMark>;
   issue: {
     id: string;
     type: string;
@@ -249,6 +258,7 @@ export default function TrackingPage() {
             <AnimatePresence initial={false}>
               {timeline.map((n) => {
                 const Icon = KIND_ICON[n.kind] ?? Bell;
+                const wa = data.whatsapp_by_kind?.[n.kind];
                 return (
                   <Reveal key={n.id}>
                     <TimelineRow
@@ -258,6 +268,7 @@ export default function TrackingPage() {
                       body={n.body}
                       at={new Date(n.created_at)}
                       channelTag={n.channel}
+                      whatsapp={wa ? { sent_at: wa.logged_at, status: wa.status } : undefined}
                     />
                   </Reveal>
                 );
@@ -357,6 +368,7 @@ function TimelineRow({
   at,
   pending = false,
   channelTag,
+  whatsapp,
 }: {
   icon: typeof Bell;
   tone: "brand" | "amber" | "ink" | "rose" | "blue";
@@ -365,6 +377,7 @@ function TimelineRow({
   at?: Date;
   pending?: boolean;
   channelTag?: string;
+  whatsapp?: { sent_at?: string; status?: string };
 }) {
   const accent =
     tone === "brand" ? "bg-brand-500" :
@@ -392,6 +405,29 @@ function TimelineRow({
           </div>
         </div>
         <p className="mt-1 text-sm text-ink-600">{body}</p>
+        {whatsapp && (
+          <div
+            className="mt-2 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px]"
+            style={{
+              background: "rgba(37, 211, 102, 0.10)",
+              color: "#15803d",
+              border: "1px solid rgba(37, 211, 102, 0.30)",
+            }}
+          >
+            <Bell className="h-2.5 w-2.5" />
+            Forwarded to WhatsApp
+            {whatsapp.sent_at && (
+              <span className="font-mono">
+                · {new Date(whatsapp.sent_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
+              </span>
+            )}
+            {whatsapp.status === "simulated" && (
+              <span className="rounded bg-amber-100 px-1 text-[9px] font-semibold uppercase text-amber-700">
+                sim
+              </span>
+            )}
+          </div>
+        )}
       </motion.div>
     </div>
   );

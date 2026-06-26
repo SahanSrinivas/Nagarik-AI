@@ -124,6 +124,11 @@ class Issue(Base):
     escalation_level: Mapped[int] = mapped_column(Integer, default=0)
     escalated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
+    # Optional WhatsApp opt-in captured on /report. If set, every status
+    # transition for this issue also fires a WhatsApp template to the
+    # number via nagarik.whatsapp.send_citizen_update().
+    whatsapp_number: Mapped[str | None] = mapped_column(String(20))
+
     resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
