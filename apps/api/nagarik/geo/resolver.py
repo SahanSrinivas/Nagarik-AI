@@ -41,6 +41,7 @@ class LocationSource:
     BROWSER_ONLY = "browser_only"
     EXIF_AND_BROWSER_AGREE = "exif_and_browser_agree"
     EXIF_PREFERRED_BROWSER_DISAGREES = "exif_preferred_browser_disagrees"
+    GEOCODED_FROM_ADDRESS = "geocoded_from_address"
     UNKNOWN = "unknown"
 
 
@@ -57,22 +58,44 @@ class ResolvedLocation:
     browser_lng: float | None = None
     cross_check_km: float | None = None    # set when both signals exist
     flagged_for_review: bool = False
+    geocoded_display: str | None = None
+    geocoder_confidence: float | None = None
 
 
 # --------------------------------------------------------------------------
 # EXIF
 # --------------------------------------------------------------------------
 
+_HEIF_REGISTERED = False
+
+
+def _ensure_heif_opener() -> None:
+    """Register pillow-heif once so PIL.Image.open accepts iPhone .heic files."""
+    global _HEIF_REGISTERED
+    if _HEIF_REGISTERED:
+        return
+    try:
+        import pillow_heif  # type: ignore[import-not-found]
+
+        pillow_heif.register_heif_opener()
+        _HEIF_REGISTERED = True
+    except ImportError:
+        # Without pillow-heif we silently lose iPhone EXIF; JPEG path still works.
+        _HEIF_REGISTERED = True  # don't re-try every call
+
+
 def extract_exif_gps(image_bytes: bytes) -> tuple[float, float] | None:
     """Return (lat, lng) if the JPEG/HEIC has GPS EXIF, else None.
 
-    Cleanly returns None on missing libs, corrupt headers, stripped EXIF, or
-    iPhone HEIC files (we'd need pillow-heif for those).
+    Cleanly returns None on missing libs, corrupt headers, or stripped EXIF.
+    HEIC support requires pillow-heif; we register it lazily on first call.
     """
     try:
         from PIL import ExifTags, Image
     except ImportError:
         return None
+
+    _ensure_heif_opener()
 
     try:
         import io
@@ -182,8 +205,12 @@ def resolve(
     photo_bytes: bytes | None = None,
     browser_lat: float | None = None,
     browser_lng: float | None = None,
+    address: str | None = None,
 ) -> ResolvedLocation:
-    """The single entry point. Always returns a ResolvedLocation."""
+    """The single entry point. Always returns a ResolvedLocation.
+
+    Priority: EXIF > browser GPS > free-text address (Nominatim) > unknown.
+    """
     exif: tuple[float, float] | None = None
     if photo_bytes:
         exif = extract_exif_gps(photo_bytes)
@@ -191,13 +218,15 @@ def resolve(
     exif_lat = exif[0] if exif else None
     exif_lng = exif[1] if exif else None
 
-    # --- Decision tree ----------------------------------------------------
     chosen_lat: float | None = None
     chosen_lng: float | None = None
     source = LocationSource.UNKNOWN
     cross_check: float | None = None
     flagged = False
+    geocoded_display: str | None = None
+    geocoder_confidence: float | None = None
 
+    # --- Tier 1: EXIF (with cross-check) ----------------------------------
     if exif and browser_lat is not None and browser_lng is not None:
         cross_check = haversine_km(exif_lat, exif_lng, browser_lat, browser_lng)
         if cross_check <= CROSS_CHECK_KM:
@@ -213,6 +242,20 @@ def resolve(
     elif browser_lat is not None and browser_lng is not None:
         chosen_lat, chosen_lng = browser_lat, browser_lng
         source = LocationSource.BROWSER_ONLY
+
+    # --- Tier 2: free-text address via Nominatim --------------------------
+    if chosen_lat is None and address and address.strip():
+        from nagarik.geo.geocoder import geocode_address
+
+        hit = geocode_address(address)
+        if hit is not None:
+            chosen_lat, chosen_lng = hit.lat, hit.lng
+            source = LocationSource.GEOCODED_FROM_ADDRESS
+            geocoded_display = hit.display_name
+            geocoder_confidence = hit.confidence
+            # Low-confidence geocodes should be reviewed by ops.
+            if hit.confidence < 0.4:
+                flagged = True
 
     ward_name: str | None = None
     ward_no: int | None = None
@@ -233,6 +276,8 @@ def resolve(
         browser_lng=browser_lng,
         cross_check_km=round(cross_check, 3) if cross_check is not None else None,
         flagged_for_review=flagged,
+        geocoded_display=geocoded_display,
+        geocoder_confidence=geocoder_confidence,
     )
 
 
@@ -241,6 +286,7 @@ def resolve_from_url(
     *,
     browser_lat: float | None = None,
     browser_lng: float | None = None,
+    address: str | None = None,
     timeout: float = 15.0,
 ) -> ResolvedLocation:
     """Convenience: fetch photo bytes from URL then call resolve()."""
@@ -257,4 +303,5 @@ def resolve_from_url(
         photo_bytes=photo_bytes,
         browser_lat=browser_lat,
         browser_lng=browser_lng,
+        address=address,
     )

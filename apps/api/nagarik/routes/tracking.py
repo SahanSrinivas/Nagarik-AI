@@ -34,6 +34,8 @@ def tracking(issue_id: uuid.UUID, db: Session = Depends(get_db)) -> dict:
         .order_by(Notification.created_at.asc())
     ).all()
 
+    loc_meta = (issue.ai_classification or {}).get("location_resolver") if issue.ai_classification else None
+
     return {
         "issue": {
             "id": str(issue.id),
@@ -52,6 +54,7 @@ def tracking(issue_id: uuid.UUID, db: Session = Depends(get_db)) -> dict:
             "scheduled_at": issue.scheduled_at.isoformat() if issue.scheduled_at else None,
             "resolved_at": issue.resolved_at.isoformat() if issue.resolved_at else None,
             "created_at": issue.created_at.isoformat(),
+            "location_resolver": loc_meta,
         },
         "reporter": {
             "id": str(reporter.id) if reporter else None,

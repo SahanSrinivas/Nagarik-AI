@@ -19,6 +19,20 @@ import { useEffect, useState } from "react";
 import { Reveal, Stagger } from "@/components/Motion";
 import { Pill, SeverityPill, StatusPill } from "@/components/Pill";
 
+interface LocationResolver {
+  source: string;
+  ward: string | null;
+  ward_no: number | null;
+  exif_lat: number | null;
+  exif_lng: number | null;
+  browser_lat: number | null;
+  browser_lng: number | null;
+  cross_check_km: number | null;
+  flagged_for_review: boolean;
+  geocoded_display: string | null;
+  geocoder_confidence: number | null;
+}
+
 interface Tracking {
   issue: {
     id: string;
@@ -37,11 +51,21 @@ interface Tracking {
     scheduled_at: string | null;
     resolved_at: string | null;
     created_at: string;
+    location_resolver: LocationResolver | null;
   };
   reporter: { id: string | null; name: string | null; xp: number };
   crew: { id: string; name: string; department: string } | null;
   timeline: { id: string; kind: string; title: string; body: string; channel: string; created_at: string; read_at: string | null }[];
 }
+
+const SOURCE_COPY: Record<string, { label: string; tone: "brand" | "amber" | "rose" | "ink" }> = {
+  exif_and_browser_agree:           { label: "Located via your photo (verified)", tone: "brand" },
+  exif_only:                        { label: "Located via your photo's EXIF",     tone: "brand" },
+  browser_only:                     { label: "Browser GPS only — please confirm", tone: "amber" },
+  exif_preferred_browser_disagrees: { label: "Photo & GPS disagreed — flagged",   tone: "rose"  },
+  geocoded_from_address:            { label: "Located from your address",         tone: "amber" },
+  unknown:                          { label: "Location unknown — ops will reach out", tone: "rose" },
+};
 
 const KIND_ICON: Record<string, typeof Bell> = {
   classified: Sparkles,
@@ -127,6 +151,12 @@ export default function TrackingPage() {
             value={issue.sla_deadline ? new Date(issue.sla_deadline).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "—"}
           />
         </div>
+
+        {issue.location_resolver && (
+          <div className="border-t border-ink-100 px-6 py-3">
+            <LocationProvenance loc={issue.location_resolver} ward={issue.ward} />
+          </div>
+        )}
       </section>
 
       {/* ---- TIMELINE ---- */}
@@ -214,6 +244,64 @@ export default function TrackingPage() {
     </motion.div>
   );
 }
+
+function LocationProvenance({ loc, ward }: { loc: LocationResolver; ward: string | null }) {
+  const meta = SOURCE_COPY[loc.source] ?? { label: loc.source, tone: "ink" as const };
+  return (
+    <div className="flex flex-wrap items-center gap-2 text-xs">
+      <MapPin className="h-3.5 w-3.5 text-brand-600" />
+      <Pill tone={meta.tone}>{meta.label}</Pill>
+      {ward && <span className="text-ink-600">· Ward <strong>{ward}</strong>{loc.ward_no ? ` (#${loc.ward_no})` : ""}</span>}
+      {loc.cross_check_km != null && (
+        <span className="text-ink-500">
+          · photo / GPS gap <span className="font-mono">{loc.cross_check_km.toFixed(2)} km</span>
+        </span>
+      )}
+      {loc.geocoded_display && (
+        <span className="text-ink-500 truncate max-w-md">· {loc.geocoded_display}</span>
+      )}
+      {loc.flagged_for_review && <Pill tone="rose">flagged for review</Pill>}
+    </div>
+  );
+}
+
+function LocationProvenance({ loc, ward }: { loc: LocationResolver; ward: string | null }) {
+  const copy = SOURCE_COPY[loc.source] ?? { label: loc.source, tone: "ink" as const };
+  return (
+    <div className="flex flex-wrap items-center gap-2 text-xs">
+      <Pill tone={copy.tone}>{copy.label}</Pill>
+      {ward && <Pill tone="ink">Ward · {ward}</Pill>}
+      {loc.flagged_for_review && <Pill tone="rose">flagged for review</Pill>}
+      {loc.cross_check_km != null && (
+        <span className="text-ink-500">photo↔GPS gap: <span className="font-mono">{loc.cross_check_km} km</span></span>
+      )}
+      {loc.geocoded_display && (
+        <span className="truncate text-ink-500 max-w-md">via address: {loc.geocoded_display}</span>
+      )}
+    </div>
+  );
+}
+
+function LocationProvenance({ loc, ward }: { loc: LocationResolver; ward: string | null }) {
+  const copy = SOURCE_COPY[loc.source] ?? SOURCE_COPY.unknown;
+  return (
+    <div className="flex flex-wrap items-center gap-2 text-xs">
+      <Pill tone={copy.tone}>
+        <MapPin className="h-3 w-3" /> {copy.label}{ward ? ` · ${ward}` : ""}
+      </Pill>
+      {loc.cross_check_km != null && (
+        <span className="font-mono text-ink-500">EXIF ↔ browser: {loc.cross_check_km.toFixed(1)} km</span>
+      )}
+      {loc.flagged_for_review && (
+        <Pill tone="rose">flagged for ops review</Pill>
+      )}
+      {loc.geocoded_display && (
+        <span className="text-ink-500 truncate">geocoded: “{loc.geocoded_display.slice(0, 80)}”</span>
+      )}
+    </div>
+  );
+}
+
 
 function Meta({ icon: Icon, label, value }: { icon: typeof Bell; label: string; value: string }) {
   return (

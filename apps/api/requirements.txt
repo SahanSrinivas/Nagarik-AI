@@ -53,3 +53,9 @@ py-solc-x>=2.0,<3
 # open_clip_torch>=2.26,<3
 # torch>=2.4,<3
 # Pillow>=10.0,<12
+
+# Image + geo support — EXIF extraction, HEIC (iPhone) decoding, ward
+# polygon attribution, geocoding fallback.
+Pillow>=10.0,<12
+pillow-heif>=1.0,<2
+shapely>=2.0,<3

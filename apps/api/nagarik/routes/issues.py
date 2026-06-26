@@ -57,12 +57,14 @@ def create_issue(
         db.flush()
 
     # Resolve location: extract EXIF GPS from the photo + reconcile with the
-    # browser GPS the client submitted. Then point-in-polygon for the ward.
-    # See nagarik/geo/resolver.py for the priority order.
+    # browser GPS the client submitted. Falls back to Nominatim geocoding of
+    # the free-text address when no GPS sources available. Then
+    # point-in-polygon for the ward. See nagarik/geo/resolver.py.
     resolved = resolve_from_url(
         payload.before_photo_url,
         browser_lat=payload.lat,
         browser_lng=payload.lng,
+        address=payload.address,
     )
     final_lat = resolved.lat if resolved.lat is not None else payload.lat
     final_lng = resolved.lng if resolved.lng is not None else payload.lng
@@ -88,6 +90,8 @@ def create_issue(
                 "browser_lng": resolved.browser_lng,
                 "cross_check_km": resolved.cross_check_km,
                 "flagged_for_review": resolved.flagged_for_review,
+                "geocoded_display": resolved.geocoded_display,
+                "geocoder_confidence": resolved.geocoder_confidence,
             }
         },
     )

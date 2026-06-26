@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import Link from "next/link";
 import {
   Activity,
+  AlertTriangle,
   BarChart3,
   Camera,
   LayoutDashboard,
@@ -25,13 +26,14 @@ export const metadata: Metadata = {
 };
 
 const NAV = [
-  { href: "/report",    label: "Report",    icon: Camera },
-  { href: "/map",       label: "Map",       icon: Map },
-  { href: "/agents",    label: "Agents",    icon: Network },
-  { href: "/milp",      label: "Optimizer", icon: Activity },
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/impact",    label: "Impact",    icon: Trophy },
-  { href: "/chain",     label: "Chain",     icon: Link2 },
+  { href: "/report",       label: "Report",    icon: Camera },
+  { href: "/map",          label: "Map",       icon: Map },
+  { href: "/agents",       label: "Agents",    icon: Network },
+  { href: "/milp",         label: "Optimizer", icon: Activity },
+  { href: "/dashboard",    label: "Dashboard", icon: LayoutDashboard },
+  { href: "/impact",       label: "Impact",    icon: Trophy },
+  { href: "/chain",        label: "Chain",     icon: Link2 },
+  { href: "/ops/flagged",  label: "Ops",       icon: AlertTriangle },
 ];
 
 // Tracking + wallet routes are linked from contextual surfaces (report
