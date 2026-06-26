@@ -83,13 +83,26 @@ def _parse_json(text: str) -> dict[str, Any] | None:
             return None
 
 
+_GEMINI_ALLOWED_MIMES = {"image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"}
+
+
 def _fetch_image(url: str) -> tuple[bytes, str]:
     with httpx.Client(follow_redirects=True, timeout=20) as client:
         r = client.get(url, headers={"User-Agent": "NagarikAI-Vision/0.1"})
         r.raise_for_status()
-        mime = r.headers.get("content-type", "image/jpeg").split(";")[0].strip()
-        if not mime.startswith("image/"):
-            mime = "image/jpeg"
+        mime = r.headers.get("content-type", "image/jpeg").split(";")[0].strip().lower()
+        if mime not in _GEMINI_ALLOWED_MIMES:
+            # Gemini Vision rejects SVG and other vector/exotic MIME types.
+            # Re-encode to JPEG via Pillow so the upstream call always succeeds.
+            try:
+                import io
+                from PIL import Image
+                img = Image.open(io.BytesIO(r.content)).convert("RGB")
+                buf = io.BytesIO()
+                img.save(buf, "JPEG", quality=88)
+                return buf.getvalue(), "image/jpeg"
+            except Exception as exc:  # noqa: BLE001
+                raise ValueError(f"unsupported image MIME {mime!r}: {exc}") from exc
         return r.content, mime
 
 

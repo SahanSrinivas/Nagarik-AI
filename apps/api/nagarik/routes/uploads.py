@@ -35,11 +35,14 @@ def _looks_like_placeholder(url: str) -> bool:
 
 
 def _stub(file_key: str, reason: str) -> dict:
+    # .jpg suffix forces placehold.co to return a real JPEG (not the
+    # default SVG, which Gemini Vision rejects with INVALID_ARGUMENT).
+    short = file_key.split("/")[-1][:24]
     return {
         "provider": "stub",
         "key": file_key,
         "upload_url": None,
-        "public_url": f"https://placehold.co/600x400?text={file_key.split('/')[-1]}",
+        "public_url": f"https://placehold.co/600x400.jpg?text={short}",
         "note": f"Storage not configured: {reason}. /report still works — submit "
                 "with this placeholder, the agent loop runs end-to-end. Set "
                 "SUPABASE_URL + SUPABASE_SERVICE_KEY to enable real uploads.",
