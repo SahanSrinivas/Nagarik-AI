@@ -54,6 +54,8 @@ class Citizen(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     phone: Mapped[str] = mapped_column(String(15), unique=True, index=True)
+    username: Mapped[str | None] = mapped_column(String(60), unique=True, index=True)
+    password_hash: Mapped[str | None] = mapped_column(String(200))
     name: Mapped[str | None] = mapped_column(String(80))
     xp: Mapped[int] = mapped_column(default=0)          # gamification
     badge: Mapped[str | None] = mapped_column(String(40))

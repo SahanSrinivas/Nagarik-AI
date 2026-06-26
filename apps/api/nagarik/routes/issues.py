@@ -5,7 +5,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request
 from geoalchemy2.shape import from_shape, to_shape
 from shapely.geometry import Point
 from sqlalchemy import select
@@ -15,7 +15,10 @@ from nagarik.agents.graph import run_agent_loop
 from nagarik.db import get_db
 from nagarik.geo.resolver import resolve_from_url
 from nagarik.models import AgentEvent, Citizen, Issue, IssueStatus
+from nagarik.ratelimit import limiter
 from nagarik.schemas import AgentEventRead, IssueCreate, IssueRead
+
+XP_PER_SUBMIT = 5
 
 router = APIRouter(prefix="/issues", tags=["issues"])
 
@@ -44,16 +47,33 @@ def _to_read(issue: Issue) -> IssueRead:
 
 
 @router.post("", response_model=IssueRead, status_code=201)
+@limiter.limit("20/minute")
 def create_issue(
+    request: Request,
     payload: IssueCreate,
     bg: BackgroundTasks,
     db: Session = Depends(get_db),
 ) -> IssueRead:
-    # TODO: wire to real auth — for now, attach to a demo citizen.
-    demo = db.scalar(select(Citizen).limit(1))
-    if demo is None:
-        demo = Citizen(phone="+910000000000", name="Demo Citizen")
-        db.add(demo)
+    # Pick a reporter: if the client sent a Bearer JWT, attach to that
+    # citizen and award XP; otherwise fall back to the seeded demo citizen.
+    from nagarik.auth import current_citizen, decode_jwt
+    from jose import JWTError as _JWTError
+
+    reporter: Citizen | None = None
+    auth_header = request.headers.get("authorization") or ""
+    if auth_header.lower().startswith("bearer "):
+        try:
+            sub = decode_jwt(auth_header.split(" ", 1)[1]).get("sub")
+            if sub:
+                import uuid as _uuid
+                reporter = db.get(Citizen, _uuid.UUID(sub))
+        except (_JWTError, ValueError):
+            reporter = None
+    if reporter is None:
+        reporter = db.scalar(select(Citizen).limit(1))
+    if reporter is None:
+        reporter = Citizen(phone="+910000000000", name="Demo Citizen")
+        db.add(reporter)
         db.flush()
 
     # Resolve location: extract EXIF GPS from the photo + reconcile with the
@@ -98,8 +118,11 @@ def create_issue(
             },
         )
 
+    # +XP for submitting a report — gamification baseline before verification/resolution award more.
+    reporter.xp = (reporter.xp or 0) + XP_PER_SUBMIT
+
     issue = Issue(
-        reporter_id=demo.id,
+        reporter_id=reporter.id,
         type=payload.type or "other",
         severity=payload.severity,
         location=from_shape(Point(final_lng, final_lat), srid=4326),
@@ -162,6 +185,36 @@ def nearby_issues(
         .where(Issue.location.ST_DWithin(pt, radius_m))
         .order_by(Issue.created_at.desc())
         .limit(100)
+    )
+    return [_to_read(i) for i in db.scalars(stmt).all()]
+
+
+@router.get("/mine", response_model=list[IssueRead])
+def my_issues(
+    request: Request,
+    limit: int = Query(50, le=200),
+    db: Session = Depends(get_db),
+) -> list[IssueRead]:
+    """List issues reported by the JWT bearer. Empty if no auth header."""
+    from nagarik.auth import decode_jwt
+    from jose import JWTError as _JWTError
+
+    auth_header = request.headers.get("authorization") or ""
+    if not auth_header.lower().startswith("bearer "):
+        return []
+    try:
+        sub = decode_jwt(auth_header.split(" ", 1)[1]).get("sub")
+        if not sub:
+            return []
+        cid = uuid.UUID(sub)
+    except (_JWTError, ValueError):
+        return []
+
+    stmt = (
+        select(Issue)
+        .where(Issue.reporter_id == cid)
+        .order_by(Issue.created_at.desc())
+        .limit(limit)
     )
     return [_to_read(i) for i in db.scalars(stmt).all()]
 
