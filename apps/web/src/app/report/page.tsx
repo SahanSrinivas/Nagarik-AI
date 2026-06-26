@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Camera, CheckCircle2, MapPin, ShieldAlert, Upload } from "lucide-react";
+import { ArrowRight, Camera, CheckCircle2, FlaskConical, MapPin, ShieldAlert, Upload } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -15,6 +15,29 @@ interface CoverageResult {
   ward_no?: number;
   message?: string;
 }
+
+/**
+ * Hackathon location presets. Each is a real KGIS ward centroid lifted from
+ * community-hero/data/ward_backlog.json — the same wards the MILP scheduler,
+ * dashboard and heatmap already know about. Lets a judge in another city
+ * complete the /report flow without faking GPS in DevTools, while the
+ * server-side BBMP gate stays strict (these coords pass it for real).
+ */
+// Each preset is verified to fall inside a real KGIS BBMP ward polygon
+// (the same set the gate uses). Whitefield + Horamavu centroids sit on
+// the BBMP boundary and miss the polygon — dropped from this list.
+const DEMO_LOCATIONS: { label: string; lat: number; lng: number }[] = [
+  { label: "Koramangala",   lat: 12.9352, lng: 77.6245 },
+  { label: "Indiranagar",   lat: 12.9716, lng: 77.6412 },
+  { label: "HSR Layout",    lat: 12.9116, lng: 77.6473 },
+  { label: "BTM Layout",    lat: 12.9166, lng: 77.6101 },
+  { label: "Jayanagar",     lat: 12.9279, lng: 77.5832 },
+  { label: "Malleshwaram",  lat: 13.0036, lng: 77.5712 },
+  { label: "Hebbal",        lat: 13.0358, lng: 77.5970 },
+  { label: "Sanjayanagar",  lat: 13.0316, lng: 77.5694 },
+  { label: "Marathahalli",  lat: 12.9591, lng: 77.6974 },
+  { label: "Hongasandra",   lat: 12.8915, lng: 77.6263 },
+];
 
 export default function ReportPage() {
   const t = useT();
@@ -144,6 +167,37 @@ export default function ReportPage() {
             ? `${t("report.locate_button_located")} (${lat.toFixed(4)}, ${lng?.toFixed(4)})`
             : t("report.locate_button_idle")}
         </button>
+
+        {/* Hackathon-mode location presets — real Bengaluru ward centroids
+            so a judge anywhere in the world can complete the flow without
+            tricking the browser. The server-side BBMP gate stays strict. */}
+        <div
+          className="rounded-xl border px-3 py-2.5"
+          style={{
+            background: "rgb(var(--bg-surface-hover))",
+            borderColor: "rgb(var(--border-light))",
+          }}
+        >
+          <div className="mb-2 flex items-center gap-1.5 text-[11px] uppercase tracking-wider" style={{ color: "rgb(var(--text-muted))" }}>
+            <FlaskConical className="h-3 w-3" /> Demo · pick a Bengaluru ward
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {DEMO_LOCATIONS.map((d) => (
+              <button
+                key={d.label}
+                onClick={() => { setLat(d.lat); setLng(d.lng); setErr(null); }}
+                className="rounded-lg px-2.5 py-1 text-xs transition hover:opacity-80"
+                style={{
+                  border: "1px solid rgb(var(--border-color))",
+                  background: "rgb(var(--bg-surface))",
+                  color: "rgb(var(--text-primary))",
+                }}
+              >
+                {d.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
         {/* Coverage banner — shown once we have coords */}
         {coverage && coverage.inside_bbmp && (
