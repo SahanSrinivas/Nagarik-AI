@@ -66,7 +66,14 @@ export default function ReportPage() {
   const [coverage, setCoverage] = useState<CoverageResult | null>(null);
 
   // Optional WhatsApp opt-in. Stored per-issue so anonymous citizens work too.
-  const [whatsapp, setWhatsapp] = useState("");
+  // We split country-code + national number on the form so any Meta test
+  // recipient works (Indian, US, UK, anyone you added in the Meta App test
+  // recipient list). Final wire format: '+{cc}{digits}'.
+  const [whatsappCC, setWhatsappCC] = useState("+91");
+  const [whatsappNum, setWhatsappNum] = useState("");
+  const whatsapp = whatsappNum.replace(/\D/g, "")
+    ? `${whatsappCC}${whatsappNum.replace(/\D/g, "")}`
+    : "";
 
   function locate() {
     if (!navigator.geolocation) return setErr(t("report.err_geolocation_unsupported"));
@@ -120,7 +127,7 @@ export default function ReportPage() {
           lat, lng, description: desc,
           before_photo_url: evidenceKind === "photo" ? photoUrl : null,
           before_video_url: evidenceKind === "video" ? videoUrl : null,
-          whatsapp_number: whatsapp.trim() || null,
+          whatsapp_number: whatsapp || null,
         }),
       });
       if (!r.ok) {
@@ -167,7 +174,7 @@ export default function ReportPage() {
           </div>
           <p className="mt-3 text-xs text-ink-500">+5 XP earned for this submission.</p>
 
-          {whatsapp.trim() && (
+          {whatsapp && (
             <div
               className="mt-4 mx-auto inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs"
               style={{
@@ -178,7 +185,7 @@ export default function ReportPage() {
             >
               <MessageCircle className="h-3.5 w-3.5" />
               WhatsApp updates will land at{" "}
-              <code className="font-mono">{whatsapp.trim()}</code> at every step.
+              <code className="font-mono">{whatsapp}</code> at every step.
             </div>
           )}
         </div>
@@ -370,23 +377,50 @@ export default function ReportPage() {
               </div>
             </div>
           </div>
+          <div className="flex gap-2">
+            <select
+              value={whatsappCC}
+              onChange={(e) => setWhatsappCC(e.target.value)}
+              className="input shrink-0 cursor-pointer pr-7"
+              style={{ width: "auto", maxWidth: 110 }}
+              aria-label="Country code"
+            >
+              {/* Most-likely civic-context codes first. Add more freely. */}
+              <option value="+91">🇮🇳 +91</option>
+              <option value="+1">🇺🇸 +1</option>
+              <option value="+44">🇬🇧 +44</option>
+              <option value="+971">🇦🇪 +971</option>
+              <option value="+966">🇸🇦 +966</option>
+              <option value="+65">🇸🇬 +65</option>
+              <option value="+61">🇦🇺 +61</option>
+              <option value="+880">🇧🇩 +880</option>
+              <option value="+94">🇱🇰 +94</option>
+              <option value="+977">🇳🇵 +977</option>
+            </select>
           <input
             type="tel"
             inputMode="tel"
-            value={whatsapp}
-            onChange={(e) => setWhatsapp(e.target.value)}
-            placeholder="+91 98xxx xxxxx"
+            value={whatsappNum}
+            onChange={(e) => setWhatsappNum(e.target.value)}
+            placeholder="98xxx xxxxx"
             className="input w-full"
             style={{
               borderColor: whatsapp ? "rgba(37, 211, 102, 0.6)" : undefined,
             }}
           />
+          </div>
           {whatsapp && (
             <div className="mt-1.5 flex items-center gap-1 text-[11px]" style={{ color: "#15803d" }}>
               <CheckCircle2 className="h-3 w-3" />
               You&apos;ll get updates at <code className="font-mono">{whatsapp}</code>
             </div>
           )}
+          <div className="mt-2 text-[10px]" style={{ color: "rgb(var(--text-muted))" }}>
+            Note: in our hackathon Meta sandbox, only numbers registered as
+            test recipients in our App dashboard receive real messages. Other
+            numbers still log to <code className="font-mono">whatsapp_log.jsonl</code>{" "}
+            so the demo loop stays closed.
+          </div>
         </motion.div>
 
         {err && <div className="rounded-xl bg-rose-50 p-3 text-sm text-rose-700">{err}</div>}

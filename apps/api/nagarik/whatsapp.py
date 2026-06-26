@@ -93,44 +93,91 @@ def _format(kind: str, ctx: dict[str, Any], issue: Issue) -> str:
     return tpl.format_map(_Missing(full_ctx))
 
 
-def _send_meta(to: str, body: str, access_token: str, phone_number_id: str) -> dict[str, Any]:
-    """Meta WhatsApp Cloud API — official, no third-party reseller needed.
-
-    Endpoint: POST https://graph.facebook.com/v18.0/{PHONE_NUMBER_ID}/messages
-    Auth:     Authorization: Bearer <access_token>
-
-    Sandbox/dev caveat: until you complete business verification, Meta only
-    delivers to recipients you've explicitly added in the App dashboard's
-    'WhatsApp test recipients' list. Add your number there before testing.
-
-    For an unrequested message (citizen never DM'd you first), production
-    requires a pre-approved template. For demo the simulated path is fine.
-    """
-    digits = "".join(ch for ch in to if ch.isdigit())
+def _meta_post(payload: dict[str, Any], access_token: str, phone_number_id: str) -> dict[str, Any]:
+    """Single Graph API POST + uniform error packaging."""
     try:
         with httpx.Client(timeout=15) as http:
             r = http.post(
                 f"https://graph.facebook.com/v18.0/{phone_number_id}/messages",
                 headers={"Authorization": f"Bearer {access_token}",
                          "Content-Type": "application/json"},
-                json={"messaging_product": "whatsapp",
-                      "to": digits,
-                      "type": "text",
-                      "text": {"body": body[:4096]}},
+                json=payload,
             )
-            payload = r.json() if r.headers.get("content-type", "").startswith("application/json") else {}
+            body = r.json() if r.headers.get("content-type", "").startswith("application/json") else {}
             if r.status_code >= 400:
-                err = (payload.get("error") or {}).get("message") if isinstance(payload, dict) else r.text[:120]
+                err_obj = (body.get("error") or {}) if isinstance(body, dict) else {}
+                err_msg = err_obj.get("message") or r.text[:120]
+                err_code = err_obj.get("code")
+                # Common case: recipient not in test list → code 131030
+                hint = ""
+                if err_code == 131030:
+                    hint = " (recipient not in your test recipients list — add it at developers.facebook.com → your app → WhatsApp → API Setup → To)"
+                elif err_code == 131047:
+                    hint = " (24h customer window closed — use a template message)"
                 return {"status": "send_failed", "provider": "meta",
-                        "http": r.status_code, "error": str(err)[:200]}
+                        "http": r.status_code, "code": err_code,
+                        "error": (str(err_msg) + hint)[:300]}
         msg_id = None
-        if isinstance(payload, dict):
-            msgs = payload.get("messages") or []
+        if isinstance(body, dict):
+            msgs = body.get("messages") or []
             if msgs and isinstance(msgs[0], dict):
                 msg_id = msgs[0].get("id")
         return {"status": "sent", "provider": "meta", "remote_id": msg_id}
     except httpx.HTTPError as exc:
         return {"status": "send_failed", "provider": "meta", "error": str(exc)[:120]}
+
+
+def _send_meta(to: str, body: str, access_token: str, phone_number_id: str) -> dict[str, Any]:
+    """Meta WhatsApp Cloud API — text message (24h customer window required).
+
+    Tries free-text first. If Meta replies with code 131047 (window closed) or
+    131026 (unable to deliver to unregistered recipient), automatically falls
+    back to the auto-approved ``hello_world`` template so the demo still lands
+    something on the recipient's phone.
+    """
+    digits = "".join(ch for ch in to if ch.isdigit())
+    payload = {"messaging_product": "whatsapp", "to": digits,
+               "type": "text", "text": {"body": body[:4096]}}
+    res = _meta_post(payload, access_token, phone_number_id)
+    if res.get("status") == "send_failed" and res.get("code") in (131047, 131026, 131051):
+        # Fall back to the auto-approved hello_world template.
+        tmpl_res = _send_meta_template(to, "hello_world", access_token, phone_number_id)
+        if tmpl_res.get("status") == "sent":
+            tmpl_res["fallback_from"] = "text"
+            tmpl_res["original_error"] = res.get("error")
+            return tmpl_res
+    return res
+
+
+def _send_meta_template(to: str, template_name: str, access_token: str,
+                        phone_number_id: str, language: str = "en_US") -> dict[str, Any]:
+    """Send a Meta WhatsApp template message. Use 'hello_world' for sandbox
+    verification — Meta auto-approves it and it doesn't need any params."""
+    digits = "".join(ch for ch in to if ch.isdigit())
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": digits,
+        "type": "template",
+        "template": {"name": template_name, "language": {"code": language}},
+    }
+    return _meta_post(payload, access_token, phone_number_id)
+
+
+def send_meta_template(to: str, template_name: str = "hello_world",
+                       language: str = "en_US") -> dict[str, Any]:
+    """Public helper — fire a template message directly, no Issue lookup.
+
+    Used by scripts/whatsapp_test_send.py to verify credentials before
+    wiring real issue flows. Reads creds from env.
+    """
+    api_key  = os.environ.get("WHATSAPP_API_KEY") or ""
+    meta_pid = os.environ.get("WHATSAPP_PHONE_NUMBER_ID") or ""
+    if not api_key or not meta_pid:
+        return {"status": "skipped", "reason": "missing WHATSAPP_API_KEY or WHATSAPP_PHONE_NUMBER_ID"}
+    result = _send_meta_template(to, template_name, api_key, meta_pid, language)
+    _append_log({"kind": "_probe_template", "ticket_id": None, "to": to,
+                 "template": template_name, **result})
+    return result
 
 
 def _send_aisensy(to: str, body: str, api_key: str) -> dict[str, Any]:

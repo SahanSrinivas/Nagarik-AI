@@ -580,6 +580,125 @@ export default function MarketingHome() {
         </div>
       </section>
 
+      {/* ROADMAP ─ what's next, what we'd build after the hackathon ──────── */}
+      <section>
+        <header className="mb-6">
+          <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "rgb(var(--accent))" }}>Roadmap</div>
+          <h2 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
+            What ships next — beyond the hackathon
+          </h2>
+          <p className="mt-3 max-w-2xl text-base text-ink-600 sm:text-lg">
+            Today NagarikAI is a working web app + Meta WhatsApp sandbox. The architecture is
+            production-ready; what&apos;s left is partnership, hardening, and platform reach. Here&apos;s
+            the post-hackathon plan, ordered by user impact.
+          </p>
+        </header>
+
+        <Stagger step={0.05} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[
+            {
+              when: "Q1",
+              icon: Sparkles,
+              title: "Native Android + iOS apps",
+              body: "Today: responsive PWA that runs in any mobile browser, including the WhatsApp in-app browser. Next: native React Native shell so we get true background location for verifiers, push notifications without a service-worker round-trip, and Play Store / App Store discoverability.",
+              tag: "Mobile",
+            },
+            {
+              when: "Q1",
+              icon: ShieldCheck,
+              title: "Meta WhatsApp Business verification",
+              body: "Today we run on Meta's sandbox (test recipients only). Next: complete business verification + register the citizen-facing 'civic_ticket_update' template with {type}/{severity}/{dept}/{sla} variables. Unlocks unsolicited messages to any number, not just registered testers.",
+              tag: "Messaging",
+            },
+            {
+              when: "Q1",
+              icon: Building2,
+              title: "BBMP MoU + real outbound channels",
+              body: "Switch each department's primary_channel from simulated to live. WhatsApp for Roads/SWM via their actual supervisor numbers; SMTP into the existing BWSSB and BESCOM complaint inboxes; signed webhooks into BBMP's e-Aasthi where available.",
+              tag: "Partnership",
+            },
+            {
+              when: "Q2",
+              icon: UserCheck,
+              title: "Aadhaar + UPI verification",
+              body: "Prevent XP gaming. One verified human = one citizen account, tied to a UPI ID. Civic Hero NFTs become attestable identities crews can trust when triaging high-severity reports (sewage on busy roads, fallen power lines).",
+              tag: "Trust",
+            },
+            {
+              when: "Q2",
+              icon: AlertTriangle,
+              title: "SOS button for life-safety issues",
+              body: "Today every ticket follows the same 45s pipeline. Next: a 'this is dangerous right now' tap that bypasses verification, fires an SMS + WhatsApp to the on-call supervisor, and pings the nearest crew via live GPS — for downed power lines, exposed manholes, fire-prone garbage piles.",
+              tag: "Safety",
+            },
+            {
+              when: "Q2",
+              icon: Truck,
+              title: "Live crew GPS + ETA on tracking",
+              body: "Crew app uploads location every 30s when a stop is in progress. Citizen tracking page shows a live blue dot + a real-time ETA so they don&apos;t have to keep refreshing.",
+              tag: "UX",
+            },
+            {
+              when: "Q3",
+              icon: Map,
+              title: "Multi-city rollout",
+              body: "Hyderabad, Chennai, Mumbai, Delhi. The ward polygons, SOP table, and department list are config; the agent loop and MILP are not. Roughly 1 week of data ingestion per city plus a local MoU.",
+              tag: "Scale",
+            },
+            {
+              when: "Q3",
+              icon: Brain,
+              title: "Voice-first reporting in Kannada + Hindi",
+              body: "Open the report page, hold the mic, describe the issue in your language. Gemini transcribes + classifies + asks the one clarifying question the model couldn&apos;t resolve from the photo. Drops literacy barriers entirely.",
+              tag: "Accessibility",
+            },
+            {
+              when: "Q3",
+              icon: Cpu,
+              title: "Per-city MILP re-solver",
+              body: "Today the scheduler re-solves on every new issue (fine for the demo, wasteful at city scale). Next: nightly Cloud Scheduler job that re-solves once + stores assignments + diffs against the prior solution so dispatchers see only what changed.",
+              tag: "Infrastructure",
+            },
+          ].map((step) => (
+            <Reveal key={step.title}>
+              <motion.div whileHover={{ y: -3 }} className="card h-full p-5">
+                <div className="flex items-start justify-between">
+                  <div className="grid h-10 w-10 place-items-center rounded-xl"
+                    style={{ background: "rgba(191, 79, 54, 0.10)", color: "rgb(var(--accent))" }}>
+                    <step.icon className="h-5 w-5" />
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider"
+                      style={{ background: "rgba(191, 79, 54, 0.12)", color: "rgb(var(--accent))" }}>
+                      {step.when}
+                    </span>
+                    <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase"
+                      style={{ background: "rgb(var(--bg-surface-hover))", color: "rgb(var(--text-muted))" }}>
+                      {step.tag}
+                    </span>
+                  </div>
+                </div>
+                <div className="mt-3 text-lg font-semibold">{step.title}</div>
+                <p className="mt-1 text-sm text-ink-600">{step.body}</p>
+              </motion.div>
+            </Reveal>
+          ))}
+        </Stagger>
+
+        <div className="mt-6 rounded-2xl p-4 text-sm"
+          style={{
+            background: "rgb(var(--bg-surface-hover))",
+            border: "1px solid rgb(var(--border-light))",
+            color: "rgb(var(--text-secondary))",
+          }}>
+          <strong style={{ color: "rgb(var(--text-primary))" }}>None of this is research.</strong>{" "}
+          The hackathon build proves the architecture works on real Bengaluru data
+          (127k complaints, 243 wards, 14,580 ward-months of rainfall, 800-issue MILP backtest with
+          89.5% km reduction). Scaling it to the rest of India is a build problem — partnership
+          conversations and platform reach, not new models.
+        </div>
+      </section>
+
       {/* FINAL CTA */}
       <section className="rounded-3xl border p-10 text-center"
         style={{ borderColor: "rgb(var(--border-light))", background: "rgb(var(--bg-surface))" }}>
