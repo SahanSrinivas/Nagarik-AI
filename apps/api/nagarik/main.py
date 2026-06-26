@@ -14,7 +14,7 @@ from nagarik.jobs.sla_watcher import start_sla_watcher
 from nagarik.ratelimit import limiter
 from nagarik.routes import (
     chain, coverage, crew, insights, issues, ops, schedule, stream,
-    supervisor, tracking, uploads, verify,
+    supervisor, tracking, uploads, verify, whatsapp_admin,
 )
 from nagarik.settings import get_settings
 
@@ -60,6 +60,7 @@ app.include_router(crew.router)
 app.include_router(supervisor.router)
 app.include_router(coverage.router)
 app.include_router(auth_mod.router)
+app.include_router(whatsapp_admin.router)
 
 
 @app.get("/health")

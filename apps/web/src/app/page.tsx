@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import {
   AlertTriangle,
   ArrowDown,
@@ -19,6 +20,7 @@ import {
   Lock,
   LogIn,
   Mail,
+  Map,
   Medal,
   MessageCircle,
   Construction,
@@ -580,6 +582,9 @@ export default function MarketingHome() {
         </div>
       </section>
 
+      {/* WHATSAPP DEMO PHONE — Framer Motion showing live citizen updates ──── */}
+      <WhatsAppPhoneDemo />
+
       {/* ROADMAP ─ what's next, what we'd build after the hackathon ──────── */}
       <section>
         <header className="mb-6">
@@ -820,5 +825,159 @@ function EscalChip({ level, body, tone, icon: Icon }:
       <span className="font-mono font-semibold">{level}</span>
       <span>{body}</span>
     </span>
+  );
+}
+
+/* ───────── WhatsAppPhoneDemo — animated mock phone showing live sends ───── */
+
+const PHONE_MESSAGES = [
+  { emoji: "🤖", title: "Step 1", body: "NagarikAI received your report (#a1b2c3d4). Classified as *pothole* · severity *4/5*." },
+  { emoji: "📤", title: "Step 2", body: "Forwarded to *BBMP Roads* via their WhatsApp channel. SLA: by Mon 29 Jun, 14:24 IST." },
+  { emoji: "👥", title: "Step 3", body: "3 nearby citizens confirmed the issue. Dispatcher is picking it up." },
+  { emoji: "🚧", title: "Step 5", body: "The crew is on-site now." },
+  { emoji: "✅", title: "Step 6", body: "BBMP Roads reported the fix. After-photo cleared CLIP+CNN audit. +10 XP earned — you're at *135 XP*." },
+];
+
+function WhatsAppPhoneDemo() {
+  return (
+    <section className="overflow-hidden rounded-3xl border p-6 sm:p-8"
+      style={{
+        background: "linear-gradient(135deg, rgba(37,211,102,0.06) 0%, rgb(var(--bg-surface)) 100%)",
+        borderColor: "rgba(37,211,102,0.35)",
+      }}>
+      <div className="grid items-center gap-8 lg:grid-cols-[1fr_320px]">
+        {/* LEFT — copy */}
+        <div>
+          <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider"
+            style={{ color: "#15803d" }}>
+            <MessageCircle className="h-3.5 w-3.5" /> WhatsApp · live for the citizen
+          </div>
+          <h2 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
+            NagarikAI pings the citizen at every step
+          </h2>
+          <p className="mt-3 text-base text-ink-600 sm:text-lg">
+            Drop your number into the green opt-in on{" "}
+            <Link href="/report" className="font-semibold underline" style={{ color: "rgb(var(--accent))" }}>/report</Link>{" "}
+            and the same 7-agent loop that triages your ticket also DMs you on WhatsApp the moment
+            each stage finishes. No app to install. No refresh button. The phone buzzes.
+          </p>
+          <ul className="mt-4 space-y-2 text-sm" style={{ color: "rgb(var(--text-secondary))" }}>
+            {[
+              ["🤖", "AI classifies your photo or video"],
+              ["📤", "Forwarded to the right department"],
+              ["👥", "Confirmed by your neighbours"],
+              ["🚧", "Crew on-site (MILP-optimised route)"],
+              ["✅", "Resolved · after-photo verified · +10 XP"],
+            ].map(([e, t]) => (
+              <li key={t as string} className="flex items-center gap-2">
+                <span aria-hidden>{e}</span>{t}
+              </li>
+            ))}
+          </ul>
+          <div className="mt-5 flex flex-wrap items-center gap-3">
+            <Link href="/report"
+              className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold text-white"
+              style={{ background: "#25D366" }}>
+              <MessageCircle className="h-4 w-4" /> Try it on your phone
+            </Link>
+            <Link href="/admin/whatsapp"
+              className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium"
+              style={{ background: "rgb(var(--bg-surface-hover))", border: "1px solid rgb(var(--border-color))", color: "rgb(var(--text-primary))" }}>
+              See sandbox roster <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+
+        {/* RIGHT — animated phone mock */}
+        <div className="mx-auto w-full max-w-[280px]">
+          <PhoneFrame>
+            <PhoneChat />
+          </PhoneFrame>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function PhoneFrame({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="relative">
+      <div className="relative mx-auto h-[520px] w-[260px] rounded-[36px] p-3 shadow-2xl"
+        style={{
+          background: "linear-gradient(180deg, #1f2937 0%, #0f172a 100%)",
+          border: "1px solid rgba(255,255,255,0.08)",
+        }}>
+        {/* notch */}
+        <div className="absolute left-1/2 top-3 z-10 h-5 w-24 -translate-x-1/2 rounded-b-2xl"
+          style={{ background: "#0f172a" }} />
+        {/* screen */}
+        <div className="relative h-full w-full overflow-hidden rounded-[26px]"
+          style={{ background: "#e5ddd5" /* WhatsApp chat bg */ }}>
+          {/* header */}
+          <div className="flex items-center gap-2 px-3 py-2 text-white"
+            style={{ background: "#075E54" }}>
+            <span className="grid h-7 w-7 place-items-center rounded-full text-[11px] font-bold"
+              style={{ background: "rgb(var(--accent))" }}>N</span>
+            <div className="min-w-0">
+              <div className="truncate text-[11px] font-semibold leading-tight">NagarikAI</div>
+              <div className="truncate text-[9px] opacity-70">online · typing…</div>
+            </div>
+          </div>
+          {/* chat area */}
+          <div className="absolute inset-x-0 bottom-0 top-[44px] overflow-hidden">
+            {children}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PhoneChat() {
+  // The whole strip is one motion.div that we replay every ~18s by cycling
+  // a key. Each message slides up with a stagger so the demo feels live.
+  const [cycle, setCycle] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setCycle((c) => c + 1), 20000);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <motion.div key={cycle}
+      initial={{ y: 0 }}
+      className="flex h-full flex-col-reverse gap-1.5 overflow-hidden p-2"
+    >
+      {/* render messages in reverse so newest is at bottom — natural chat order */}
+      {[...PHONE_MESSAGES].reverse().map((m, i) => {
+        const orderFromBottom = i;
+        // delay = (4 - i) * 2.2s so step 1 appears first then step 2 etc.
+        const delay = (PHONE_MESSAGES.length - 1 - orderFromBottom) * 2.2;
+        return (
+          <motion.div
+            key={`${cycle}-${i}`}
+            initial={{ opacity: 0, y: 12, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ delay, duration: 0.35, ease: "easeOut" }}
+            className="max-w-[88%] self-end rounded-2xl px-2.5 py-1.5 text-[10.5px] leading-snug shadow-sm"
+            style={{
+              background: "#dcf8c6", // WhatsApp received-bubble green
+              color: "#111827",
+            }}
+          >
+            <div className="font-semibold">
+              <span className="mr-1">{m.emoji}</span>{m.title}
+            </div>
+            <div className="mt-0.5">
+              {m.body.split("*").map((chunk, ci) =>
+                ci % 2 === 1 ? <strong key={ci}>{chunk}</strong> : <span key={ci}>{chunk}</span>,
+              )}
+            </div>
+            <div className="mt-0.5 text-right text-[8px] opacity-60">
+              {String(10 + (PHONE_MESSAGES.length - 1 - orderFromBottom)).padStart(2, "0")}:24 ✓✓
+            </div>
+          </motion.div>
+        );
+      })}
+    </motion.div>
   );
 }

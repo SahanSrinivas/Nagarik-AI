@@ -75,6 +75,24 @@ export default function ReportPage() {
     ? `${whatsappCC}${whatsappNum.replace(/\D/g, "")}`
     : "";
 
+  // Live counter from /whatsapp/recipients — feeds the green slot chip.
+  const [waSlots, setWaSlots] = useState<{
+    slots_used: number; slots_total: number; slots_free: number;
+    pending_adds: number; provider: string;
+    business_account_id?: string;
+  } | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    const poll = () =>
+      fetch(`${BASE}/whatsapp/recipients`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => { if (!cancelled && d) setWaSlots(d); })
+        .catch(() => {});
+    poll();
+    const id = setInterval(poll, 8000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, []);
+
   function locate() {
     if (!navigator.geolocation) return setErr(t("report.err_geolocation_unsupported"));
     navigator.geolocation.getCurrentPosition(
@@ -361,21 +379,37 @@ export default function ReportPage() {
             border: "1px solid rgba(37, 211, 102, 0.45)",
           }}
         >
-          <div className="mb-2 flex items-start gap-2">
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl text-white"
-              style={{ background: "#25D366" /* WhatsApp green */ }}>
-              <MessageCircle className="h-4 w-4" />
-            </span>
-            <div className="min-w-0">
-              <div className="text-sm font-semibold" style={{ color: "rgb(var(--text-primary))" }}>
-                Want live updates on WhatsApp?
-              </div>
-              <div className="mt-0.5 text-xs" style={{ color: "rgb(var(--text-secondary))" }}>
-                Add your number and we&apos;ll DM you every step: <em>First</em> AI saw your photo →{" "}
-                <em>next</em> forwarded to BBMP → <em>next</em> crew on-site →{" "}
-                <em>next</em> resolved with after-photo. Optional, never shown publicly.
+          <div className="mb-2 flex items-start justify-between gap-2">
+            <div className="flex items-start gap-2">
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl text-white"
+                style={{ background: "#25D366" /* WhatsApp green */ }}>
+                <MessageCircle className="h-4 w-4" />
+              </span>
+              <div className="min-w-0">
+                <div className="text-sm font-semibold" style={{ color: "rgb(var(--text-primary))" }}>
+                  Want live updates on WhatsApp?
+                </div>
+                <div className="mt-0.5 text-xs" style={{ color: "rgb(var(--text-secondary))" }}>
+                  Add your number and we&apos;ll DM you every step: <em>First</em> AI saw your photo →{" "}
+                  <em>next</em> forwarded to BBMP → <em>next</em> crew on-site →{" "}
+                  <em>next</em> resolved with after-photo. Optional, never shown publicly.
+                </div>
               </div>
             </div>
+            {/* Sandbox slot counter — clickable goes to /admin/whatsapp */}
+            {waSlots && (
+              <Link href="/admin/whatsapp"
+                title="Open WhatsApp admin · manage Meta sandbox test recipients"
+                className="shrink-0 rounded-lg px-2 py-1 text-[11px] font-semibold transition hover:opacity-80"
+                style={{
+                  background: waSlots.slots_free > 0 ? "rgba(37,211,102,0.18)" : "rgba(245,158,11,0.18)",
+                  color: waSlots.slots_free > 0 ? "#15803d" : "#b45309",
+                  border: `1px solid ${waSlots.slots_free > 0 ? "rgba(37,211,102,0.45)" : "rgba(245,158,11,0.45)"}`,
+                }}
+              >
+                {waSlots.slots_used} / {waSlots.slots_total} slots
+              </Link>
+            )}
           </div>
           <div className="flex gap-2">
             <select

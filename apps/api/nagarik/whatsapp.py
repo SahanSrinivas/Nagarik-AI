@@ -50,6 +50,79 @@ log = logging.getLogger(__name__)
 # Tail consumed by /tracking and /agents to show 'forwarded to WhatsApp at HH:MM'.
 _LOG_PATH = Path(__file__).resolve().parents[3] / "data" / "whatsapp_log.jsonl"
 
+# Tracker for the /admin/whatsapp page — one row per unique recipient number,
+# updated every time we attempt a send. Meta doesn't expose a list-test-
+# recipients endpoint, so this is our local source of truth for 'is this
+# number actually registered in the Meta sandbox?'.
+_TRACKER_PATH = Path(__file__).resolve().parents[3] / "data" / "whatsapp_recipients.json"
+META_SANDBOX_SLOTS = 5  # Meta caps unverified WhatsApp apps at 5 test recipients
+
+
+def _load_tracker() -> dict[str, dict[str, Any]]:
+    if not _TRACKER_PATH.exists():
+        return {}
+    try:
+        return json.loads(_TRACKER_PATH.read_text())
+    except json.JSONDecodeError:
+        return {}
+
+
+def _save_tracker(t: dict[str, dict[str, Any]]) -> None:
+    _TRACKER_PATH.parent.mkdir(parents=True, exist_ok=True)
+    _TRACKER_PATH.write_text(json.dumps(t, indent=2, sort_keys=True))
+
+
+def _track_send(phone: str, status: str, code: int | None = None) -> None:
+    """Update the local recipients tracker after every send attempt.
+
+    Status interpretation:
+      sent                → meta accepted. Mark as 'registered'.
+      send_failed + 131030 → recipient not in test list. Mark as 'unregistered'.
+      send_failed + other  → leave previous status; bump last_error.
+      simulated           → no provider configured; mark as 'unknown'.
+    """
+    if not phone:
+        return
+    t = _load_tracker()
+    now = datetime.now(timezone.utc).isoformat()
+    row = t.get(phone) or {"phone": phone, "first_seen": now, "send_count": 0}
+    row["last_attempt"] = now
+    row["send_count"] = int(row.get("send_count", 0)) + 1
+    if status == "sent":
+        row["meta_status"] = "registered"
+        row.pop("last_error", None)
+    elif status == "send_failed" and code == 131030:
+        row["meta_status"] = "unregistered"
+        row["last_error"] = "Recipient not in Meta test list"
+    elif status == "simulated":
+        row.setdefault("meta_status", "unknown")
+    elif status == "send_failed":
+        row.setdefault("meta_status", "error")
+        row["last_error"] = f"Meta error {code or '?'}"
+    t[phone] = row
+    _save_tracker(t)
+
+
+def recipients_summary() -> dict[str, Any]:
+    """For /admin/whatsapp and /report — current state of the sandbox roster."""
+    t = _load_tracker()
+    rows = sorted(t.values(), key=lambda r: r.get("first_seen", ""), reverse=True)
+    registered = [r for r in rows if r.get("meta_status") == "registered"]
+    unregistered = [r for r in rows if r.get("meta_status") == "unregistered"]
+    return {
+        "slots_total":    META_SANDBOX_SLOTS,
+        "slots_used":     len(registered),
+        "slots_free":     max(0, META_SANDBOX_SLOTS - len(registered)),
+        "pending_adds":   len(unregistered),
+        "all_recipients": rows[:50],
+        "meta_dashboard_url": (
+            "https://developers.facebook.com/apps/"
+            f"{os.environ.get('META_APP_ID', '')}/whatsapp-business/wa-dev-console/"
+            if os.environ.get("META_APP_ID")
+            else "https://developers.facebook.com/apps/"
+        ),
+    }
+
 
 # Human-friendly templates per notification kind. The {dept}/{type}/{sla}/...
 # placeholders match the Notification.payload context dict from notifications.py
@@ -260,6 +333,7 @@ def send_citizen_update(
         **result,
     }
     _append_log(record)
+    _track_send(to, result.get("status", "unknown"), result.get("code"))
     return record
 
 
