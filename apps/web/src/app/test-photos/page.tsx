@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Copy, Download, FlaskConical, MapPin, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Reveal, Stagger } from "@/components/Motion";
 import { Pill } from "@/components/Pill";
@@ -103,7 +103,11 @@ const CASES = [
 
 export default function TestPhotosPage() {
   const [copied, setCopied] = useState<string | null>(null);
-  const origin = typeof window === "undefined" ? "" : window.location.origin;
+  // Origin is set after mount so SSR + first client render agree (empty
+  // string on both). The displayed URL hydrates on the client without
+  // tripping React's text-content mismatch check.
+  const [origin, setOrigin] = useState("");
+  useEffect(() => { setOrigin(window.location.origin); }, []);
 
   function copy(text: string) {
     navigator.clipboard.writeText(text).then(() => {
