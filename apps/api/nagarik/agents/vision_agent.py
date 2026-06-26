@@ -145,7 +145,13 @@ def run_vision(state: AgentState) -> AgentState:
             config=gtypes.GenerateContentConfig(
                 response_mime_type="application/json",
                 temperature=0.1,
-                max_output_tokens=400,
+                # Disable Gemini 2.5 Flash's internal "thinking" — for a
+                # straight classify task we don't need extended reasoning,
+                # and thinking tokens eat the output budget. (Older 400-
+                # then-1500-token caps were exhausted by thinking before
+                # any JSON got emitted.)
+                thinking_config=gtypes.ThinkingConfig(thinking_budget=0),
+                max_output_tokens=800,
             ),
         )
         text = getattr(resp, "text", "") or ""
