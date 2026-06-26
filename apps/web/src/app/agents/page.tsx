@@ -164,11 +164,18 @@ export default function AgentsPage() {
               </motion.div>
             )}
             {events.map((e, i) => {
+              const payload = (e.payload || {}) as Record<string, unknown>;
+              const isDup = payload.is_duplicate === true;
+              const dupOf = payload.duplicate_of_id as string | undefined;
               // Pull structured routing telemetry off the triage event.
               const routingMeta =
-                e.agent === "triage" && (e.payload as { ai_meta?: { routing?: unknown } })?.ai_meta
-                  ? ((e.payload as { ai_meta: { routing?: unknown } }).ai_meta.routing as Parameters<typeof RoutingCard>[0]["meta"])
+                e.agent === "triage" && (payload as { ai_meta?: { routing?: unknown } }).ai_meta
+                  ? ((payload as { ai_meta: { routing?: unknown } }).ai_meta.routing as Parameters<typeof RoutingCard>[0]["meta"])
                   : undefined;
+              // Agents that early-return on duplicate render as a slim "skipped" row.
+              const skippedDownstream =
+                isDup && e.status === "completed" &&
+                ["triage", "verification", "scheduler", "resolution", "insights"].includes(e.agent);
               return (
                 <motion.div
                   key={`${e.agent}-${e.created_at}-${i}`}
@@ -187,10 +194,24 @@ export default function AgentsPage() {
                       </Pill>
                       <span className="text-ink-500">{e.duration_ms ?? "—"}ms</span>
                       <span className="text-ink-400">{new Date(e.created_at).toLocaleTimeString()}</span>
+                      {skippedDownstream && (
+                        <Pill tone="amber">skipped · duplicate of {dupOf?.slice(0, 8)}…</Pill>
+                      )}
+                      {e.agent === "dedup" && isDup && (
+                        <Pill tone="amber">merged into {dupOf?.slice(0, 8)}…</Pill>
+                      )}
                     </div>
-                    <pre className="mt-2 overflow-auto rounded-lg bg-ink-950 p-3 font-mono text-[11px] text-brand-200">
+                    {skippedDownstream ? (
+                      <p className="mt-2 text-xs text-ink-600">
+                        Issue was deduplicated by an earlier report — this agent intentionally
+                        short-circuits to avoid double-dispatch / double-notification.
+                        Submit from a different ward to see this agent run for real.
+                      </p>
+                    ) : (
+                      <pre className="mt-2 overflow-auto rounded-lg bg-ink-950 p-3 font-mono text-[11px] text-brand-200">
 {JSON.stringify(e.payload, null, 2)}
-                    </pre>
+                      </pre>
+                    )}
                   </div>
                   {routingMeta && <RoutingCard meta={routingMeta} />}
                 </motion.div>
