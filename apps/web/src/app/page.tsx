@@ -437,7 +437,7 @@ export default function MarketingHome() {
                 <th className="p-3 text-left">
                   <div className="flex items-center gap-1.5">
                     <span className="grid h-6 w-6 place-items-center rounded-md text-white"
-                      style={{ background: "rgb(var(--ink-900))" }}>
+                      style={{ background: "rgb(var(--accent))" }}>
                       <Building2 className="h-3.5 w-3.5" strokeWidth={2.5} />
                     </span>
                     <span className="text-sm font-semibold">For Crew &amp; Supervisor <span className="font-normal text-ink-500">(BBMP/BWSSB/BESCOM)</span></span>
@@ -567,7 +567,7 @@ export default function MarketingHome() {
             <Link href="/dept-login"
               className="card-glow flex items-center gap-3 p-4 text-sm transition hover:opacity-90">
               <span className="grid h-9 w-9 place-items-center rounded-xl text-white"
-                style={{ background: "rgb(var(--ink-900))" }}>
+                style={{ background: "rgb(var(--accent))" }}>
                 <Building2 className="h-4 w-4" />
               </span>
               <div>
