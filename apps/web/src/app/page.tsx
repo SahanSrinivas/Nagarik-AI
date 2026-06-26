@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   AlertTriangle,
   ArrowRight,
+  Award,
   Brain,
   Building2,
   Camera,
@@ -14,15 +15,21 @@ import {
   Eye,
   GitBranch,
   Lightbulb,
+  Lock,
   LogIn,
+  Medal,
   Construction,
   ShieldCheck,
+  Shield,
   Shovel,
   Sparkles,
+  Star,
   Trash2,
   TreeDeciduous,
   TrendingUp,
+  Trophy,
   Truck,
+  UserCheck,
   Waves,
   Wrench,
   Zap,
@@ -68,6 +75,30 @@ const SOLUTIONS = [
  *
  * If you add a new category in guardrails.SOP_TABLE, mirror it here.
  */
+/**
+ * The actual XP economy enforced server-side.
+ *   +5  per submitted report          — XP_PER_SUBMIT in routes/issues.py
+ *   +5  per verification confirmed    — XP_PER_VERIFICATION in routes/verify.py
+ *   +10 per verified-resolved fix     — XP_PER_RESOLVED_REPORT in agents/resolution_agent.py
+ * Plus tier thresholds from nagarik/chain/badges.MILESTONES.
+ */
+const XP_ACTIONS = [
+  { icon: Camera,       k: "Report an issue",   xp: 5,
+    note: "Snap + submit a civic issue. Awarded the moment the report passes the BBMP gate." },
+  { icon: UserCheck,    k: "Verify a neighbour's report", xp: 5,
+    note: "Confirm a nearby citizen's report from your area. 3 confirmations promote it to VERIFIED." },
+  { icon: CheckCircle2, k: "Your report gets fixed",      xp: 10,
+    note: "When the ResolutionAgent's CLIP + CNN audit clears the crew's after-photo, the original reporter gets +10." },
+];
+
+const BADGE_TIERS = [
+  { tier: "Reporter",   xp: 100,  icon: Star,    desc: "First milestone — you've actively engaged with civic issues" },
+  { tier: "Verifier",   xp: 250,  icon: UserCheck, desc: "You confirm others' reports too — earning community trust" },
+  { tier: "Watchdog",   xp: 500,  icon: Shield,  desc: "Sustained presence — your ward notices when you flag something" },
+  { tier: "Sentinel",   xp: 1000, icon: Medal,   desc: "Top-tier civic contributor — featured on the public leaderboard" },
+  { tier: "Civic Hero", xp: 2500, icon: Trophy,  desc: "Reserved for the most active citizens — a soulbound NFT on Polygon" },
+];
+
 const ROUTING_TAXONOMY = [
   { type: "pothole",       label: "Pothole",         icon: Construction,  dept: "BBMP Roads",         sla: "72h" },
   { type: "garbage",       label: "Garbage / waste",  icon: Trash2,        dept: "BBMP SWM",           sla: "24h" },
@@ -257,6 +288,78 @@ export default function MarketingHome() {
           High-severity (≥ 4) reports auto-halve the SLA at runtime. e.g. a sev-4 pothole
           becomes 36h instead of 72h. See <Link href="/architecture" className="underline">/architecture</Link> for the gate's full decision tree.
         </p>
+      </section>
+
+      {/* XP + BADGES */}
+      <section>
+        <header className="mx-auto mb-8 max-w-2xl text-center">
+          <div className="text-xs uppercase tracking-wider text-ink-500">For citizens</div>
+          <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
+            Earn XP for every verified contribution
+          </h2>
+          <p className="mt-2 text-sm text-ink-600">
+            Reporting civic issues is a public good. NagarikAI rewards citizens who show up
+            consistently — every submitted report, every neighbour-verification, every
+            crew-verified fix bumps your XP. Hit a tier and a soulbound NFT badge lands in
+            your wallet (Polygon Amoy testnet — non-transferable, real proof of contribution).
+          </p>
+        </header>
+
+        {/* The 3 ways to earn XP */}
+        <Stagger step={0.05} className="grid gap-3 sm:grid-cols-3">
+          {XP_ACTIONS.map((a) => (
+            <Reveal key={a.k}>
+              <motion.div whileHover={{ y: -3 }} className="card relative h-full p-5">
+                <span className="absolute -top-2 right-3 rounded-full px-2.5 py-1 text-xs font-semibold text-white"
+                  style={{ background: "rgb(var(--accent))" }}>
+                  +{a.xp} XP
+                </span>
+                <div className="grid h-10 w-10 place-items-center rounded-xl"
+                  style={{ background: "rgba(191,79,54,0.10)", color: "rgb(var(--accent))" }}>
+                  <a.icon className="h-5 w-5" />
+                </div>
+                <div className="mt-3 text-base font-semibold">{a.k}</div>
+                <p className="mt-1 text-xs text-ink-600">{a.note}</p>
+              </motion.div>
+            </Reveal>
+          ))}
+        </Stagger>
+
+        {/* Badge ladder — Reporter → Civic Hero */}
+        <div className="mt-8">
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <h3 className="text-sm font-semibold text-ink-700">Badge tiers — climb the ladder</h3>
+            <span className="text-xs text-ink-500">Each badge is a soulbound NFT (ERC-721, non-transferable)</span>
+          </div>
+          <Stagger step={0.04} className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+            {BADGE_TIERS.map((b, i) => (
+              <Reveal key={b.tier}>
+                <motion.div whileHover={{ y: -3 }} className="card relative overflow-hidden p-4">
+                  {/* Tier number ribbon */}
+                  <span className="absolute right-3 top-3 font-mono text-[10px] text-ink-400">
+                    Tier {i + 1}
+                  </span>
+                  <div className="grid h-12 w-12 place-items-center rounded-2xl shadow-soft"
+                    style={{
+                      background: `linear-gradient(135deg, rgb(var(--accent)), #a3402b)`,
+                      color: "white",
+                    }}>
+                    <b.icon className="h-6 w-6" />
+                  </div>
+                  <div className="mt-3 text-base font-semibold">{b.tier}</div>
+                  <div className="font-mono text-xs" style={{ color: "rgb(var(--accent))" }}>
+                    {b.xp.toLocaleString("en-IN")} XP
+                  </div>
+                  <p className="mt-1 text-[11px] text-ink-600">{b.desc}</p>
+                </motion.div>
+              </Reveal>
+            ))}
+          </Stagger>
+          <p className="mt-3 text-center text-xs text-ink-500">
+            Demo account starts at <strong>125 XP</strong> — log in and you're already past your first milestone.
+            See the live leaderboard on <Link href="/impact" className="underline">/impact</Link>.
+          </p>
+        </div>
       </section>
 
       {/* AGENT STRIP */}
