@@ -226,3 +226,62 @@
   .ring-brand-100 { --tw-ring-color: rgba(191, 79, 54, 0.20); }
   .ring-brand-200 { --tw-ring-color: rgba(191, 79, 54, 0.35); }
 }
+
+/* ──────────────────────────────────────────────────────────────────────
+ * Dark-mode overrides for hard-coded light surfaces and tinted chips.
+ *
+ * Many pages were written before the theme system existed and use
+ * bg-white / bg-amber-50 / bg-rose-50 directly. In dark mode those would
+ * render light cards under white text → invisible. Here we re-bind the
+ * raw classes to dark-friendly tints + the live theme variables so
+ * existing markup just works.
+ * ────────────────────────────────────────────────────────────────────── */
+
+.dark .bg-white          { background-color: rgb(var(--bg-surface)); }
+.dark .bg-zinc-50,
+.dark .bg-zinc-100       { background-color: rgb(var(--bg-surface-hover)); }
+.dark .bg-gray-50,
+.dark .bg-gray-100       { background-color: rgb(var(--bg-surface-hover)); }
+.dark .bg-amber-50       { background-color: rgba(245, 158, 11, 0.10); }
+.dark .bg-amber-50\/40   { background-color: rgba(245, 158, 11, 0.06); }
+.dark .bg-amber-50\/60   { background-color: rgba(245, 158, 11, 0.08); }
+.dark .bg-blue-50        { background-color: rgba(59, 130, 246, 0.10); }
+.dark .bg-blue-50\/40    { background-color: rgba(59, 130, 246, 0.06); }
+.dark .bg-blue-50\/60    { background-color: rgba(59, 130, 246, 0.08); }
+.dark .bg-rose-50        { background-color: rgba(244, 63, 94, 0.10); }
+.dark .bg-rose-50\/40    { background-color: rgba(244, 63, 94, 0.06); }
+.dark .bg-lime-50        { background-color: rgba(132, 204, 22, 0.10); }
+.dark .bg-brand-50       { background-color: rgba(191, 79, 54, 0.14); }
+
+/* Soften tinted body text on dark backgrounds (was hard-coded -700 shades
+   meant for light cards — readable but a bit muddy on the new dark tints). */
+.dark .text-amber-700    { color: #fbbf24; }   /* amber-400 */
+.dark .text-blue-700     { color: #60a5fa; }   /* blue-400  */
+.dark .text-rose-700     { color: #fb7185; }   /* rose-400  */
+.dark .text-lime-700     { color: #a3e635; }   /* lime-400  */
+.dark .text-brand-700    { color: #d4664d; }   /* brand-light */
+
+/* Pill rings are designed for light. On dark backgrounds the inset
+   ring-1 from -200 colors disappears; bump intensity. */
+.dark .ring-amber-200    { --tw-ring-color: rgba(245, 158, 11, 0.40); }
+.dark .ring-blue-200     { --tw-ring-color: rgba(59, 130, 246, 0.40); }
+.dark .ring-rose-200     { --tw-ring-color: rgba(244, 63, 94, 0.40); }
+.dark .ring-lime-200     { --tw-ring-color: rgba(132, 204, 22, 0.40); }
+.dark .ring-brand-200    { --tw-ring-color: rgba(191, 79, 54, 0.45); }
+
+/* Inputs use raw bg-white in some places — bridge them too. */
+.dark input[type="file"],
+.dark input[type="text"],
+.dark input[type="date"],
+.dark textarea,
+.dark select {
+  background-color: rgb(var(--bg-surface));
+  color: rgb(var(--text-primary));
+  border-color: rgb(var(--border-color));
+}
+
+/* Scrollbar — match the theme so it doesn't pop out as a bright bar. */
+.dark ::-webkit-scrollbar          { width: 10px; height: 10px; }
+.dark ::-webkit-scrollbar-track    { background: rgb(var(--bg-canvas)); }
+.dark ::-webkit-scrollbar-thumb    { background: rgb(var(--border-light)); border-radius: 8px; }
+.dark ::-webkit-scrollbar-thumb:hover { background: rgb(var(--text-muted)); }
