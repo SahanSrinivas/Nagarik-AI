@@ -174,7 +174,7 @@ export default function TrackingPage() {
             <div className="flex items-center justify-between gap-2">
               <div className="text-xs font-semibold uppercase tracking-wider"
                 style={{ color: "rgb(var(--accent))" }}>
-                {issue.before_video_url ? "Video evidence" : "Photo evidence · AI focus"}
+                {issue.before_video_url ? "Video evidence · AI focus" : "Photo / video evidence · AI focus"}
               </div>
               {issue.ai_focus_label && (
                 <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700">

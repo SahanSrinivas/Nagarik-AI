@@ -70,7 +70,7 @@ const PROBLEMS = [
 ];
 
 const SOLUTIONS = [
-  { icon: Brain,        k: "AI does the work", v: "Snap a photo (or short video) → Gemini classifies it · Claude routes it · OR-Tools schedules it · CLIP + CNN verify the fix." },
+  { icon: Brain,        k: "AI does the work", v: "Snap a photo or video → Gemini classifies it · Claude routes it · OR-Tools schedules it · CLIP + CNN verify the fix." },
   { icon: ShieldCheck,  k: "Gates keep AI honest", v: "Every LLM output passes through deterministic guardrails. Hallucinations and prompt injections fail closed to the canonical SOP." },
   { icon: TrendingUp,   k: "Closed feedback loop", v: "Citizen sees every status change in real time (in EN / हि / ಕ). XP rewards verified contributions." },
 ];
@@ -587,7 +587,7 @@ export default function MarketingHome() {
           Try it — it takes 30 seconds.
         </h2>
         <p className="mx-auto mt-3 max-w-xl text-base text-ink-600 sm:text-lg">
-          A hackathon demo account is preloaded. Sign in, pick a Bengaluru ward, snap a photo,
+          A hackathon demo account is preloaded. Sign in, pick a Bengaluru ward, snap a photo or video,
           and watch all 7 agents fire in real time.
         </p>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">

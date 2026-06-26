@@ -38,7 +38,7 @@ import { Pill } from "@/components/Pill";
 
 const AGENTS = [
   { n: 1, icon: Eye,          name: "Vision",       model: "Gemini 2.5 Flash",
-    desc: "Reads your photo → identifies what's wrong (pothole? streetlight? sewage?), how bad it is (severity 1-5), and how confident the model is." },
+    desc: "Reads your photo or short video → identifies what's wrong (pothole? streetlight? sewage?), how bad it is (severity 1-5), and how confident the model is." },
   { n: 2, icon: GitBranch,    name: "Dedup",        model: "PostGIS",
     desc: "Checks if anyone within 50 metres already reported the same thing. If yes, merges into that ticket so the crew isn't sent twice." },
   { n: 3, icon: Brain,        name: "Triage",       model: "Claude Haiku 4.5 + guardrails",
@@ -110,7 +110,7 @@ export default function ArchitecturePage() {
       {/* CITIZEN FLOW */}
       <section className="card p-6">
         <h2 className="text-lg font-semibold tracking-tight">The citizen flow, end-to-end</h2>
-        <p className="mt-2 text-base text-ink-600 sm:text-lg">What happens between &ldquo;snap a photo&rdquo; and &ldquo;crew shows up&rdquo;.</p>
+        <p className="mt-2 text-base text-ink-600 sm:text-lg">What happens between &ldquo;snap a photo or video&rdquo; and &ldquo;crew shows up&rdquo;.</p>
         <div className="mt-4 grid gap-2 sm:grid-cols-5">
           {[
             { ic: Camera,       k: "1 · Report",   sub: "/report — photo + tap" },
