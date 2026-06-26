@@ -3,18 +3,27 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
+  AlertTriangle,
   ArrowRight,
   Brain,
+  Building2,
   Camera,
   CheckCircle2,
   Cpu,
+  Droplet,
   Eye,
   GitBranch,
+  Lightbulb,
   LogIn,
+  Construction,
   ShieldCheck,
+  Shovel,
   Sparkles,
+  Trash2,
+  TreeDeciduous,
   TrendingUp,
   Truck,
+  Waves,
   Wrench,
   Zap,
 } from "lucide-react";
@@ -50,6 +59,24 @@ const SOLUTIONS = [
   { icon: Brain,        k: "AI does the work", v: "Snap a photo → Gemini classifies it · Claude routes it · OR-Tools schedules it · CLIP + CNN verify the fix." },
   { icon: ShieldCheck,  k: "Gates keep AI honest", v: "Every LLM output passes through deterministic guardrails. Hallucinations and prompt injections fail closed to the canonical SOP." },
   { icon: TrendingUp,   k: "Closed feedback loop", v: "Citizen sees every status change in real time (in EN / हि / ಕ). XP rewards verified contributions." },
+];
+
+/**
+ * The actual SOP table from nagarik/agents/guardrails.py — every civic
+ * issue type the system handles, the BBMP/BESCOM/BWSSB department it
+ * routes to, and the default SLA. Severity ≥ 4 halves the SLA at runtime.
+ *
+ * If you add a new category in guardrails.SOP_TABLE, mirror it here.
+ */
+const ROUTING_TAXONOMY = [
+  { type: "pothole",       label: "Pothole",         icon: Construction,  dept: "BBMP Roads",         sla: "72h" },
+  { type: "garbage",       label: "Garbage / waste",  icon: Trash2,        dept: "BBMP SWM",           sla: "24h" },
+  { type: "streetlight",   label: "Streetlight",      icon: Lightbulb,     dept: "BESCOM Streetlight", sla: "48h" },
+  { type: "water_leak",    label: "Water leak",       icon: Droplet,       dept: "BWSSB",              sla: "12h" },
+  { type: "sewage",        label: "Sewage / manhole", icon: Waves,         dept: "BWSSB",              sla: "24h" },
+  { type: "tree_fall",     label: "Fallen tree",      icon: TreeDeciduous, dept: "BBMP Horticulture",  sla: "6h"  },
+  { type: "encroachment",  label: "Encroachment",     icon: Shovel,        dept: "BBMP Town Planning", sla: "168h" },
+  { type: "other",         label: "Other",            icon: AlertTriangle, dept: "BBMP Helpdesk",      sla: "72h" },
 ];
 
 export default function MarketingHome() {
@@ -160,6 +187,76 @@ export default function MarketingHome() {
             </Reveal>
           ))}
         </Stagger>
+      </section>
+
+      {/* ROUTING TAXONOMY */}
+      <section>
+        <header className="mx-auto mb-8 max-w-2xl text-center">
+          <div className="text-xs uppercase tracking-wider text-ink-500">The routing taxonomy</div>
+          <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
+            8 issue types · 7 departments · 1 deterministic gate
+          </h2>
+          <p className="mt-2 text-sm text-ink-600">
+            Vision (Gemini) classifies your photo into one of these 8 categories.
+            The Triage agent's SOP table routes each to the right BBMP / BWSSB / BESCOM
+            department with a default SLA. The deterministic gate verifies the LLM's
+            choice — any mismatch falls back to the canonical mapping below.
+          </p>
+        </header>
+
+        {/* 3-step header strip — Photo → Vision → Routes */}
+        <div className="mx-auto mb-6 grid max-w-3xl grid-cols-5 items-center gap-2 text-center">
+          <div className="card p-3">
+            <Camera className="mx-auto h-5 w-5" style={{ color: "rgb(var(--accent))" }} />
+            <div className="mt-1 text-xs font-semibold">Photo</div>
+            <div className="text-[10px] text-ink-500">Citizen snap</div>
+          </div>
+          <ArrowRight className="mx-auto h-5 w-5 text-ink-400" />
+          <div className="card p-3">
+            <Eye className="mx-auto h-5 w-5" style={{ color: "rgb(var(--accent))" }} />
+            <div className="mt-1 text-xs font-semibold">Vision + Triage</div>
+            <div className="text-[10px] text-ink-500">Gemini · Claude · Gate</div>
+          </div>
+          <ArrowRight className="mx-auto h-5 w-5 text-ink-400" />
+          <div className="card p-3">
+            <Building2 className="mx-auto h-5 w-5" style={{ color: "rgb(var(--accent))" }} />
+            <div className="mt-1 text-xs font-semibold">Department</div>
+            <div className="text-[10px] text-ink-500">+ SLA</div>
+          </div>
+        </div>
+
+        {/* The 8 category rows */}
+        <Stagger step={0.04} className="grid gap-2 sm:grid-cols-2">
+          {ROUTING_TAXONOMY.map((r) => (
+            <Reveal key={r.type}>
+              <motion.div whileHover={{ y: -2 }}
+                className="card flex items-center gap-3 p-3">
+                {/* Category icon */}
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl"
+                  style={{ background: "rgba(191,79,54,0.10)", color: "rgb(var(--accent))" }}>
+                  <r.icon className="h-5 w-5" />
+                </span>
+                {/* Type name */}
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-semibold">{r.label}</div>
+                  <div className="font-mono text-[10px] text-ink-500">{r.type}</div>
+                </div>
+                {/* Arrow */}
+                <ArrowRight className="h-4 w-4 shrink-0 text-ink-300" />
+                {/* Department + SLA */}
+                <div className="min-w-0 flex-1 text-right">
+                  <div className="text-sm font-semibold">{r.dept}</div>
+                  <div className="text-[10px] text-ink-500">SLA · {r.sla}</div>
+                </div>
+              </motion.div>
+            </Reveal>
+          ))}
+        </Stagger>
+
+        <p className="mt-4 text-center text-xs text-ink-500">
+          High-severity (≥ 4) reports auto-halve the SLA at runtime. e.g. a sev-4 pothole
+          becomes 36h instead of 72h. See <Link href="/architecture" className="underline">/architecture</Link> for the gate's full decision tree.
+        </p>
       </section>
 
       {/* AGENT STRIP */}
