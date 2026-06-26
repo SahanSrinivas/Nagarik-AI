@@ -481,9 +481,9 @@ export default function MarketingHome() {
                 style={{ color: "rgb(var(--accent))" }}>
                 <RefreshCw className="h-3 w-3" /> The closed loop
               </div>
-              <h3 className="mt-1 text-xl font-semibold">From snap to resolved — every step is acked or escalated</h3>
+              <h3 className="mt-1 text-xl font-semibold sm:text-2xl">From snap to resolved — every step is acked or escalated</h3>
             </div>
-            <span className="text-[11px]" style={{ color: "rgb(var(--text-muted))" }}>
+            <span className="text-sm font-medium" style={{ color: "rgb(var(--text-secondary))" }}>
               ~10s pipeline · 60s SLA-watcher tick · citizen never has to follow up
             </span>
           </div>
@@ -531,11 +531,11 @@ export default function MarketingHome() {
             style={{ background: "rgba(220, 38, 38, 0.05)", border: "1px solid rgba(220, 38, 38, 0.25)" }}>
             <div className="mb-3 flex items-center gap-1.5">
               <Siren className="h-4 w-4" style={{ color: "#dc2626" }} />
-              <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#dc2626" }}>
+              <span className="text-sm font-semibold uppercase tracking-wider" style={{ color: "#dc2626" }}>
                 If a department goes silent — the escalation ladder
               </span>
             </div>
-            <div className="flex flex-wrap items-center gap-2 text-xs">
+            <div className="flex flex-wrap items-center gap-2 text-sm">
               <EscalChip level="L0" body="Nominal · awaiting ack" tone="ink" />
               <ArrowRight className="h-3.5 w-3.5" style={{ color: "rgb(var(--text-muted))" }} />
               <EscalChip level="L1" body="SLA breach — re-ping supervisor" tone="amber" icon={AlertTriangle} />
@@ -607,34 +607,66 @@ export default function MarketingHome() {
 
 type Tone = "citizen" | "ai" | "dept" | "crew";
 
+/**
+ * Per-tone Tailwind classes. Each tone has paired light + dark variants so
+ * the tinted backgrounds stay visible in BOTH themes — the previous version
+ * used fixed-opacity rgba strings which washed out in dark mode (especially
+ * the slate-based 'dept' tone, which became invisible against the dark canvas).
+ */
+const LOOP_TONES: Record<Tone, {
+  card: string;       // bg + border for the stage
+  chipBg: string;     // square icon chip background
+  pillBg: string;     // small role pill at top-right
+  pillText: string;   // role pill text colour
+  label: string;
+}> = {
+  citizen: {
+    card:     "bg-[rgba(191,79,54,0.10)] border border-[rgba(191,79,54,0.35)] dark:bg-[rgba(191,79,54,0.22)] dark:border-[rgba(191,79,54,0.55)]",
+    chipBg:   "bg-[rgb(var(--accent))]",
+    pillBg:   "bg-white/70 dark:bg-white/10",
+    pillText: "text-[rgb(var(--accent))] dark:text-[#fbbcab]",
+    label:    "Citizen",
+  },
+  ai: {
+    card:     "bg-blue-500/10 border border-blue-500/40 dark:bg-blue-500/22 dark:border-blue-400/60",
+    chipBg:   "bg-blue-600 dark:bg-blue-500",
+    pillBg:   "bg-white/70 dark:bg-white/10",
+    pillText: "text-blue-700 dark:text-blue-200",
+    label:    "AI agent",
+  },
+  dept: {
+    // Was slate-on-dark = invisible. Swapped to a warm amber so the
+    // 'Department' lane reads in BOTH themes alongside the other tones.
+    card:     "bg-amber-500/10 border border-amber-500/40 dark:bg-amber-500/22 dark:border-amber-400/60",
+    chipBg:   "bg-amber-600 dark:bg-amber-500",
+    pillBg:   "bg-white/70 dark:bg-white/10",
+    pillText: "text-amber-700 dark:text-amber-200",
+    label:    "Department",
+  },
+  crew: {
+    card:     "bg-emerald-500/10 border border-emerald-500/40 dark:bg-emerald-500/22 dark:border-emerald-400/60",
+    chipBg:   "bg-emerald-600 dark:bg-emerald-500",
+    pillBg:   "bg-white/70 dark:bg-white/10",
+    pillText: "text-emerald-700 dark:text-emerald-200",
+    label:    "Crew",
+  },
+};
+
 function LoopStage({ step, icon: Icon, title, body, tone }:
   { step: number; icon: typeof Camera; title: string; body: string; tone: Tone }) {
-  const palette: Record<Tone, { bg: string; ring: string; chip: string; pill: string }> = {
-    citizen: { bg: "rgba(191, 79, 54, 0.10)", ring: "rgba(191, 79, 54, 0.35)",
-               chip: "rgb(var(--accent))", pill: "Citizen" },
-    ai:      { bg: "rgba(59, 130, 246, 0.10)", ring: "rgba(59, 130, 246, 0.35)",
-               chip: "#2563eb", pill: "AI agent" },
-    dept:    { bg: "rgba(15, 23, 42, 0.06)", ring: "rgba(15, 23, 42, 0.25)",
-               chip: "rgb(var(--ink-900))", pill: "Department" },
-    crew:    { bg: "rgba(16, 185, 129, 0.10)", ring: "rgba(16, 185, 129, 0.35)",
-               chip: "#059669", pill: "Crew" },
-  };
-  const p = palette[tone];
+  const t = LOOP_TONES[tone];
   return (
-    <div className="rounded-xl p-3"
-      style={{ background: p.bg, border: `1px solid ${p.ring}` }}>
+    <div className={`rounded-xl p-4 ${t.card}`}>
       <div className="flex items-center justify-between">
-        <span className="grid h-7 w-7 place-items-center rounded-lg text-white"
-          style={{ background: p.chip }}>
-          <Icon className="h-3.5 w-3.5" strokeWidth={2.25} />
+        <span className={`grid h-9 w-9 place-items-center rounded-lg text-white ${t.chipBg}`}>
+          <Icon className="h-4 w-4" strokeWidth={2.25} />
         </span>
-        <span className="rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider"
-          style={{ background: "rgba(255,255,255,0.6)", color: p.chip }}>
-          {p.pill} · {step}
+        <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${t.pillBg} ${t.pillText}`}>
+          {t.label} · {step}
         </span>
       </div>
-      <div className="mt-2 text-sm font-semibold" style={{ color: "rgb(var(--text-primary))" }}>{title}</div>
-      <div className="mt-0.5 text-[11px]" style={{ color: "rgb(var(--text-secondary))" }}>{body}</div>
+      <div className="mt-3 text-base font-semibold" style={{ color: "rgb(var(--text-primary))" }}>{title}</div>
+      <div className="mt-1 text-sm" style={{ color: "rgb(var(--text-secondary))" }}>{body}</div>
     </div>
   );
 }
@@ -643,24 +675,29 @@ function ArrowCell({ hide }: { hide?: "lg" }) {
   // Horizontal arrow on ≥sm, vertical on mobile so the grid wraps cleanly.
   return (
     <div className={`flex items-center justify-center ${hide === "lg" ? "lg:hidden" : ""}`}>
-      <ArrowRight className="hidden h-4 w-4 sm:block" style={{ color: "rgb(var(--text-muted))" }} />
-      <ArrowDown className="h-4 w-4 sm:hidden" style={{ color: "rgb(var(--text-muted))" }} />
+      <ArrowRight className="hidden h-5 w-5 sm:block" style={{ color: "rgb(var(--text-muted))" }} />
+      <ArrowDown className="h-5 w-5 sm:hidden" style={{ color: "rgb(var(--text-muted))" }} />
     </div>
   );
 }
 
+/**
+ * Per-tone classes for the escalation chips. 'ink' (the nominal/baseline
+ * step) uses the theme surface so it reads cleanly in both modes; amber/red
+ * use mid-opacity tints that brighten in dark mode so the gradient up the
+ * ladder remains visible.
+ */
+const ESCAL_TONES: Record<"ink" | "amber" | "red", string> = {
+  ink:   "bg-[rgb(var(--bg-surface))] border border-[rgb(var(--border-light))] text-[rgb(var(--text-primary))]",
+  amber: "bg-amber-500/15 border border-amber-500/40 text-amber-700 dark:bg-amber-500/25 dark:border-amber-400/55 dark:text-amber-200",
+  red:   "bg-rose-500/15  border border-rose-500/40  text-rose-700  dark:bg-rose-500/25  dark:border-rose-400/55  dark:text-rose-200",
+};
+
 function EscalChip({ level, body, tone, icon: Icon }:
   { level: string; body: string; tone: "ink" | "amber" | "red"; icon?: typeof Siren }) {
-  const tones: Record<string, { bg: string; border: string; text: string }> = {
-    ink:   { bg: "rgb(var(--bg-surface))",  border: "rgb(var(--border-light))",  text: "rgb(var(--text-primary))" },
-    amber: { bg: "rgba(245, 158, 11, 0.12)", border: "rgba(245, 158, 11, 0.40)", text: "#b45309" },
-    red:   { bg: "rgba(220, 38, 38, 0.12)",  border: "rgba(220, 38, 38, 0.40)",  text: "#b91c1c" },
-  };
-  const t = tones[tone];
   return (
-    <span className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px]"
-      style={{ background: t.bg, border: `1px solid ${t.border}`, color: t.text }}>
-      {Icon && <Icon className="h-3 w-3" />}
+    <span className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm ${ESCAL_TONES[tone]}`}>
+      {Icon && <Icon className="h-3.5 w-3.5" />}
       <span className="font-mono font-semibold">{level}</span>
       <span>{body}</span>
     </span>
