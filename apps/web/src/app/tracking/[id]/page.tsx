@@ -251,50 +251,13 @@ export default function TrackingPage() {
 }
 
 function LocationProvenance({ loc, ward }: { loc: LocationResolver; ward: string | null }) {
-  const meta = SOURCE_COPY[loc.source] ?? { label: loc.source, tone: "ink" as const };
-  return (
-    <div className="flex flex-wrap items-center gap-2 text-xs">
-      <MapPin className="h-3.5 w-3.5 text-brand-600" />
-      <Pill tone={meta.tone}>{meta.label}</Pill>
-      {ward && <span className="text-ink-600">· Ward <strong>{ward}</strong>{loc.ward_no ? ` (#${loc.ward_no})` : ""}</span>}
-      {loc.cross_check_km != null && (
-        <span className="text-ink-500">
-          · photo / GPS gap <span className="font-mono">{loc.cross_check_km.toFixed(2)} km</span>
-        </span>
-      )}
-      {loc.geocoded_display && (
-        <span className="text-ink-500 truncate max-w-md">· {loc.geocoded_display}</span>
-      )}
-      {loc.flagged_for_review && <Pill tone="rose">flagged for review</Pill>}
-    </div>
-  );
-}
-
-function LocationProvenance({ loc, ward }: { loc: LocationResolver; ward: string | null }) {
-  const copy = SOURCE_COPY[loc.source] ?? { label: loc.source, tone: "ink" as const };
-  return (
-    <div className="flex flex-wrap items-center gap-2 text-xs">
-      <Pill tone={copy.tone}>{copy.label}</Pill>
-      {ward && <Pill tone="ink">Ward · {ward}</Pill>}
-      {loc.flagged_for_review && <Pill tone="rose">flagged for review</Pill>}
-      {loc.cross_check_km != null && (
-        <span className="text-ink-500">photo↔GPS gap: <span className="font-mono">{loc.cross_check_km} km</span></span>
-      )}
-      {loc.geocoded_display && (
-        <span className="truncate text-ink-500 max-w-md">via address: {loc.geocoded_display}</span>
-      )}
-    </div>
-  );
-}
-
-function LocationProvenance({ loc, ward }: { loc: LocationResolver; ward: string | null }) {
   const { t } = useI18n();
   const tone = SOURCE_TONE[loc.source] ?? "ink";
   const label = t(`loc.${loc.source}`, loc.source);
   return (
     <div className="flex flex-wrap items-center gap-2 text-xs">
       <Pill tone={tone}>
-        <MapPin className="h-3 w-3" /> {label}{ward ? ` · ${ward}` : ""}
+        <MapPin className="h-3 w-3" /> {label}{ward ? ` · ${ward}${loc.ward_no ? ` (#${loc.ward_no})` : ""}` : ""}
       </Pill>
       {loc.cross_check_km != null && (
         <span className="font-mono text-ink-500">EXIF ↔ browser: {loc.cross_check_km.toFixed(1)} km</span>
