@@ -179,7 +179,7 @@ export default function MarketingHome() {
       {/* PROBLEM */}
       <section>
         <header className="mx-auto mb-8 max-w-2xl text-center">
-          <div className="text-xs uppercase tracking-wider text-ink-500">Why this matters</div>
+          <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "rgb(var(--accent))" }}>Why this matters</div>
           <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
             Bengaluru's BBMP gets ~127,000 complaints in six months. 15% stay open.
           </h2>
@@ -206,7 +206,7 @@ export default function MarketingHome() {
       {/* SOLUTION */}
       <section>
         <header className="mx-auto mb-8 max-w-2xl text-center">
-          <div className="text-xs uppercase tracking-wider text-ink-500">How NagarikAI works</div>
+          <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "rgb(var(--accent))" }}>How NagarikAI works</div>
           <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
             The LLM proposes. The gate decides. The citizen sees every step.
           </h2>
@@ -230,7 +230,7 @@ export default function MarketingHome() {
       {/* ROUTING TAXONOMY */}
       <section>
         <header className="mx-auto mb-8 max-w-2xl text-center">
-          <div className="text-xs uppercase tracking-wider text-ink-500">The routing taxonomy</div>
+          <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "rgb(var(--accent))" }}>The routing taxonomy</div>
           <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
             8 issue types · 7 departments · 1 deterministic gate
           </h2>
@@ -303,7 +303,7 @@ export default function MarketingHome() {
       {/* XP + BADGES */}
       <section>
         <header className="mx-auto mb-8 max-w-2xl text-center">
-          <div className="text-xs uppercase tracking-wider text-ink-500">For citizens</div>
+          <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "rgb(var(--accent))" }}>For citizens</div>
           <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
             Earn XP for every verified contribution
           </h2>
@@ -376,7 +376,7 @@ export default function MarketingHome() {
       <section>
         <header className="mb-6 flex items-end justify-between gap-3">
           <div>
-            <div className="text-xs uppercase tracking-wider text-ink-500">The pipeline</div>
+            <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "rgb(var(--accent))" }}>The pipeline</div>
             <h2 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">7 specialized agents · under 10 seconds end-to-end</h2>
           </div>
           <Link href="/architecture" className="btn-ghost hidden text-sm sm:inline-flex">
@@ -405,7 +405,7 @@ export default function MarketingHome() {
       {/* TWO SIDES ─ closed-loop ──────────────────────────────────────── */}
       <section>
         <header className="mb-6">
-          <div className="text-xs uppercase tracking-wider text-ink-500">Two sides · one loop</div>
+          <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "rgb(var(--accent))" }}>Two sides · one loop</div>
           <h2 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
             Citizens report. Crews fix. AI keeps both honest.
           </h2>
@@ -421,8 +421,8 @@ export default function MarketingHome() {
           <table className="w-full text-base">
             <thead>
               <tr style={{ background: "rgb(var(--bg-surface-hover))" }}>
-                <th className="w-44 p-3 text-left text-[10px] font-semibold uppercase tracking-wider"
-                  style={{ color: "rgb(var(--text-muted))" }}>
+                <th className="w-44 p-3 text-left text-[11px] font-semibold uppercase tracking-wider"
+                  style={{ color: "rgb(var(--text-secondary))" }}>
                   Dimension
                 </th>
                 <th className="p-3 text-left">
@@ -457,8 +457,8 @@ export default function MarketingHome() {
               ].map((row, idx) => (
                 <tr key={row.dim}
                   style={{ borderTop: idx === 0 ? undefined : "1px solid rgb(var(--border-light))" }}>
-                  <td className="p-3 text-[11px] font-semibold uppercase tracking-wider"
-                    style={{ color: "rgb(var(--text-muted))" }}>
+                  <td className="p-3 text-xs font-semibold uppercase tracking-wider"
+                    style={{ color: "rgb(var(--text-secondary))" }}>
                     {row.dim}
                   </td>
                   <td className="p-3 text-base" style={{ color: "rgb(var(--text-primary))" }}>{row.citizen}</td>
