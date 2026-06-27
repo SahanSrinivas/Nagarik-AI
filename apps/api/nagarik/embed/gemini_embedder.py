@@ -44,12 +44,17 @@ def embed_text(text: str) -> tuple[float, ...]:
 
     try:
         from google import genai
-        client = genai.Client(api_key=settings.google_api_key)
+        # Hard 6s timeout — the dedup agent calls this in a tight loop
+        # and a slow Vertex response must NEVER block the downstream
+        # Triage agent. Past dedup outage taught us the hard way.
+        client = genai.Client(
+            api_key=settings.google_api_key,
+            http_options={"timeout": 6_000},  # milliseconds
+        )
         resp = client.models.embed_content(
             model=_MODEL,
             contents=text,
         )
-        # google-genai v1.x: resp.embeddings[0].values
         embs = getattr(resp, "embeddings", None)
         if embs and len(embs) > 0:
             vec = getattr(embs[0], "values", None) or []

@@ -110,21 +110,33 @@ def run_dedup(state: AgentState) -> AgentState:
         # post-Vision description. Catches dup reports where two citizens
         # photographed the same problem from different angles (CLIP misses)
         # but described it similarly.
+        #
+        # Capped at 2 candidate embeddings per dedup run so the pipeline
+        # latency stays bounded — each embed_text call is a sync round
+        # trip to Vertex AI (~1-2s warm, longer cold). With this cap
+        # dedup adds ≤ ~6s in the worst case, well within the agent loop
+        # budget. The full loop is wrapped in try/except so a Vertex
+        # outage degrades the dedup signal gracefully instead of
+        # blocking the downstream Triage agent.
+        VERTEX_EMBED_MAX_CANDIDATES = 2
         if chosen is None and candidates:
-            from nagarik.embed.gemini_embedder import embed_text, cosine as text_cosine
+            try:
+                from nagarik.embed.gemini_embedder import embed_text, cosine as text_cosine
 
-            this_text = _describe_for_embed(issue, state.get("ai_meta") or {})
-            this_emb = embed_text(this_text)
-            if this_emb:
-                for cand in candidates:
-                    cand_text = _describe_for_embed(
-                        cand, (cand.ai_classification or {}) if hasattr(cand, "ai_classification") else {}
-                    )
-                    cand_emb = embed_text(cand_text)
-                    if text_cosine(this_emb, cand_emb) >= TEXT_COSINE_THRESHOLD:
-                        chosen = cand
-                        match_signal = "text"
-                        break
+                this_text = _describe_for_embed(issue, state.get("ai_meta") or {})
+                this_emb = embed_text(this_text)
+                if this_emb:
+                    for cand in candidates[:VERTEX_EMBED_MAX_CANDIDATES]:
+                        cand_text = _describe_for_embed(
+                            cand, (cand.ai_classification or {}) if hasattr(cand, "ai_classification") else {}
+                        )
+                        cand_emb = embed_text(cand_text)
+                        if text_cosine(this_emb, cand_emb) >= TEXT_COSINE_THRESHOLD:
+                            chosen = cand
+                            match_signal = "text"
+                            break
+            except Exception:  # noqa: BLE001 — never let the dedup signal block Triage
+                pass
 
         # Fallback: with no embeddings on either side, trust geography alone.
         if chosen is None and candidates and emb is None:
