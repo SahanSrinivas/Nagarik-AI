@@ -21,7 +21,13 @@ export default function LoginPage() {
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
-  const [demo, setDemo] = useState<{ username: string; password: string } | null>(null);
+  // Hardcode the seeded citizen demo creds so the banner renders on first
+  // paint instead of waiting for /auth/demo-credentials. Same value the
+  // API endpoint returns; the useEffect below still hits it as a fallback
+  // so a seed-data change automatically updates the banner.
+  const [demo, setDemo] = useState<{ username: string; password: string }>({
+    username: "H@cktHon", password: "Sw33ney@8688",
+  });
 
   function captureHome() {
     if (!navigator.geolocation) {
@@ -46,6 +52,10 @@ export default function LoginPage() {
   }, [me, router]);
 
   useEffect(() => {
+    // Refresh demo creds in the background — if the seed script changes,
+    // the banner picks up the new values on next page load without a code
+    // change. Failures here are silent because the hardcoded default
+    // covers us.
     fetch(`${BASE}/auth/demo-credentials`).then((r) => r.json()).then(setDemo).catch(() => {});
   }, []);
 

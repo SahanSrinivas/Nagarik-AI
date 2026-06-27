@@ -636,6 +636,31 @@ def build() -> None:
         "E2E_MUTATE=1 npm test          # also runs the actual /issues POST end-to-end\n"
         "BASE_URL=http://localhost:3000 npm test    # same suite against local dev")
 
+    h2(doc, "Daily regression in CI — GitHub Actions")
+    p(doc,
+      "Every day at 02:30 UTC (08:00 IST) a GitHub Actions workflow at "
+      ".github/workflows/daily-e2e.yml runs three jobs against the live "
+      "nagarikai.xyz deployment in parallel: the Playwright smoke suite, "
+      "a red-team probe (4 deliberately non-civic photos that must reject), "
+      "and the Case A happy path (pothole → verified_resolved). The probe "
+      "logic itself lives in e2e/ci/red-team.sh and e2e/ci/happy-path.sh "
+      "so it can be reproduced locally with the same code path. A "
+      "regression in any of the three opens a tracking issue tagged "
+      "regression, automated with a direct link to the failed run.")
+    table(doc,
+          ["Job", "Asserts", "Wall-clock"],
+          [
+              ["Playwright suite",
+               "12 public routes + API /health + auth + Mapbox canvas — 22 tests",
+               "~1.5 min"],
+              ["Red-team probe",
+               "4 non-civic photos (cat, food, indoor, selfie) all land at status=rejected, routed=None",
+               "~40 s"],
+              ["Happy path",
+               "Case A pothole submit → Triage=BBMP Roads → crew complete with case_a_resolved.jpg → ResolutionAgent verdict=verified_resolved",
+               "~3 min"],
+          ])
+
     h2(doc, "Closed-loop submission — Koramangala 4th Block")
     p(doc,
       "A real citizen submission was driven through the full 7-agent pipeline "

@@ -21,7 +21,29 @@ export default function DeptLoginPage() {
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
-  const [demo, setDemo] = useState<DemoCreds | null>(null);
+  // Hardcode the seeded dept demo accounts — matches the output of
+  // seed_departments.py. Banner renders on first paint; the useEffect
+  // below still refreshes from /auth/dept-demo-credentials so a seed
+  // change updates the list on next page load automatically.
+  const [demo, setDemo] = useState<DemoCreds>({
+    password: "supervisor2026",
+    accounts: [
+      { department: "BBMP Roads",         username: "bbmp_roads_supervisor",          role: "supervisor" },
+      { department: "BBMP Roads",         username: "bbmp_roads_crew_lead",           role: "crew_lead"  },
+      { department: "BBMP SWM",           username: "bbmp_swm_supervisor",            role: "supervisor" },
+      { department: "BBMP SWM",           username: "bbmp_swm_crew_lead",             role: "crew_lead"  },
+      { department: "BESCOM Streetlight", username: "bescom_streetlight_supervisor",  role: "supervisor" },
+      { department: "BESCOM Streetlight", username: "bescom_streetlight_crew_lead",   role: "crew_lead"  },
+      { department: "BWSSB",              username: "bwssb_supervisor",               role: "supervisor" },
+      { department: "BWSSB",              username: "bwssb_crew_lead",                role: "crew_lead"  },
+      { department: "BBMP Horticulture",  username: "bbmp_horticulture_supervisor",   role: "supervisor" },
+      { department: "BBMP Horticulture",  username: "bbmp_horticulture_crew_lead",    role: "crew_lead"  },
+      { department: "BBMP Town Planning", username: "bbmp_town_planning_supervisor",  role: "supervisor" },
+      { department: "BBMP Town Planning", username: "bbmp_town_planning_crew_lead",   role: "crew_lead"  },
+      { department: "BBMP Helpdesk",      username: "bbmp_helpdesk_supervisor",       role: "supervisor" },
+      { department: "BBMP Helpdesk",      username: "bbmp_helpdesk_crew_lead",        role: "crew_lead"  },
+    ],
+  });
 
   // Already signed in? Bounce.
   useEffect(() => {
@@ -32,6 +54,8 @@ export default function DeptLoginPage() {
   }, [router]);
 
   useEffect(() => {
+    // Background refresh — picks up any seed change without a redeploy.
+    // Failures silent because hardcoded defaults cover us.
     fetch(`${BASE}/auth/dept-demo-credentials`).then((r) => r.json()).then(setDemo).catch(() => {});
   }, []);
 
