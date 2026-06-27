@@ -329,6 +329,71 @@ def build() -> None:
 
     doc.add_page_break()
 
+    # ─── Hackathon Submission Package ───────────────────────────
+    h1(doc, "Hackathon Submission Package")
+
+    h3(doc, "Mandatory submission items")
+    table(doc,
+          ["Item", "Link / value"],
+          [
+              ["Deployed application (citizen + supervisor web)",
+               "https://nagarikai.xyz"],
+              ["Deployed application (public API)",
+               "https://api.nagarikai.xyz"],
+              ["API health probe",
+               "https://api.nagarikai.xyz/health  →  {\"status\":\"ok\",\"env\":\"prod\"}"],
+              ["GitHub repository",
+               "https://github.com/SahanSrinivas/Nagarik-AI"],
+              ["Project description",
+               "This document. To share as a Google Doc, upload this .docx to Google Drive and toggle link-sharing to 'anyone with the link can view'."],
+          ])
+
+    h3(doc, "Demo credentials — no signup required")
+    p(doc,
+      "Both sign-in pages render a 'Use demo credentials' button that fills "
+      "the form. Hardcoded client-side so the banner appears on first paint "
+      "(no fetch wait).")
+    table(doc,
+          ["Surface", "Username", "Password"],
+          [
+              ["Citizen (https://nagarikai.xyz/login)",
+               "H@cktHon", "Sw33ney@8688"],
+              ["Department supervisor (https://nagarikai.xyz/dept-login)",
+               "bbmp_roads_supervisor (or any of 7 dept _supervisor accounts)",
+               "supervisor2026"],
+              ["Department crew lead",
+               "bbmp_roads_crew_lead (or any of 7 dept _crew_lead accounts)",
+               "supervisor2026"],
+          ])
+    p(doc,
+      "Test media: https://nagarikai.xyz/test-photos — 5 labelled pothole "
+      "before/after pairs + 6 category photos. Downloadable; use for the "
+      "Resolution-agent audit demo.")
+
+    h3(doc, "Self-assessment against the evaluation matrix")
+    p(doc,
+      "Detailed evidence per criterion is in Appendix C. Brief view:")
+    table(doc,
+          ["Criterion", "Weight", "Self-assessment"],
+          [
+              ["Problem Solving & Impact", "20%",
+               "Real Bengaluru pain (~127k BBMP complaints / 6 mo, ~15% unresolved). Hub-and-spoke design plugs into existing dept channels — no MoU needed."],
+              ["Agentic Depth", "20%",
+               "7-agent LangGraph loop (Vision, Dedup, Triage, Verification, Scheduler, Resolution, Insights) + deterministic SOP gate + conditional edges. Every transition emits audit events."],
+              ["Innovation & Creativity", "20%",
+               "MILP CVRPTW dispatch on real BBMP data (89.5% km reduction); CLIP+CNN closure audit; soulbound CivicBadge on Polygon Amoy; multilingual UI; on-chain audit anchor."],
+              ["Usage of Google Technologies", "15%",
+               "Gemini 2.5 Flash (Vision + i18n), Cloud Run (web + api), Global HTTPS LB + Serverless NEG, Cloud Build, Artifact Registry, Secret Manager, Cloud Logging, OR-Tools, Google Search Console. Full list in Appendix B."],
+              ["Product Experience & Design", "10%",
+               "Theme-aware (light + dark), responsive (hamburger drawer for tablet/mobile), 3-language i18n (EN / हिन्दी / ಕನ್ನಡ), Mapbox heatmap, framer-motion. Hardcoded demo creds for instant-render."],
+              ["Technical Implementation", "10%",
+               "FastAPI + LangGraph + SQLAlchemy + PostGIS + pgvector + OpenCLIP + custom CNN. Idempotent seed scripts. Reproducible deploy via cloudbuild.yaml. 22-test Playwright suite + daily GitHub Actions cron."],
+              ["Completeness & Usability", "5%",
+               "End-to-end loop closes on prod (verdict=verified_resolved). 1,138-image empirical guardrail eval at 100% specificity. Daily regression CI."],
+          ])
+
+    doc.add_page_break()
+
     # ─── Abstract ───────────────────────────────────────────────
     h1(doc, "Abstract")
     p(doc,
@@ -1031,6 +1096,196 @@ def build() -> None:
         " 3. Match plain civic-help tone — short, respectful, no flourish.\n"
         " 4. Return STRICT JSON: an array of translated strings, same length, same order as input.\n"
         " 5. No prose, no markdown, no explanations.")
+
+    # ─── Appendix B — Google Technologies ────────────────────────
+    h1(doc, "Appendix B — Google Technologies Used")
+    p(doc,
+      "The hackathon weights 'Usage of Google Technologies' at 15%. The "
+      "table below maps each Google product to the specific place it is "
+      "wired into NagarikAI. Every row has a concrete file path or live "
+      "URL so a reviewer can verify.")
+    table(doc,
+          ["Google technology", "Where in NagarikAI", "Evidence"],
+          [
+              ["Gemini 2.5 Flash (multimodal LLM)",
+               "VisionAgent — classifies citizen photo / video into one of 7 civic categories with bbox, severity, hazard, indoor flag; also the UI i18n translator (EN→हिन्दी/ಕನ್ನಡ).",
+               "apps/api/nagarik/agents/vision_agent.py · apps/api/nagarik/i18n_runtime.py · Appendix A"],
+              ["Google Cloud Run",
+               "Web service nagarikai-web (Next.js 14) and API service nagarikai-api (FastAPI + LangGraph). Both scale to zero between requests.",
+               "asia-south1 region · gcloud run services list --project=nagarikai-demo"],
+              ["Google Cloud Load Balancer (Global External HTTPS)",
+               "Front-ends both Cloud Run services on the branded nagarikai.xyz / www / api.* hostnames with a Google-managed SSL certificate.",
+               "Reserved IP 136.68.155.39 · forwarding-rule nagarikai-https-fwd"],
+              ["Serverless Network Endpoint Group (NEG)",
+               "Connects the global LB to the regional Cloud Run services in asia-south1.",
+               "nagarikai-web-neg, nagarikai-api-neg"],
+              ["Google Cloud Build",
+               "Builds both Docker images on every deploy. The web image is built via apps/web/cloudbuild.yaml which pulls the Mapbox token from Secret Manager and passes it as a --build-arg.",
+               "apps/web/cloudbuild.yaml · gcloud builds list --region=asia-south1"],
+              ["Google Artifact Registry",
+               "Hosts the immutable container images for both services.",
+               "asia-south1-docker.pkg.dev/nagarikai-demo/cloud-run-source-deploy/"],
+              ["Google Secret Manager",
+               "Stores 11 secrets: DATABASE_URL, JWT_SECRET, GOOGLE_API_KEY, ANTHROPIC_API_KEY, WHATSAPP_*, SUPABASE_*, mapbox-token. Mounted at deploy time, never in source.",
+               "gcloud secrets list --project=nagarikai-demo"],
+              ["Google Cloud Logging",
+               "Captures every API request, agent event, and Vision-agent rejection reason for post-hoc debugging.",
+               "gcloud run services logs read nagarikai-api --region=asia-south1"],
+              ["Google Search Console",
+               "Domain ownership verification for the Cloud Run domain mapping flow + the LB managed SSL certificate.",
+               "google-site-verification TXT record on nagarikai.xyz"],
+              ["Google OR-Tools",
+               "MILP CVRPTW solver for the SchedulerAgent — dispatches crews against 243 BBMP wards with travel-time + capacity + skill constraints.",
+               "apps/api/nagarik/milp/cvrptw.py · 89.5% km reduction vs FIFO"],
+              ["Google Fonts (via Next.js)",
+               "Application typography.",
+               "apps/web/src/app/layout.tsx"],
+              ["GitHub Actions (Google-adjacent CI)",
+               "Daily 02:30 UTC regression workflow against the live deployment — Playwright suite + red-team probe + happy-path verdict check.",
+               ".github/workflows/daily-e2e.yml"],
+          ])
+
+    # ─── Appendix C — Evaluation Matrix Self-Assessment ─────────
+    h1(doc, "Appendix C — Evaluation Matrix Self-Assessment")
+    p(doc,
+      "The seven criteria from the hackathon rubric, with concrete "
+      "evidence for each. Reviewers can verify any item by opening the "
+      "linked URL or file path.")
+
+    h2(doc, "C.1 — Problem Solving & Impact (20%)")
+    p(doc,
+      "Bengaluru's BBMP receives ~127,000 complaints every six months, "
+      "with around 15% unresolved at any given time. Citizens have "
+      "learned to distrust the half-dozen existing apps (Sahaaya, "
+      "BBMP One, etc.). NagarikAI is built as a thin, fast front-door "
+      "that sits in front of those existing systems rather than "
+      "replacing them — every triaged ticket is dispatched out via the "
+      "department's own preferred channel (WhatsApp / email / webhook) "
+      "with no integration burden on BBMP.")
+    bullets(doc, [
+        "Real-data backtest — MILP scheduler cuts crew kilometres by 89.5% on a 800-issue load (see Results §2).",
+        "Closed-loop verification at the citizen end — same ticket goes through report → AI classify → community verify → crew dispatch → CLIP+CNN audit → +10 XP, all visible to the citizen in real time.",
+        "Trust-graph design — verifier role unlocks at 250 XP, gated by a captured home location so fake confirmations can't be farmed.",
+        "Multi-channel hub-and-spoke — works with any dept regardless of what software (or no software) they use.",
+    ])
+
+    h2(doc, "C.2 — Agentic Depth (20%)")
+    p(doc,
+      "Seven LangGraph agents, each with its own state slice + emitted "
+      "AgentEvent rows. The graph is NOT a linear LLM-call chain — it "
+      "has a deterministic SOP gate between the LLM router and the "
+      "downstream dispatch, and a conditional edge after Vision that "
+      "short-circuits to END when the guardrail rejects.")
+    table(doc,
+          ["Agent", "Model / algorithm", "Output (recorded in agent_events)"],
+          [
+              ["Vision",       "Gemini 2.5 Flash + hardened guardrail prompt", "type, severity, confidence, bbox, indoor, is_civic_issue"],
+              ["Dedup",        "PostGIS radius + OpenCLIP ViT-B/32 cosine",    "is_duplicate, duplicate_of_id"],
+              ["Triage",       "Claude Haiku 4.5 (tool-use) + SOP gate",       "routed_department, sla_hours, severity_verdict, gate_verdict"],
+              ["Verification", "Trust-graph 3-confirm or demo auto-promote",   "notified_citizens"],
+              ["Scheduler",    "Google OR-Tools MILP CVRPTW",                  "scheduled_for (crew_id, slot_index)"],
+              ["Resolution",   "OpenCLIP scene-match + custom pothole CNN",    "resolution_similarity, verdict ∈ {verified_resolved, rejected_*, needs_review}"],
+              ["Insights",     "HistGradientBoosting on rainfall × ward panel","contributes_to_prediction"],
+          ])
+    p(doc,
+      "The conditional vision→END edge is what stops cat / food / "
+      "indoor photos from ever reaching Dedup, Triage, Scheduler, or "
+      "Resolution — see Appendix C.7 + empirical eval (100% specificity "
+      "across 471 random photos).")
+
+    h2(doc, "C.3 — Innovation & Creativity (20%)")
+    bullets(doc, [
+        "AI focus mask — Gemini's bbox is rendered as an SVG overlay on the citizen's tracking page, so the citizen literally sees where the AI looked on their own photo (rust border on before, emerald on after).",
+        "Two-stage routing (LLM proposes, deterministic SOP gate verifies) — 7.39% misroute caught by the gate across 127k complaints replayed; zero hallucinated departments out of 106 fixture cases.",
+        "Closure CNN — custom 24k-param 3-conv + GAP network trained on real OpenCity pothole images (92% test accuracy), used as the second layer of audit after CLIP scene similarity.",
+        "Soulbound CivicBadge — ERC-721 on Polygon Amoy + AuditAnchor.sol that hashes the resolved ticket on-chain (no real ETH burned).",
+        "Multilingual UI — Gemini i18n translator runs at request time with an LRU cache, hot-swaps EN ↔ हिन्दी ↔ ಕನ್ನಡ.",
+        "1,138-image empirical guardrail eval as a built-in pipeline (4 reusable scripts under scripts/ + report at data/eval/REPORT.md).",
+    ])
+
+    h2(doc, "C.4 — Usage of Google Technologies (15%)")
+    p(doc,
+      "See Appendix B for the explicit product-by-product table. "
+      "Headline: Gemini 2.5 Flash for Vision + i18n, Cloud Run for "
+      "both services, Cloud Build for source builds, Global HTTPS LB "
+      "for the custom domain, Secret Manager for 11 secrets, OR-Tools "
+      "for the MILP scheduler. Net idle cost on GCP ≈ $19/mo, "
+      "dominated by the Load Balancer.")
+
+    h2(doc, "C.5 — Product Experience & Design (10%)")
+    bullets(doc, [
+        "Theme — sage / forest-green palette with a bee mascot and accent rust; full light + dark mode (CSS variables, Mapbox popup theme-aware).",
+        "Responsive — desktop horizontal nav at ≥ lg (1024px); below that a slide-out hamburger drawer (framer-motion, body-scroll-lock, close-on-route-change).",
+        "i18n — full EN / हिन्दी / ಕನ್ನಡ at every user-facing surface.",
+        "Demo banners on both sign-in pages with one-click 'Use demo credentials' (hardcoded for instant render — no fetch wait).",
+        "Test gallery at /test-photos with downloadable before/after pairs so judges can drive the loop themselves.",
+        "All timestamps render in IST (Asia/Kolkata) regardless of browser locale; DB storage is UTC.",
+    ])
+
+    h2(doc, "C.6 — Technical Implementation (10%)")
+    bullets(doc, [
+        "Stack — FastAPI 0.138 + LangGraph + SQLAlchemy 2 + Pydantic v2 + Alembic + PostGIS + pgvector + OpenCLIP + Pillow + OR-Tools.",
+        "Database — Supabase Postgres (us-east-1, free tier) over pgBouncer pooler; prepared statements auto-disabled.",
+        "Deploys — one-shot 'gcloud run deploy --source .' for the API; apps/web/cloudbuild.yaml for web (with Secret Manager build-arg injection).",
+        "Seed scripts — idempotent (re-runnable): scripts/seed_departments.py, scripts/seed_crews.py, scripts/seed_leaderboard.py.",
+        "Tests — 22-test Playwright suite at e2e/, plus shell-only e2e/ci/red-team.sh + e2e/ci/happy-path.sh runnable locally and in GitHub Actions cron.",
+        "Observability — every agent emits started/completed/failed events with payload + duration; supervisor view at /supervisor/issue/<id> replays the chain.",
+    ])
+
+    h2(doc, "C.7 — Completeness & Usability (5%)")
+    bullets(doc, [
+        "End-to-end loop closes on prod — last verified at status=resolved, verdict=verified_resolved, ResolutionAgent dur ≈ 38 s.",
+        "Empirical guardrail eval — 1,138 images, 100% specificity (0 of 471 random photos leaked).",
+        "Daily regression in GitHub Actions opens a tracking issue on failure.",
+        "Site loads from a cold start (Cloud Run zero) in ~3 s; warm in <1 s.",
+        "Zero-friction demo — no signup required, demo banners render instantly on both login pages, test photos are downloadable from /test-photos.",
+    ])
+
+    # ─── Appendix D — Demo Walkthrough ──────────────────────────
+    h1(doc, "Appendix D — 5-Minute Demo Walkthrough for Judges")
+    p(doc,
+      "The fastest path through the system. Each step shows a different "
+      "agent or product surface. Total wall-clock ≈ 5 minutes if you "
+      "wait for ResolutionAgent at step 5.")
+
+    h3(doc, "Step 1 — Open the home page")
+    p(doc, "https://nagarikai.xyz — landing page with Brand, top nav, theme toggle, language switcher.")
+
+    h3(doc, "Step 2 — Sign in as the demo citizen")
+    p(doc, "Click 'Sign in' (top-right). Click 'Use demo credentials'. Click 'Sign in'. Lands on /home.")
+
+    h3(doc, "Step 3 — Submit a report")
+    p(doc, "Click 'Report' in the nav. Either: (a) drop a test photo from /test-photos, or (b) use the camera capture. Add a description and submit. Auto-redirects to /tracking/<id>.")
+
+    h3(doc, "Step 4 — Watch the 7-agent pipeline live")
+    p(doc, "The tracking page polls every 2 s and lights up the agent chain: Vision (~10 s) → Dedup (~7 s) → Triage (~25 s) → Verification (~3 s) → Scheduler (~2 s). After ~55 s the ticket is routed to BBMP Roads (or appropriate dept) and the AI focus mask is rendered as an SVG overlay on the photo.")
+
+    h3(doc, "Step 5 — Close the loop as the crew")
+    p(doc, "Open https://nagarikai.xyz/dept-login in a new tab. Click 'bbmp_roads_supervisor' (the first listed account). Click 'Sign in'. From /supervisor you can see the new ticket. Click into it, reassign a crew if none assigned, then upload the matching after-photo (case_a_resolved.jpg works for the Case A pothole). Watch the ResolutionAgent fire (~30 s) and the status flip to resolved.")
+
+    h3(doc, "Step 6 — See the rest of the surface area")
+    table(doc,
+          ["URL", "What's there"],
+          [
+              ["/map",           "Mapbox heatmap of pothole hotspots predicted from rainfall × ward panel"],
+              ["/agents",        "Live 7-agent graph visualisation"],
+              ["/architecture",  "Full system map (same content as the Architecture section of this doc)"],
+              ["/dashboard",     "243-ward complaint stats from the BBMP archive"],
+              ["/crew",          "Crew-side daily route board"],
+              ["/milp",          "MILP scheduler flight board (compare FIFO vs CVRPTW)"],
+              ["/impact",        "Veer leaderboard (gamified citizen XP)"],
+              ["/references",    "Data sources + 7 live charts from the 14,580-row panel"],
+              ["/test-photos",   "Downloadable test media (5 pothole pairs + 6 category photos)"],
+              ["api.nagarikai.xyz/docs", "FastAPI Swagger — all endpoints + schemas"],
+          ])
+
+    h3(doc, "Step 7 — Drive the guardrail probe yourself")
+    p(doc,
+      "Upload a non-civic photo (cat, food, indoor scene) at /report. "
+      "The Vision agent will hard-reject within ~10 s — the ticket "
+      "lands at status=rejected, type=other, routed=None, and never "
+      "enters any department's queue. The same probe is automated "
+      "daily in GitHub Actions (e2e/ci/red-team.sh).")
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     doc.save(str(OUT))
