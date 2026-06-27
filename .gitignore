@@ -77,3 +77,7 @@ apps/web/.claude-flow/
 # Misplaced root-level test photos (belong in apps/web/public/test-photos/)
 /case_*.jpg
 /cyclone-*.webp
+
+# Eval pipeline: keep scripts + manifests + report, exclude downloaded image bytes (220 MB)
+data/eval/images/
+data/eval/predictions_v1.jsonl.bak
