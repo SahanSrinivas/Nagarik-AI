@@ -36,5 +36,10 @@ class AgentState(TypedDict, total=False):
     # InsightsAgent output
     contributes_to_prediction: bool
 
+    # Early-reject signal — when True, the graph short-circuits to END so
+    # downstream agents (Dedup/Triage/etc.) don't run on junk input.
+    rejected: bool
+    rejection_reason: str
+
     # Diagnostics
     errors: list[str]

@@ -184,7 +184,7 @@ export default function HomePage() {
                       )}
                     </div>
                     <div className="mt-1 text-sm" style={{ color: "rgb(var(--text-secondary))" }}>
-                      {i.ward ?? "—"} · {new Date(i.created_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
+                      {i.ward ?? "—"} · {new Date(i.created_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Kolkata" })} IST
                     </div>
                   </div>
                   <StatusPill value={i.status} />

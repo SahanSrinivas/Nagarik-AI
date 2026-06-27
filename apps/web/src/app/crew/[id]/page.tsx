@@ -145,7 +145,7 @@ export default function CrewPage() {
                     {s.ward && <Pill tone="ink">Ward · {s.ward}</Pill>}
                     {s.scheduled_at && (
                       <span className="ml-auto font-mono text-ink-500">
-                        {new Date(s.scheduled_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
+                        {new Date(s.scheduled_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" })} IST
                       </span>
                     )}
                   </div>
@@ -163,7 +163,7 @@ export default function CrewPage() {
                     <div className="font-mono text-xs text-ink-500">{s.lat.toFixed(4)}, {s.lng.toFixed(4)}</div>
                     {s.sla_deadline && (
                       <div className="flex items-center gap-1 text-xs text-amber-700">
-                        <Clock className="h-3 w-3" /> SLA by {new Date(s.sla_deadline).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
+                        <Clock className="h-3 w-3" /> SLA by {new Date(s.sla_deadline).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" })} IST
                       </div>
                     )}
                   </div>

@@ -117,12 +117,16 @@ def _simulate(issue_id: str) -> None:
 def maybe_simulate(issue_id: str) -> None:
     """Kick off the simulation in a daemon thread iff DEMO_AUTO_PROGRESS is on.
 
-    No-op when DEMO_AUTO_PROGRESS=0. The thread is non-blocking so the
-    agent loop returns immediately and the citizen's tracking page starts
-    auto-refreshing within seconds.
+    No-op when DEMO_AUTO_PROGRESS=0, OR when the Vision agent has already
+    rejected the submission (cat / selfie / indoor / etc.) — otherwise the
+    simulator would still walk a rejected issue all the way to RESOLVED.
     """
     if os.environ.get("DEMO_AUTO_PROGRESS", "1") == "0":
         return
+    with SessionLocal() as db:
+        issue = db.get(Issue, uuid.UUID(issue_id))
+        if issue is None or issue.status in (IssueStatus.REJECTED, IssueStatus.CLOSED):
+            return
     t = threading.Thread(target=_simulate, args=(issue_id,), daemon=True,
                          name=f"demo-progress-{issue_id[:8]}")
     t.start()

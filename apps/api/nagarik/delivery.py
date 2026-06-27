@@ -30,6 +30,7 @@ from sqlalchemy.orm import Session
 from nagarik.db import SessionLocal
 from nagarik.models import Department, Issue
 from nagarik.settings import get_settings
+from nagarik.timeutil import fmt_ist
 
 log = logging.getLogger(__name__)
 
@@ -86,8 +87,16 @@ def _dispatch_whatsapp(msg: dict[str, Any], dept: Department) -> dict[str, Any]:
 
 
 def _whatsapp_preview(msg: dict[str, Any]) -> str:
+    # sla_deadline arrives as a UTC ISO string from _build_message; render
+    # it in IST so the dept sees their actual deadline, not 5.5h early.
+    sla_str = "TBD"
+    if msg.get("sla_deadline"):
+        try:
+            sla_str = fmt_ist(datetime.fromisoformat(msg["sla_deadline"]))
+        except (ValueError, TypeError):
+            sla_str = str(msg["sla_deadline"])[:16]
     return (f"🚨 New {msg['type']} report (sev {msg['severity']}/5) in {msg['ward'] or 'BBMP area'}. "
-            f"SLA: {msg['sla_deadline'][:16] if msg['sla_deadline'] else 'TBD'}. "
+            f"SLA: {sla_str}. "
             f"Ticket {msg['ticket_id'][:8]}. View: {msg['supervisor_dashboard_url']}")
 
 

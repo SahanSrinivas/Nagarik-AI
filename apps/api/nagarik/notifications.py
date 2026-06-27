@@ -17,6 +17,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from nagarik.db import Base, SessionLocal
 from nagarik.models import Issue
+from nagarik.timeutil import fmt_ist
 
 
 class Notification(Base):
@@ -74,9 +75,7 @@ def emit(
             "type": getattr(issue.type, "value", issue.type),
             "severity": issue.severity,
             "dept": issue.routed_department or "the department",
-            "sla": issue.sla_deadline.astimezone(timezone.utc).strftime("%a %d %b, %H:%M IST")
-            if issue.sla_deadline
-            else "soon",
+            "sla": fmt_ist(issue.sla_deadline) if issue.sla_deadline else "soon",
             **(extras or {}),
         }
         # Safe formatting — missing keys render as the literal {name}.

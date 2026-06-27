@@ -78,13 +78,21 @@ def _wrap(agent_name: str) -> Callable[[AgentState], AgentState]:
     return node
 
 
+def _after_vision(state: AgentState) -> str:
+    """Short-circuit the graph when Vision has rejected the submission
+    (cat / selfie / indoor / low-confidence / image-fetch failure). Without
+    this, Dedup → Triage → Scheduler all run on junk input and end up
+    routing phantom complaints to BBMP Helpdesk."""
+    return "__end__" if state.get("rejected") else "dedup"
+
+
 def build_graph():
     g = StateGraph(AgentState)
     for name in AGENT_RUNNERS:
         g.add_node(name, _wrap(name))
 
     g.add_edge(START, "vision")
-    g.add_edge("vision", "dedup")
+    g.add_conditional_edges("vision", _after_vision, {"dedup": "dedup", "__end__": END})
     g.add_edge("dedup", "triage")
     g.add_edge("triage", "verification")
     g.add_edge("verification", "scheduler")

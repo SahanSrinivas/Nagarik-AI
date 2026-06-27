@@ -188,7 +188,7 @@ export default function WhatsAppAdminPage() {
                     <td className="p-3 text-right font-mono tabular-nums">{r.send_count}</td>
                     <td className="p-3 text-xs" style={{ color: "rgb(var(--text-muted))" }}>
                       {r.last_attempt
-                        ? new Date(r.last_attempt).toLocaleString("en-IN", { dateStyle: "short", timeStyle: "short" })
+                        ? new Date(r.last_attempt).toLocaleString("en-IN", { dateStyle: "short", timeStyle: "short", timeZone: "Asia/Kolkata" }) + " IST"
                         : "—"}
                     </td>
                     <td className="p-3 text-right">
