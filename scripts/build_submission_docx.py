@@ -145,6 +145,25 @@ def build() -> None:
       "that encourages transparency, accountability, and community "
       "participation. NagarikAI is built for exactly that.")
 
+    h2(doc, "What citizens told us — voices from Bengaluru")
+    p(doc,
+      "Before writing a line of code we spoke to three Bengaluru "
+      "residents across different wards. Their stories drove three "
+      "concrete design responses: one front door instead of six, "
+      "post-fix CLIP+CNN audit so a re-pothole gets caught, and "
+      "WhatsApp pings at every status change. Quotes paraphrased "
+      "with consent; last names redacted.")
+    table(doc,
+          ["Citizen", "Ward", "Issue", "What they said"],
+          [
+              ["Sravan G.", "Marathahalli", "Falling trees",
+               "Every monsoon a tree branch comes down on our lane. Last June it blocked the road for two days — BBMP took 36 hours to even acknowledge the call."],
+              ["Haarika P.", "Kalyan Nagar", "Repeat potholes",
+               "They re-tarred the road in March and the same potholes were back in two months. There's no way to flag 'this fix didn't last' on the existing apps — you just file a fresh complaint."],
+              ["Anila K.", "Hebbal", "Streetlights",
+               "The streetlight on our side has been out for three weeks. I logged it on BBMP Sahaaya, the BESCOM helpline, and on Twitter. No reply on any of them. I don't even know which one I'm supposed to use."],
+          ])
+
     # ── 2. Solution Overview ──
     h1(doc, "Solution Overview")
     p(doc,
@@ -298,13 +317,31 @@ def build() -> None:
       "hallucinated departments out of 106 fixtures. Zero out of 16 "
       "prompt-injection attempts succeeded.")
 
-    h2(doc, "5. End-to-end closed loop on prod")
+    h2(doc, "5. End-to-end closed loop on prod — fully automated")
     p(doc,
-      "Latest verified Koramangala submission: Vision sev=4 conf=0.95, "
-      "Triage→BBMP Roads, ResolutionAgent verdict=verified_resolved "
-      "(CLIP+CNN, dur ≈ 38 s). Daily GitHub Actions cron runs the "
-      "same probe + the Playwright suite + the red-team test against "
-      "the live nagarikai.xyz deployment.")
+      "Latest verified Indiranagar submission: Vision sev=4 conf=0.95, "
+      "Triage→BBMP Roads, SchedulerAgent auto-assigned crew Roads "
+      "North · Hebbal, ResolutionAgent verdict=verified_resolved "
+      "(CLIP+CNN, ~30 s). Zero manual intervention from submit to "
+      "resolved — the prior 'manual reassign-crew' workaround was "
+      "removed once the SQLAlchemy UUID/ORM persist bug in Scheduler "
+      "was closed.")
+    p(doc,
+      "Daily GitHub Actions cron at 02:30 UTC runs three jobs against "
+      "the live nagarikai.xyz deployment: Playwright (22 tests), the "
+      "red-team probe (4 non-civic photos), and the same happy-path "
+      "above. Any regression opens a tracking issue tagged "
+      "regression, automated.")
+
+    h2(doc, "6. Hosting cost — runs at ~$30/month")
+    p(doc,
+      "Cloud Run: nagarikai-web + nagarikai-api each kept at "
+      "min-instances=1 (one warm container) so the citizen never sees a "
+      "3-5s cold start — ≈ $10-14/mo. Global HTTPS LB + managed SSL ≈ "
+      "$18/mo. Artifact Registry, Secret Manager, and Cloud Logging "
+      "round to ≈ $0.10/mo combined. Supabase Postgres + Storage on "
+      "the free tier. Net steady-state cost = ≈ $30/mo for a fully-"
+      "demoable, always-warm civic platform.")
 
     # ── Appendix A — Demo credentials ──
     h1(doc, "Appendix A — Demo Credentials (no signup needed)")
