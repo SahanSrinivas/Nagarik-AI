@@ -81,3 +81,4 @@ apps/web/.claude-flow/
 # Eval pipeline: keep scripts + manifests + report, exclude downloaded image bytes (220 MB)
 data/eval/images/
 data/eval/predictions_v1.jsonl.bak
+~$*.docx

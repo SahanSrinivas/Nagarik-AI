@@ -443,6 +443,28 @@ def build() -> None:
       "Build a platform that lets citizens identify, report, validate, track, and resolve "
       "community issues through collaboration, data, and intelligent automation — and that "
       "encourages transparency, accountability, and community participation.")
+    h3(doc, "What citizens told us")
+    p(doc,
+      "Before writing a line of code we spoke to three Bengaluru "
+      "residents across different wards. The pattern was consistent: "
+      "the existing apps are too many, too slow, and too opaque. Quotes "
+      "are paraphrased with consent; last names redacted.")
+    table(doc,
+          ["Citizen", "Ward", "What they reported"],
+          [
+              ["Sravan G.", "Marathahalli",
+               "\"Every monsoon a tree branch comes down on our lane. Last June it blocked the road for two days — BBMP took 36 hours to even acknowledge the call.\""],
+              ["Haarika P.", "Kalyan Nagar",
+               "\"They re-tarred the road in March and the same potholes were back in two months. There's no way to flag 'this fix didn't last' on the existing apps — you just file a fresh complaint and it goes to the same crew.\""],
+              ["Anila K.", "Hebbal",
+               "\"The streetlight on our side has been out for three weeks. I logged it on BBMP Sahaaya, on the BESCOM helpline, and on Twitter. No reply on any of them. I don't know which one I'm supposed to use.\""],
+          ])
+    p(doc,
+      "Three concrete design responses fell out of those conversations: "
+      "(a) one front door instead of six, (b) post-fix CLIP+CNN audit so a "
+      "re-pothole gets caught as 'not actually fixed', (c) WhatsApp pings on "
+      "every status change so the citizen never wonders where their ticket is.")
+
     h3(doc, "Three pain points NagarikAI targets directly:")
     bullets(doc, [
         "Fragmented reporting — BBMP runs at least half a dozen apps and a helpline; citizens "

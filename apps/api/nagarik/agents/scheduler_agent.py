@@ -8,6 +8,7 @@ job that re-solves once and stores assignments.
 
 from __future__ import annotations
 
+import uuid
 from datetime import date, datetime, time, timezone
 
 from geoalchemy2.shape import to_shape
@@ -17,6 +18,15 @@ from nagarik.agents.state import AgentState
 from nagarik.db import SessionLocal
 from nagarik.milp.cvrptw import CVRPTWInput, CrewVehicle, IssueNode, solve_cvrptw
 from nagarik.models import Crew, Issue, IssueStatus
+
+
+def _as_uuid(v):
+    """Tolerant cast. The MILP solver emits IssueNode/CrewVehicle ids as
+    str (see line 43), but the Issue.id / Crew.id columns are UUID — when
+    the WHERE clause compares str against UUID, Postgres/SQLAlchemy
+    silently match zero rows, so the UPDATE is a no-op and the citizen
+    sees crew=None forever. Casting both sides to UUID fixes that."""
+    return v if isinstance(v, uuid.UUID) else uuid.UUID(str(v))
 
 
 def run_scheduler(state: AgentState) -> AgentState:
@@ -69,18 +79,23 @@ def run_scheduler(state: AgentState) -> AgentState:
         # Apply the assignments back to the database.
         scheduled_this_issue = None
         for route in result.get("routes", []):
+            crew_uuid = _as_uuid(route["crew_id"])
             for seq, issue_id in enumerate(route["sequence"]):
+                issue_uuid = _as_uuid(issue_id)
+                # Bound slot hours to the shift window so seq > 9 (very long
+                # routes) doesn't roll over to 24+:00 and 500-error the DB.
+                slot_hour = min(17, 9 + seq)
                 db.execute(
                     update(Issue)
-                    .where(Issue.id == issue_id)
+                    .where(Issue.id == issue_uuid)
                     .values(
-                        assigned_crew_id=route["crew_id"],
-                        scheduled_at=datetime.combine(today, time(9 + seq, 0), tzinfo=timezone.utc),
+                        assigned_crew_id=crew_uuid,
+                        scheduled_at=datetime.combine(today, time(slot_hour, 0), tzinfo=timezone.utc),
                         status=IssueStatus.SCHEDULED,
                     )
                 )
-                if issue_id == state["issue_id"]:
-                    scheduled_this_issue = (route["crew_id"], seq)
+                if str(issue_uuid) == str(state["issue_id"]):
+                    scheduled_this_issue = (str(crew_uuid), seq)
         db.commit()
 
     # Close the loop: notify the citizen that a crew has been assigned.
