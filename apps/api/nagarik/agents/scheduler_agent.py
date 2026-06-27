@@ -76,27 +76,42 @@ def run_scheduler(state: AgentState) -> AgentState:
 
         result = solve_cvrptw(CVRPTWInput(issues=nodes, crews=vehicles, date=today))
 
-        # Apply the assignments back to the database.
+        # Apply the assignments back to the database. Using ORM get + attr
+        # assignment (instead of the raw update(Issue).where().values()
+        # builder) because the builder pattern was silently zero-matching
+        # in prod — see the long debugging trail in agent_events for issues
+        # where scheduler.completed.payload.scheduled_for is set (proving
+        # the loop iterated correctly) but Issue.assigned_crew_id stayed
+        # NULL. The ORM path makes "row not found" explicit and gives us
+        # a single commit point at the end.
+        import logging as _log
+        logger = _log.getLogger(__name__)
+
         scheduled_this_issue = None
+        updated = 0
+        missing = 0
         for route in result.get("routes", []):
             crew_uuid = _as_uuid(route["crew_id"])
             for seq, issue_id in enumerate(route["sequence"]):
                 issue_uuid = _as_uuid(issue_id)
-                # Bound slot hours to the shift window so seq > 9 (very long
-                # routes) doesn't roll over to 24+:00 and 500-error the DB.
                 slot_hour = min(17, 9 + seq)
-                db.execute(
-                    update(Issue)
-                    .where(Issue.id == issue_uuid)
-                    .values(
-                        assigned_crew_id=crew_uuid,
-                        scheduled_at=datetime.combine(today, time(slot_hour, 0), tzinfo=timezone.utc),
-                        status=IssueStatus.SCHEDULED,
-                    )
+                issue_obj = db.get(Issue, issue_uuid)
+                if issue_obj is None:
+                    missing += 1
+                    logger.warning("scheduler: issue %s not found in DB", issue_uuid)
+                    continue
+                issue_obj.assigned_crew_id = crew_uuid
+                issue_obj.scheduled_at = datetime.combine(
+                    today, time(slot_hour, 0), tzinfo=timezone.utc
                 )
+                issue_obj.status = IssueStatus.SCHEDULED
+                updated += 1
                 if str(issue_uuid) == str(state["issue_id"]):
                     scheduled_this_issue = (str(crew_uuid), seq)
+        db.flush()
         db.commit()
+        logger.info("scheduler: updated=%d missing=%d this_issue=%s",
+                    updated, missing, scheduled_this_issue)
 
     # Close the loop: notify the citizen that a crew has been assigned.
     if scheduled_this_issue is not None:

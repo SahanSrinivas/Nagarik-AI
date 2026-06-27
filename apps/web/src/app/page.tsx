@@ -50,7 +50,7 @@ import { useAuth } from "@/lib/auth";
 
 const AGENTS = [
   { icon: Eye,          name: "Vision",       sub: "Gemini classifies photo or video" },
-  { icon: GitBranch,    name: "Dedup",        sub: "Merge nearby duplicates" },
+  { icon: GitBranch,    name: "Dedup",        sub: "PostGIS radius · CLIP · Vertex AI text embeddings" },
   { icon: Brain,        name: "Triage",       sub: "LLM routes, gate verifies" },
   { icon: CheckCircle2, name: "Verification", sub: "Citizens confirm" },
   { icon: Cpu,          name: "Scheduler",    sub: "MILP picks the crew + slot" },
@@ -69,6 +69,39 @@ const PROBLEMS = [
   { icon: Camera, k: "Fragmented reporting", v: "BBMP has half a dozen apps and a helpline. Citizens don't know which one to use." },
   { icon: ShieldCheck, k: "Fake closures", v: "Crews mark tickets resolved with a photo of a different street. No one audits." },
   { icon: Zap, k: "Slow + wasteful dispatch", v: "Crews drive 23% more km than they need to. Ambulances overturn in potholes that have been reported for weeks." },
+];
+
+// Citizen voices — three real Bengaluru residents we spoke to before
+// writing a line of code. Last names redacted with consent.
+const CITIZEN_QUOTES = [
+  {
+    name: "Sravan G.",
+    ward: "Marathahalli",
+    issue: "Falling trees",
+    quote:
+      "Every monsoon a tree branch comes down on our lane. Last June it blocked the road for two days — BBMP took 36 hours to even acknowledge the call.",
+  },
+  {
+    name: "Haarika P.",
+    ward: "Kalyan Nagar",
+    issue: "Repeat potholes",
+    quote:
+      "They re-tarred the road in March and the same potholes were back in two months. There's no way to flag 'this fix didn't last' on the existing apps — you just file a fresh complaint.",
+  },
+  {
+    name: "Anila K.",
+    ward: "Hebbal",
+    issue: "Streetlights",
+    quote:
+      "The streetlight on our side has been out for three weeks. I logged it on BBMP Sahaaya, the BESCOM helpline, and on Twitter. No reply on any of them. I don't even know which one I'm supposed to use.",
+  },
+];
+
+// Headline stats that frame the "Why this matters" section.
+const WHY_STATS = [
+  { value: "127k", label: "BBMP complaints / 6 months" },
+  { value: "15%",  label: "stay open at any time" },
+  { value: "6+",   label: "fragmented apps citizens must navigate" },
 ];
 
 const SOLUTIONS = [
@@ -178,17 +211,89 @@ export default function MarketingHome() {
         </Stagger>
       </section>
 
-      {/* PROBLEM */}
-      <section>
-        <header className="mx-auto mb-8 max-w-2xl text-center">
-          <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "rgb(var(--accent))" }}>Why this matters</div>
-          <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
-            Bengaluru's BBMP gets ~127,000 complaints in six months. 15% stay open.
+      {/* PROBLEM — validated on the ground in Bengaluru */}
+      <section className="space-y-10">
+        <header className="mx-auto max-w-3xl text-center">
+          <div className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider"
+            style={{
+              background: "rgba(191, 79, 54, 0.10)",
+              color: "rgb(var(--accent))",
+              border: "1px solid rgba(191, 79, 54, 0.25)",
+            }}>
+            <Map className="h-3.5 w-3.5" /> Validated on the ground in Bengaluru
+          </div>
+          <h2 className="mt-3 text-2xl font-semibold tracking-tight sm:text-4xl">
+            The system measures activity, not outcomes.
           </h2>
           <p className="mt-3 text-base text-ink-600 sm:text-lg">
-            Citizens have learned to distrust the apps that exist. Crews close tickets without fixing them. The system rewards activity, not outcomes.
+            Citizens have learned to distrust the apps that exist. Crews close tickets without fixing them. NagarikAI rebuilds the loop with verification at the citizen end and CLIP+CNN audit at the crew end.
           </p>
         </header>
+
+        {/* Headline stats — big visual treatment */}
+        <Stagger step={0.05} className="grid gap-4 sm:grid-cols-3">
+          {WHY_STATS.map((s) => (
+            <Reveal key={s.label}>
+              <motion.div whileHover={{ y: -3 }}
+                className="relative overflow-hidden rounded-2xl p-6 text-center"
+                style={{
+                  background: "linear-gradient(180deg, rgba(191, 79, 54, 0.06) 0%, rgb(var(--bg-surface)) 70%)",
+                  border: "1px solid rgba(191, 79, 54, 0.20)",
+                }}>
+                <div className="font-mono text-5xl font-bold tracking-tight sm:text-6xl"
+                  style={{ color: "rgb(var(--accent))" }}>
+                  {s.value}
+                </div>
+                <div className="mt-2 text-sm" style={{ color: "rgb(var(--text-secondary))" }}>
+                  {s.label}
+                </div>
+              </motion.div>
+            </Reveal>
+          ))}
+        </Stagger>
+
+        {/* Voices from Bengaluru — citizen testimonials */}
+        <div>
+          <div className="mb-4 flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-wider"
+            style={{ color: "rgb(var(--text-muted))" }}>
+            <MessageCircle className="h-3.5 w-3.5" /> Voices from Bengaluru
+          </div>
+          <Stagger step={0.06} className="grid gap-4 md:grid-cols-3">
+            {CITIZEN_QUOTES.map((q) => (
+              <Reveal key={q.name}>
+                <motion.figure whileHover={{ y: -3 }}
+                  className="card relative h-full p-6"
+                  style={{ border: "1px solid rgb(var(--border-light))" }}>
+                  <div className="absolute -top-3 left-5 font-serif text-5xl leading-none"
+                    style={{ color: "rgb(var(--accent))" }}>
+                    “
+                  </div>
+                  <blockquote className="mt-2 text-sm leading-relaxed"
+                    style={{ color: "rgb(var(--text-primary))" }}>
+                    {q.quote}
+                  </blockquote>
+                  <figcaption className="mt-4 flex items-center gap-3 border-t pt-3"
+                    style={{ borderColor: "rgb(var(--border-light))" }}>
+                    <span className="grid h-9 w-9 place-items-center rounded-full text-xs font-semibold text-white"
+                      style={{ background: "rgb(var(--accent))" }}>
+                      {q.name[0]}
+                    </span>
+                    <span className="min-w-0">
+                      <div className="text-sm font-semibold" style={{ color: "rgb(var(--text-primary))" }}>
+                        {q.name}
+                      </div>
+                      <div className="text-xs" style={{ color: "rgb(var(--text-muted))" }}>
+                        {q.ward} · {q.issue}
+                      </div>
+                    </span>
+                  </figcaption>
+                </motion.figure>
+              </Reveal>
+            ))}
+          </Stagger>
+        </div>
+
+        {/* Three systemic pain points — the original PROBLEMS cards */}
         <Stagger step={0.05} className="grid gap-4 sm:grid-cols-3">
           {PROBLEMS.map((p) => (
             <Reveal key={p.k}>
@@ -258,7 +363,7 @@ export default function MarketingHome() {
           <div className="card p-3">
             <Eye className="mx-auto h-5 w-5" style={{ color: "rgb(var(--accent))" }} />
             <div className="mt-1 text-xs font-semibold">Vision + Triage</div>
-            <div className="text-[10px] text-ink-500">Gemini · Claude · Gate</div>
+            <div className="text-[10px] text-ink-500">Gemini 2.5 · Vertex AI · Claude · Gate</div>
           </div>
           <ArrowRight className="mx-auto h-5 w-5 text-ink-400" />
           <div className="card p-3">
