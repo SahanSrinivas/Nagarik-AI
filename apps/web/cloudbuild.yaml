@@ -1,0 +1,80 @@
+# Cloud Build config for nagarikai-web.
+#
+# Why a custom config instead of `gcloud run deploy --source .`?
+# Because NEXT_PUBLIC_MAPBOX_TOKEN must be baked into the Next.js client
+# bundle at build time, and source-deploys don't expose --build-arg. This
+# config reads the token from Secret Manager (secret name: mapbox-token)
+# and passes it to `docker build`. Other public env vars are also injected
+# here so the Dockerfile defaults can be tightened.
+#
+# Trigger manually from apps/web/:
+#   gcloud builds submit --config=cloudbuild.yaml --region=asia-south1
+#
+# One-time setup (see scripts/setup-web-secrets.sh):
+#   1. Create the secret from .env.local
+#   2. Grant Cloud Build SA the secretAccessor role on it
+
+substitutions:
+  _SERVICE: nagarikai-web
+  _REGION: asia-south1
+  _REPO: cloud-run-source-deploy
+  _API_URL: https://api.nagarikai.xyz
+  _CITY_LAT: "12.9716"
+  _CITY_LNG: "77.5946"
+
+steps:
+  # 1. Build the image, pulling MAPBOX_TOKEN from Secret Manager into the
+  #    docker --build-arg flag so it lands in the Next.js client bundle.
+  - id: build
+    name: gcr.io/cloud-builders/docker
+    entrypoint: bash
+    secretEnv: [MAPBOX_TOKEN]
+    args:
+      - -c
+      - |
+        docker build \
+          --build-arg NEXT_PUBLIC_API_URL="${_API_URL}" \
+          --build-arg NEXT_PUBLIC_MAPBOX_TOKEN="$$MAPBOX_TOKEN" \
+          --build-arg NEXT_PUBLIC_CITY_CENTER_LAT="${_CITY_LAT}" \
+          --build-arg NEXT_PUBLIC_CITY_CENTER_LNG="${_CITY_LNG}" \
+          -t "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:${BUILD_ID}" \
+          -t "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:latest" \
+          .
+
+  # 2. Push both tags.
+  - id: push
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - --all-tags
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}
+
+  # 3. Roll out a new Cloud Run revision pointing at :latest.
+  - id: deploy
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE}
+      - --image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:${BUILD_ID}
+      - --region=${_REGION}
+      - --project=${PROJECT_ID}
+      - --allow-unauthenticated
+      - --memory=512Mi
+      - --cpu=1
+      - --timeout=60
+      - --max-instances=3
+      - --port=8080
+
+availableSecrets:
+  secretManager:
+    - versionName: projects/${PROJECT_ID}/secrets/mapbox-token/versions/latest
+      env: MAPBOX_TOKEN
+
+images:
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:${BUILD_ID}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:latest
+
+options:
+  logging: CLOUD_LOGGING_ONLY

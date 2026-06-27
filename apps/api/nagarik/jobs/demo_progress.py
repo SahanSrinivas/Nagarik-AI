@@ -46,10 +46,18 @@ def _set_status(issue_id: str, status: IssueStatus, *, resolved: bool = False) -
     """Atomically flip an issue's status. Returns the refreshed row, or None
     if the issue has since been deleted."""
     with SessionLocal() as db:
+        current = db.get(Issue, uuid.UUID(issue_id))
+        if current is None:
+            return None
         values: dict = {"status": status}
         if resolved:
             values["resolved_at"] = datetime.now(timezone.utc)
-            values["after_photo_url"] = STUB_AFTER_PHOTO
+            # Only stub the after-photo if a real crew hasn't uploaded one
+            # already. Without this guard the simulator clobbers genuine
+            # crew uploads when re-fired via run_agent_loop from /crew/
+            # …/complete, and ResolutionAgent ends up scoring the stub.
+            if not current.after_photo_url:
+                values["after_photo_url"] = STUB_AFTER_PHOTO
         db.execute(update(Issue).where(Issue.id == uuid.UUID(issue_id)).values(**values))
         db.commit()
         return db.get(Issue, uuid.UUID(issue_id))
@@ -78,8 +86,11 @@ def _simulate(issue_id: str) -> None:
             issue = db.get(Issue, uuid.UUID(issue_id))
             if issue is None:
                 return
-            # Skip if already past triage (e.g., a real crew acted on it).
-            if issue.status in (IssueStatus.RESOLVED, IssueStatus.CLOSED, IssueStatus.REJECTED):
+            # Skip if a real crew has already taken over. IN_PROGRESS means
+            # the crew lead pressed Start in /crew/[id], so the simulator
+            # should step aside and let the real flow finish.
+            if issue.status in (IssueStatus.IN_PROGRESS, IssueStatus.RESOLVED,
+                                IssueStatus.CLOSED, IssueStatus.REJECTED):
                 return
         emit(issue_id, "verified", extras={"count": 3})
 

@@ -16,7 +16,7 @@ alembic>=1.14,<2
 langgraph>=0.2,<0.3
 langchain-core>=0.3,<0.4
 anthropic>=0.40,<1
-google-genai>=0.3,<1
+google-genai>=1.0,<3
 openai>=1.55,<2          # for embeddings only
 
 # Optimization

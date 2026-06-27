@@ -16,13 +16,198 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 from docx.shared import Inches, Pt, RGBColor
+from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT  = ROOT / "docs" / "NagarikAI_Project_Report.docx"
 PHOTOS = ROOT / "apps" / "web" / "public" / "test-photos"
+ASSETS = ROOT / "docs" / "assets"
 
 ACCENT = RGBColor(0xBF, 0x4F, 0x36)  # rust
 INK    = RGBColor(0x18, 0x18, 0x1B)
+
+# Brand palette used for the service tiles + topology diagram.
+BRANDS: list[tuple[str, str, str]] = [
+    # (display name, subtitle, hex)
+    ("Google Cloud Run",   "web + api containers",       "#4285F4"),
+    ("Cloud Load Balancer","global HTTPS + SSL",         "#1A73E8"),
+    ("Artifact Registry",  "container images",           "#34A853"),
+    ("Secret Manager",     "10 secrets, KMS-encrypted",  "#EA4335"),
+    ("Supabase",           "Postgres + PostGIS + pgvector","#3ECF8E"),
+    ("Supabase Storage",   "ivic-evidence bucket",       "#249F6F"),
+    ("Mapbox GL",          "wards + heatmap overlay",    "#4264FB"),
+    ("WhatsApp Cloud API", "citizen + dept channel",     "#25D366"),
+    ("Gemini 2.5 Flash",   "vision + i18n",              "#886FBF"),
+    ("Anthropic Claude",   "Triage agent (Haiku 4.5)",   "#D97757"),
+    ("Polygon Amoy",       "audit + soulbound badge",    "#8247E5"),
+    ("Hostinger",          "nagarikai.xyz registrar",    "#673DE6"),
+]
+
+
+def _pil_font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont:
+    """Best-effort macOS TTF lookup with sensible fallbacks."""
+    candidates = (
+        "/System/Library/Fonts/Supplemental/Helvetica.ttc",
+        "/System/Library/Fonts/HelveticaNeue.ttc",
+        "/Library/Fonts/Arial.ttf",
+        "/System/Library/Fonts/Avenir.ttc",
+    )
+    for path in candidates:
+        if os.path.exists(path):
+            try:
+                return ImageFont.truetype(path, size, index=1 if bold else 0)
+            except (OSError, ValueError):
+                try:
+                    return ImageFont.truetype(path, size)
+                except OSError:
+                    continue
+    return ImageFont.load_default()
+
+
+def _hex(c: str) -> tuple[int, int, int]:
+    c = c.lstrip("#")
+    return (int(c[0:2], 16), int(c[2:4], 16), int(c[4:6], 16))
+
+
+def make_service_grid(out_path: Path) -> None:
+    """One image holding every brand tile, 3 columns wide."""
+    cols = 3
+    rows = (len(BRANDS) + cols - 1) // cols
+    cell_w, cell_h = 540, 170
+    pad = 24
+    W = cols * cell_w + (cols + 1) * pad
+    H = rows * cell_h + (rows + 1) * pad
+    img = Image.new("RGB", (W, H), (250, 250, 252))
+    d = ImageDraw.Draw(img)
+    name_f = _pil_font(34, bold=True)
+    sub_f  = _pil_font(22)
+    for idx, (name, sub, hexcol) in enumerate(BRANDS):
+        r, c = divmod(idx, cols)
+        x0 = pad + c * (cell_w + pad)
+        y0 = pad + r * (cell_h + pad)
+        x1 = x0 + cell_w
+        y1 = y0 + cell_h
+        color = _hex(hexcol)
+        d.rounded_rectangle((x0, y0, x1, y1), radius=18, fill=color)
+        # left brand strip + a soft inner highlight
+        d.rounded_rectangle((x0, y0, x0 + 14, y1), radius=18, fill=(255, 255, 255, 60))
+        d.text((x0 + 36, y0 + 32), name, font=name_f, fill=(255, 255, 255))
+        d.text((x0 + 36, y0 + 86), sub, font=sub_f, fill=(255, 255, 255, 220))
+    img.save(out_path, "PNG", optimize=True)
+
+
+def make_topology_diagram(out_path: Path) -> None:
+    """The full nagarikai.xyz → Cloud Run → Supabase topology, one PNG."""
+    W, H = 2200, 1500
+    img = Image.new("RGB", (W, H), (250, 250, 252))
+    d = ImageDraw.Draw(img)
+
+    title_f = _pil_font(52, bold=True)
+    box_f   = _pil_font(30, bold=True)
+    sub_f   = _pil_font(22)
+    small_f = _pil_font(20)
+    note_f  = _pil_font(22)
+
+    d.text((W // 2 - 460, 36), "NagarikAI — Production Topology", font=title_f, fill=(24, 24, 27))
+    d.text((W // 2 - 380, 102), "GCP project nagarikai-demo · region asia-south1 (Mumbai) · Supabase us-east-1",
+           font=note_f, fill=(110, 110, 115))
+
+    def box(x, y, w, h, title, lines, fill, accent):
+        d.rounded_rectangle((x, y, x + w, y + h), radius=14, fill=fill, outline=accent, width=3)
+        d.rounded_rectangle((x, y, x + 8, y + h), radius=14, fill=accent)
+        d.text((x + 24, y + 18), title, font=box_f, fill=(255, 255, 255))
+        for i, line in enumerate(lines):
+            d.text((x + 24, y + 64 + i * 30), line, font=small_f, fill=(255, 255, 255, 235))
+
+    def arrow(x1, y1, x2, y2, label=None):
+        d.line((x1, y1, x2, y2), fill=(80, 80, 90), width=3)
+        # arrowhead
+        import math
+        ang = math.atan2(y2 - y1, x2 - x1)
+        ah = 14
+        d.polygon([
+            (x2, y2),
+            (x2 - ah * math.cos(ang - math.pi / 7), y2 - ah * math.sin(ang - math.pi / 7)),
+            (x2 - ah * math.cos(ang + math.pi / 7), y2 - ah * math.sin(ang + math.pi / 7)),
+        ], fill=(80, 80, 90))
+        if label:
+            mx, my = (x1 + x2) // 2, (y1 + y2) // 2
+            d.rectangle((mx - 90, my - 16, mx + 90, my + 14), fill=(250, 250, 252))
+            d.text((mx - 84, my - 12), label, font=small_f, fill=(60, 60, 70))
+
+    # Row 1 — clients
+    box(150,  180, 460, 130, "Citizen browser",
+        ["nagarikai.xyz · www", "PWA · Next.js 14"], (66, 100, 251), (40, 70, 200))
+    box(870,  180, 460, 130, "Supervisor browser",
+        ["nagarikai.xyz/supervisor", "14 dept users seeded"], (66, 100, 251), (40, 70, 200))
+    box(1590, 180, 460, 130, "Citizen WhatsApp",
+        ["+1 (555) 646-6050 sandbox", "Meta Cloud API"], (37, 211, 102), (20, 160, 75))
+
+    # Row 2 — Hostinger DNS
+    box(700, 380, 800, 100, "Hostinger DNS (nagarikai.xyz)",
+        ["A @, www, api → 136.68.155.39", "TXT google-site-verification"], (103, 61, 230), (70, 30, 180))
+
+    # Row 3 — GCP LB
+    box(550, 540, 1100, 130, "GCP Global External HTTPS Load Balancer",
+        ["IP 136.68.155.39 · :80 → :443 redirect", "Managed SSL cert · URL map (host-based)"],
+        (26, 115, 232), (10, 80, 180))
+
+    # Row 4 — Serverless NEGs
+    box(360, 740, 700, 110, "Serverless NEG · nagarikai-web-neg",
+        ["region asia-south1 · service nagarikai-web"], (66, 133, 244), (40, 90, 200))
+    box(1150, 740, 700, 110, "Serverless NEG · nagarikai-api-neg",
+        ["region asia-south1 · service nagarikai-api"], (66, 133, 244), (40, 90, 200))
+
+    # Row 5 — Cloud Run services
+    box(360, 900, 700, 160, "Cloud Run · nagarikai-web",
+        ["Next.js 14 standalone · 512 Mi / 1 vCPU",
+         "scales to zero · NEXT_PUBLIC_API_URL=…"],
+        (66, 133, 244), (40, 90, 200))
+    box(1150, 900, 700, 160, "Cloud Run · nagarikai-api",
+        ["FastAPI · LangGraph · 7-agent loop",
+         "OR-Tools MILP CVRPTW scheduler"],
+        (66, 133, 244), (40, 90, 200))
+
+    # Row 6 — Supabase + external integrations
+    box(100, 1130, 620, 280, "Supabase (us-east-1)",
+        ["Postgres 16 + PostGIS + pgvector",
+         "pooler.supabase.com:6543 (pgBouncer)",
+         "Storage bucket: ivic-evidence",
+         "Realtime channels for /tracking",
+         "Free tier · $0 idle"],
+        (62, 207, 142), (30, 150, 100))
+
+    box(770, 1130, 620, 280, "External AI / data APIs",
+        ["Gemini 2.5 Flash · vision + i18n",
+         "Claude Haiku 4.5 · Triage proposer",
+         "Mapbox GL · wards + heatmap",
+         "OpenCLIP ViT-B/32 · in-process",
+         "Pothole CNN · in-process"],
+        (216, 119, 87), (170, 80, 50))
+
+    box(1440, 1130, 620, 280, "GCP control plane",
+        ["Artifact Registry · container images",
+         "Secret Manager · 10 entries",
+         "Cloud Build · gcloud run deploy --source",
+         "Cloud Logging · gcloud run services logs read",
+         "Net idle cost ≈ $18/mo (LB) + $0 services"],
+        (52, 168, 83), (30, 130, 60))
+
+    # Arrows
+    arrow(380, 310, 700, 380, "DNS")
+    arrow(1100, 310, 1100, 380, "DNS")
+    arrow(1820, 310, 1500, 480, "outbound")
+    arrow(1100, 480, 1100, 540, "")
+    arrow(800,  670, 700, 740, "")
+    arrow(1400, 670, 1500, 740, "")
+    arrow(700,  850, 700, 900, "")
+    arrow(1500, 850, 1500, 900, "")
+    arrow(700,  1060, 410, 1130, "SQL")
+    arrow(1500, 1060, 1070, 1130, "SQL")
+    arrow(1500, 1060, 1080, 1130, "REST")  # double-up visual weight
+    arrow(1500, 1060, 1750, 1130, "ops")
+
+    img.save(out_path, "PNG", optimize=True)
 
 
 def _shade(cell, hex_color: str) -> None:
@@ -115,6 +300,10 @@ def table(doc: Document, headers: list[str], rows: list[list[str]]) -> None:
 
 
 def build() -> None:
+    ASSETS.mkdir(parents=True, exist_ok=True)
+    make_service_grid(ASSETS / "services_grid.png")
+    make_topology_diagram(ASSETS / "deployment_topology.png")
+
     doc = Document()
 
     # ─── Title page ─────────────────────────────────────────────
@@ -311,6 +500,203 @@ def build() -> None:
               ["Chain",      "Polygon Amoy · AuditAnchor.sol · CivicBadge soulbound ERC-721"],
               ["Messaging",  "Meta WhatsApp Cloud API · AiSensy · Gupshup · SMTP · Webhook"],
           ])
+
+    # ─── Deployment ─────────────────────────────────────────────
+    h1(doc, "Deployment")
+    p(doc,
+      "NagarikAI is live on Google Cloud Platform (project nagarikai-demo, region asia-south1 "
+      "Mumbai) with the database on Supabase (us-east-1, free tier). The frontend, the FastAPI "
+      "backend, and the 7-agent loop are all containerised on Cloud Run and front-ended by a "
+      "global external HTTPS Load Balancer with a Google-managed SSL certificate covering "
+      "nagarikai.xyz, www.nagarikai.xyz, and api.nagarikai.xyz.")
+
+    h2(doc, "Live endpoints")
+    table(doc,
+          ["Surface", "URL", "Service"],
+          [
+              ["Citizen + supervisor web", "https://nagarikai.xyz",            "Cloud Run · nagarikai-web (Next.js 14)"],
+              ["Public API",               "https://api.nagarikai.xyz",        "Cloud Run · nagarikai-api (FastAPI)"],
+              ["Health probe",             "https://api.nagarikai.xyz/health", "Returns {\"status\":\"ok\",\"env\":\"prod\"}"],
+              ["Interactive API docs",     "https://api.nagarikai.xyz/docs",   "FastAPI auto-generated Swagger"],
+          ])
+
+    h2(doc, "Production topology")
+    p(doc,
+      "Every request from a citizen's browser or WhatsApp lands at the global Load Balancer, "
+      "is routed by host header to the matching Cloud Run service, and from there talks to "
+      "Supabase Postgres and the external AI / data APIs. Nothing on the citizen path leaves "
+      "the GCP edge unencrypted.")
+    img(doc, ASSETS / "deployment_topology.png",
+        "End-to-end production topology — nagarikai.xyz DNS → GCP Global HTTPS LB → Cloud Run (web + api) → Supabase + AI/data APIs.",
+        6.5)
+
+    h2(doc, "Services in use")
+    p(doc,
+      "Twelve managed services power the deployment. The breakdown below maps each to the "
+      "specific role it plays in the citizen → resolution loop.")
+    img(doc, ASSETS / "services_grid.png",
+        "Service grid — every managed platform NagarikAI depends on, with its concrete role in the stack.",
+        6.5)
+
+    h2(doc, "Why this stack")
+    table(doc,
+          ["Service", "Why we picked it"],
+          [
+              ["Google Cloud Run",
+               "Scales to zero so the API costs $0 when no demo is running; same gcloud run deploy --source command for both web and api means one mental model."],
+              ["Global HTTPS Load Balancer + Serverless NEG",
+               "asia-south1 doesn't support legacy domain mappings, so this is the official path to a custom domain on Cloud Run with managed SSL."],
+              ["Supabase Postgres",
+               "Free tier with PostGIS and pgvector both turned on out of the box. Avoids Cloud SQL's per-hour idle charge while keeping spatial + vector queries first-class."],
+              ["Supabase Storage",
+               "Same project as the database, so evidence photos and the audit chain live next to the row that references them. Signed-URL based access from Cloud Run."],
+              ["Hostinger (registrar)",
+               "Owns nagarikai.xyz. DNS panel exposes A/CNAME/TXT records directly — needed for the Google site-verification TXT and the three A records pointing at the LB IP."],
+              ["WhatsApp Cloud API (Meta)",
+               "Sandbox tier today; same code path works for production once the BBMP MoU lands. Drives both the citizen status pings and the dept dispatch channel."],
+              ["Mapbox GL",
+               "243 BBMP ward polygons render at 60 fps on mid-range phones; pothole hotspot heatmap layer composites cleanly over the basemap."],
+              ["Gemini 2.5 Flash + Claude Haiku 4.5",
+               "Vision classification and Triage routing respectively — small, fast models that keep per-ticket inference under a rupee."],
+              ["Polygon Amoy",
+               "Free testnet; soulbound CivicBadge ERC-721 + AuditAnchor.sol give every resolved ticket a tamper-evident hash without burning real ETH."],
+              ["Secret Manager + Artifact Registry",
+               "All ten secrets (DB URL, API keys, signing keys) are KMS-encrypted; default compute SA holds secretAccessor per-secret. Images live in Artifact Registry, not Docker Hub."],
+          ])
+
+    h2(doc, "Deployment commands (reproducible)")
+    p(doc,
+      "Both services rebuild from source with a single command — Cloud Build picks up the "
+      "Dockerfile in each directory, pushes to Artifact Registry, and rolls out a new revision.")
+    code(doc,
+        "# nagarikai-web (Next.js 14, citizen + supervisor PWA)\n"
+        "cd apps/web && gcloud run deploy nagarikai-web --source . \\\n"
+        "  --region=asia-south1 --project=nagarikai-demo \\\n"
+        "  --allow-unauthenticated --memory=512Mi --cpu=1 \\\n"
+        "  --timeout=60 --max-instances=3 --port=8080 \\\n"
+        "  --set-build-env-vars=\"NEXT_PUBLIC_API_URL=https://api.nagarikai.xyz\"\n\n"
+        "# nagarikai-api (FastAPI + LangGraph + 7-agent loop)\n"
+        "cd apps/api && gcloud run deploy nagarikai-api --source . \\\n"
+        "  --region=asia-south1 --project=nagarikai-demo \\\n"
+        "  --allow-unauthenticated --memory=2Gi --cpu=2 \\\n"
+        "  --timeout=300 --max-instances=5 --port=8080 \\\n"
+        "  --set-secrets=\"DATABASE_URL=database-url:latest,\\\n"
+        "                 GEMINI_API_KEY=gemini-api-key:latest,\\\n"
+        "                 ANTHROPIC_API_KEY=anthropic-api-key:latest,\\\n"
+        "                 WHATSAPP_TOKEN=whatsapp-token:latest\"")
+
+    h2(doc, "Cost profile (steady state)")
+    table(doc,
+          ["Item", "Monthly when idle", "Notes"],
+          [
+              ["Cloud Run · nagarikai-web", "$0",       "scales to zero between requests"],
+              ["Cloud Run · nagarikai-api", "$0",       "scales to zero between requests"],
+              ["Global HTTPS Load Balancer","≈ $18",   "fixed forwarding-rule + cert; cost of a custom domain in asia-south1"],
+              ["Artifact Registry",         "≈ $0.02", "< 0.5 GB of layers"],
+              ["Secret Manager",            "≈ $0.06", "10 secret versions"],
+              ["Supabase Postgres + Storage","$0",     "free tier (500 MB DB, 1 GB storage)"],
+              ["Hostinger .xyz domain",     "≈ $1",    "~$12/yr renewal amortised"],
+              ["Net",                       "≈ $19",   "everything else is request-priced and stays at $0 between demos"],
+          ])
+
+    # ─── End-to-End Verification ────────────────────────────────
+    h1(doc, "End-to-End Verification on Production")
+    p(doc,
+      "Beyond the offline backtests in the Results section, the full citizen "
+      "→ AI → crew → audit loop has been exercised on the live nagarikai.xyz "
+      "deployment from real client code. This section documents that "
+      "verification so a reviewer can rerun it.")
+
+    h2(doc, "Playwright e2e suite — 20/20 passing on prod")
+    p(doc,
+      "An e2e/ workspace ships with a Playwright suite (TypeScript, Chromium "
+      "headless) that targets https://nagarikai.xyz directly. The suite is "
+      "single-worker so it does not load-test the free Cloud Run instances, "
+      "and covers every public route, both demo sign-ins, the password eye "
+      "toggle, the signup-mode demo banner, the Test-cases tab, and the "
+      "Mapbox canvas render. Runs in 1.4 minutes.")
+    table(doc,
+          ["Spec", "Tests", "What it confirms"],
+          [
+              ["01-smoke.spec.ts",  "13", "All 12 public routes return < 400 and render expected copy with zero JS pageerrors; /health returns {status:ok,env:prod}."],
+              ["02-auth.spec.ts",   "5",  "Citizen demo → /home, dept demo → /supervisor, password eye toggle, signup-mode banner visible, Test tab reachable."],
+              ["03-report.spec.ts", "2",  "/report form gated correctly behind auth; mutating issue-POST gated behind E2E_MUTATE=1 to keep CI runs idempotent."],
+              ["04-map.spec.ts",    "2",  "Mapbox canvas renders (token IS in the prod bundle); ward-chip path is informational."],
+              ["TOTAL",             "22", "20 passed · 2 intentional skips (mutating + informational)."],
+          ])
+    code(doc,
+        "cd e2e\n"
+        "npm install && npx playwright install chromium\n"
+        "npm test                       # default — all read-only specs\n"
+        "E2E_MUTATE=1 npm test          # also runs the actual /issues POST end-to-end\n"
+        "BASE_URL=http://localhost:3000 npm test    # same suite against local dev")
+
+    h2(doc, "Closed-loop submission — Koramangala 4th Block")
+    p(doc,
+      "A real citizen submission was driven through the full 7-agent pipeline "
+      "from a script that calls the same public endpoints a browser uses. The "
+      "before-photo is the Case A pothole from /test-photos; the after-photo "
+      "is the matching Case A resolved image. The ResolutionAgent's CLIP "
+      "scene-match + pothole-CNN audit produced verdict verified_resolved on "
+      "this pair, twice in a row (initial loop + crew re-fire).")
+    table(doc,
+          ["Stage", "Wall-clock", "What landed in the issue / agent payload"],
+          [
+              ["Citizen POST /issues",
+               "0 s",
+               "201 Created — id, lat/lng 12.9352/77.6245, ward=Koramangala (PostGIS point-in-polygon)."],
+              ["VisionAgent (Gemini 2.5 Flash)",
+               "~10 s",
+               "type=pothole, severity=4, ai_confidence=0.95, bbox=[0.22,0.20,0.78,0.80], width_m=1.5, depth_cm=50, hazard_to=vehicles, focus_label=\"pothole · sev 4\"."],
+              ["DedupAgent",
+               "+7 s",
+               "no nearby duplicates inside 50 m radius (PostGIS + CLIP-cosine fallback)."],
+              ["TriageAgent (Claude Haiku 4.5 + SOP gate)",
+               "+25 s",
+               "LLM proposed BBMP Roads / 48 h SLA; deterministic SOP gate accepted, severity_verdict triangulated across (vision=4, llm=4, sop_baseline=3) → final 24 h SLA."],
+              ["VerificationAgent",
+               "+3 s",
+               "notified_citizens=5 (nearby Veer-tier verifiers picked from the trust graph)."],
+              ["SchedulerAgent",
+               "+2 s",
+               "OR-Tools CVRPTW assigned crew Roads North · Hebbal."],
+              ["Crew complete (after-photo upload)",
+               "manual",
+               "POST /crew/{crew_id}/complete/{issue_id}?after_photo_url=https://nagarikai.xyz/test-photos/case_a_resolved.jpg"],
+              ["ResolutionAgent (CLIP + pothole CNN)",
+               "+19–38 s",
+               "ai_meta.verdict = \"verified_resolved\" — scene similarity above floor, defect score collapsed after → before."],
+              ["DeliveryAgent",
+               "auto",
+               "delivered_channel = whatsapp · delivered_at recorded · supervisor dashboard shows the chip."],
+              ["Final state",
+               "≈ 110 s",
+               "status = resolved, after_photo_url preserved (no demo-stub clobber), reporter +10 XP."],
+          ])
+
+    h2(doc, "Audit trail any reviewer can pull")
+    p(doc,
+      "Every agent emits a started + completed (or failed) row into the "
+      "agent_events table; the supervisor view surfaces them with their "
+      "payload at /supervisor/issue/<id>. The closed loop above leaves 14+ "
+      "rows behind, so a reviewer can replay the exact decisions made by "
+      "each agent. The cURL one-liners are listed below — they need only "
+      "the seeded demo accounts.")
+    code(doc,
+        "# 1. Citizen login\n"
+        "TOKEN=$(curl -sS -X POST https://api.nagarikai.xyz/auth/login \\\n"
+        "  -H 'Content-Type: application/json' \\\n"
+        "  -d '{\"username\":\"H@cktHon\",\"password\":\"Sw33ney@8688\"}' \\\n"
+        "  | jq -r .access_token)\n\n"
+        "# 2. Submit issue with the Case A reported photo\n"
+        "ID=$(curl -sS -X POST https://api.nagarikai.xyz/issues \\\n"
+        "  -H \"Authorization: Bearer $TOKEN\" -H 'Content-Type: application/json' \\\n"
+        "  -d '{\"lat\":12.9352,\"lng\":77.6245,\\\n"
+        "       \"description\":\"Pothole on 80 Feet Road, Koramangala\",\\\n"
+        "       \"before_photo_url\":\"https://nagarikai.xyz/test-photos/case_a_reported.jpg\"}' \\\n"
+        "  | jq -r .id)\n\n"
+        "# 3. Watch the pipeline\n"
+        "curl -sS https://api.nagarikai.xyz/issues/$ID | jq")
 
     # ─── Results ────────────────────────────────────────────────
     h1(doc, "Results")

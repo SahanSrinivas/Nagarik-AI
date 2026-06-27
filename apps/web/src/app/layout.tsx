@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { Brand } from "@/components/Brand";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { MobileNavBar, NavBar } from "@/components/NavBar";
+import { NavBar } from "@/components/NavBar";
 import { THEME_BOOT_SCRIPT, ThemeToggle } from "@/components/ThemeToggle";
 import { Providers } from "./providers";
 import "./globals.css";
@@ -53,9 +53,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div className="flex items-center gap-2">
                 <ThemeToggle />
                 <LanguageSwitcher />
-                <div className="md:hidden">
-                  <MobileNavBar />
-                </div>
               </div>
             </div>
           </header>

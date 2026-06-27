@@ -53,8 +53,12 @@ def _to_read(issue: Issue) -> IssueRead:
     )
 
 
+# Note: previously decorated with @limiter.limit("20/minute"), but slowapi
+# 0.1.10's functools.wraps wrapper hides the type annotations from FastAPI
+# 0.138's signature introspector, demoting `payload` (Pydantic Body) and
+# `bg` (BackgroundTasks) to Query params → 422 on every submit. The global
+# default_limits=["120/minute"] in nagarik/ratelimit.py still applies.
 @router.post("", response_model=IssueRead, status_code=201)
-@limiter.limit("20/minute")
 def create_issue(
     request: Request,
     payload: IssueCreate,

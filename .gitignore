@@ -64,3 +64,16 @@ logs/
 
 # Duplicated data tree for Docker build context (do not edit; source = /data/)
 apps/api/data/
+
+# Runtime / PII — never commit these
+data/whatsapp_recipients.json
+data/whatsapp_log.jsonl
+data/delivery_log.jsonl
+
+# Tooling state (claude-flow session caches)
+.claude-flow/sessions/
+apps/web/.claude-flow/
+
+# Misplaced root-level test photos (belong in apps/web/public/test-photos/)
+/case_*.jpg
+/cyclone-*.webp

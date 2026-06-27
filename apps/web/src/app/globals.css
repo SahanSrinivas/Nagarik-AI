@@ -360,3 +360,43 @@
 .dark ::-webkit-scrollbar-track    { background: rgb(var(--bg-canvas)); }
 .dark ::-webkit-scrollbar-thumb    { background: rgb(var(--border-light)); border-radius: 8px; }
 .dark ::-webkit-scrollbar-thumb:hover { background: rgb(var(--text-muted)); }
+
+/* Mapbox popups — theme-aware. Default Mapbox popups hard-code white bg
+ * with dark text, which becomes invisible in our dark theme. Pull the
+ * surface + text colors from CSS vars so popups read in both modes. */
+.mapboxgl-popup-content {
+  background: rgb(var(--bg-surface));
+  color: rgb(var(--text-primary));
+  border: 1px solid rgb(var(--border-color));
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  font-family: inherit;
+  font-size: 12px;
+  padding: 10px 12px;
+}
+.mapboxgl-popup-anchor-top .mapboxgl-popup-tip,
+.mapboxgl-popup-anchor-top-left .mapboxgl-popup-tip,
+.mapboxgl-popup-anchor-top-right .mapboxgl-popup-tip {
+  border-bottom-color: rgb(var(--bg-surface));
+}
+.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip,
+.mapboxgl-popup-anchor-bottom-left .mapboxgl-popup-tip,
+.mapboxgl-popup-anchor-bottom-right .mapboxgl-popup-tip {
+  border-top-color: rgb(var(--bg-surface));
+}
+.mapboxgl-popup-anchor-left .mapboxgl-popup-tip {
+  border-right-color: rgb(var(--bg-surface));
+}
+.mapboxgl-popup-anchor-right .mapboxgl-popup-tip {
+  border-left-color: rgb(var(--bg-surface));
+}
+.mapboxgl-popup-close-button {
+  color: rgb(var(--text-muted));
+  font-size: 18px;
+  padding: 2px 8px;
+  background: transparent;
+}
+.mapboxgl-popup-close-button:hover {
+  background: rgb(var(--bg-surface-hover));
+  color: rgb(var(--text-primary));
+}

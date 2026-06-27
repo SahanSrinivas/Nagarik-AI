@@ -30,6 +30,10 @@ class Settings(BaseSettings):
 
     cors_origins: str = "http://localhost:3000"
 
+    # Public origin of the web app — embedded in outbound dept messages so the
+    # supervisor-dashboard deep links work in WhatsApp / email previews.
+    supervisor_base_url: str = "http://localhost:3000"
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]

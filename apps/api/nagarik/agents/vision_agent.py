@@ -229,7 +229,11 @@ def run_vision(state: AgentState) -> AgentState:
         text = getattr(resp, "text", "") or ""
     except Exception as exc:  # noqa: BLE001 — never let LLM errors halt the loop
         log.warning("vision: gemini call failed: %s", exc)
-        new = _stub(state, f"gemini error: {exc.__class__.__name__}")
+        # Include the message (truncated) so the supervisor /issue/{id} view
+        # surfaces the real failure instead of a bare class name. We have
+        # been bitten by this — google-genai version drift returned
+        # `ValidationError` with no further hint until this line was changed.
+        new = _stub(state, f"gemini error: {exc.__class__.__name__}: {str(exc)[:200]}")
         _persist(new)
         return new
 

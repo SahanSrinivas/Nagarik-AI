@@ -69,7 +69,10 @@ def run_resolution(state: AgentState) -> AgentState:
         after_url = issue.after_photo_url
 
     scene = _scene_similarity(before_url, after_url) if before_url else None
-    defect, cnn_used = _defect_score(after_url) if issue.type.value == "pothole" else (None, False)
+    # SQLAlchemy returns Issue.type as a plain str (column is String(20)) even
+    # though the model hint says IssueType — so .value blows up at runtime.
+    # IssueType(str, Enum) means == "pothole" works for both forms.
+    defect, cnn_used = _defect_score(after_url) if issue.type == "pothole" else (None, False)
 
     # Verdict combining both layers (defaults: pass scene, no CNN → review).
     if scene is not None and scene < SCENE_MATCH_FLOOR:

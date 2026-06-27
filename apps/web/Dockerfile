@@ -13,11 +13,18 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-# NEXT_PUBLIC_* is baked into the client bundle at build time; pass it
-# from Cloud Build / gcloud run deploy --build-env-vars-file.
-ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-ENV NEXT_TELEMETRY_DISABLED=1
+# NEXT_PUBLIC_* is baked into the client bundle at build time. The defaults
+# below are the live production values; override per-arg with `docker build
+# --build-arg NEXT_PUBLIC_*=...` (or pass via Cloud Build substitutions).
+ARG NEXT_PUBLIC_API_URL=https://api.nagarikai.xyz
+ARG NEXT_PUBLIC_MAPBOX_TOKEN=""
+ARG NEXT_PUBLIC_CITY_CENTER_LAT=12.9716
+ARG NEXT_PUBLIC_CITY_CENTER_LNG=77.5946
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL} \
+    NEXT_PUBLIC_MAPBOX_TOKEN=${NEXT_PUBLIC_MAPBOX_TOKEN} \
+    NEXT_PUBLIC_CITY_CENTER_LAT=${NEXT_PUBLIC_CITY_CENTER_LAT} \
+    NEXT_PUBLIC_CITY_CENTER_LNG=${NEXT_PUBLIC_CITY_CENTER_LNG} \
+    NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
 # ─── 3. Runtime ────────────────────────────────────────────────────

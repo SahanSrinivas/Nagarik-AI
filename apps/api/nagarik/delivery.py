@@ -29,6 +29,7 @@ from sqlalchemy.orm import Session
 
 from nagarik.db import SessionLocal
 from nagarik.models import Department, Issue
+from nagarik.settings import get_settings
 
 log = logging.getLogger(__name__)
 
@@ -57,7 +58,7 @@ def _build_message(issue: Issue, dept: Department) -> dict[str, Any]:
         "before_video_url": getattr(issue, "before_video_url", None),
         "sla_deadline": issue.sla_deadline.isoformat() if issue.sla_deadline else None,
         "routed_department": issue.routed_department,
-        "supervisor_dashboard_url": f"http://localhost:3000/supervisor?focus={issue.id}",
+        "supervisor_dashboard_url": f"{get_settings().supervisor_base_url.rstrip('/')}/supervisor?focus={issue.id}",
     }
 
 

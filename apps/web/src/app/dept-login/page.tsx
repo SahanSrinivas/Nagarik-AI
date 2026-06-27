@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Building2, LogIn, Sparkles } from "lucide-react";
+import { Building2, Eye, EyeOff, FlaskConical, LogIn, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -20,6 +20,7 @@ export default function DeptLoginPage() {
   const [password, setP] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [showPwd, setShowPwd] = useState(false);
   const [demo, setDemo] = useState<DemoCreds | null>(null);
 
   // Already signed in? Bounce.
@@ -93,6 +94,14 @@ export default function DeptLoginPage() {
               </button>
             ))}
           </div>
+          <a
+            href="/test-photos"
+            className="mt-2 flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium underline"
+            style={{ color: "rgb(var(--accent))" }}
+          >
+            <FlaskConical className="h-3.5 w-3.5" />
+            Download test images + clips to try the AI pipeline
+          </a>
         </div>
       )}
 
@@ -104,8 +113,23 @@ export default function DeptLoginPage() {
         </label>
         <label className="block">
           <span className="block text-xs uppercase tracking-wider text-ink-500">Password</span>
-          <input type="password" value={password} onChange={(e) => setP(e.target.value)}
-            className="input mt-1" placeholder="••••••••" />
+          <div className="relative mt-1">
+            <input
+              type={showPwd ? "text" : "password"}
+              value={password}
+              onChange={(e) => setP(e.target.value)}
+              className="input w-full pr-10"
+              placeholder="••••••••"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPwd((s) => !s)}
+              aria-label={showPwd ? "Hide password" : "Show password"}
+              className="absolute inset-y-0 right-0 grid w-10 place-items-center text-ink-500 transition hover:text-ink-700"
+            >
+              {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
         </label>
 
         {err && <div className="rounded-xl bg-rose-50 p-3 text-sm text-rose-700">{err}</div>}

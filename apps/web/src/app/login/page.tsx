@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { CheckCircle2, LogIn, MapPin, Sparkles, Star, UserPlus } from "lucide-react";
+import { CheckCircle2, Eye, EyeOff, FlaskConical, LogIn, MapPin, Sparkles, Star, UserPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -20,6 +20,7 @@ export default function LoginPage() {
   const [homeBusy, setHomeBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [showPwd, setShowPwd] = useState(false);
   const [demo, setDemo] = useState<{ username: string; password: string } | null>(null);
 
   function captureHome() {
@@ -82,8 +83,9 @@ export default function LoginPage() {
         </p>
       </header>
 
-      {/* Hackathon demo credentials banner */}
-      {demo && mode === "login" && (
+      {/* Hackathon demo credentials + test media — visible in BOTH login and
+          signup modes so judges who land on signup don't have to register. */}
+      {demo && (
         <div
           className="rounded-xl px-4 py-3 text-xs"
           style={{
@@ -94,7 +96,9 @@ export default function LoginPage() {
         >
           <div className="mb-1 flex items-center gap-1.5 font-semibold">
             <Sparkles className="h-3.5 w-3.5" style={{ color: "rgb(var(--accent))" }} />
-            Hackathon demo account
+            {mode === "signup"
+              ? "Don't want to register? Use the demo account →"
+              : "Hackathon demo account"}
           </div>
           <div className="font-mono">
             username: <strong>{demo.username}</strong>
@@ -105,6 +109,14 @@ export default function LoginPage() {
           <button onClick={useDemo} className="btn-primary mt-2 w-full text-xs">
             Use demo credentials
           </button>
+          <a
+            href="/test-photos"
+            className="mt-2 flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium underline"
+            style={{ color: "rgb(var(--accent))" }}
+          >
+            <FlaskConical className="h-3.5 w-3.5" />
+            Download test images + clips to try the AI pipeline
+          </a>
         </div>
       )}
 
@@ -123,8 +135,23 @@ export default function LoginPage() {
         </label>
         <label className="block">
           <span className="block text-xs uppercase tracking-wider text-ink-500">Password</span>
-          <input type="password" value={password} onChange={(e) => setP(e.target.value)}
-            className="input mt-1" placeholder="••••••••" />
+          <div className="relative mt-1">
+            <input
+              type={showPwd ? "text" : "password"}
+              value={password}
+              onChange={(e) => setP(e.target.value)}
+              className="input w-full pr-10"
+              placeholder="••••••••"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPwd((s) => !s)}
+              aria-label={showPwd ? "Hide password" : "Show password"}
+              className="absolute inset-y-0 right-0 grid w-10 place-items-center text-ink-500 transition hover:text-ink-700"
+            >
+              {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
         </label>
 
         {/* Verifier opt-in — only shown on signup. Capturing a home location at
