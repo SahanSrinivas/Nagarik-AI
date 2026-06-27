@@ -79,7 +79,7 @@ export function AgentCard({ event }: { event: AgentEvent }) {
           <span className="font-mono text-ink-500">{event.duration_ms}ms</span>
         )}
         <span className="ml-auto text-ink-400">
-          {new Date(event.created_at).toLocaleTimeString()}
+          {new Date(event.created_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" })} IST
         </span>
       </div>
 

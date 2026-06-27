@@ -130,9 +130,12 @@ export default function TrackingPage() {
 
   if (err) return <div className="card p-6 text-sm text-rose-700">{err}</div>;
   if (!data) {
+    // Don't use the i18n "common.uploading" key here — the Gemini-translated
+    // EN string for it literally says "Uploading…" which is misleading on
+    // the tracking page (the user is just waiting for the page to fetch).
     return (
       <div className="card animate-pulse p-6 text-sm text-ink-400">
-        {t("common.uploading", "Loading…")}
+        Loading issue details…
       </div>
     );
   }
@@ -152,7 +155,7 @@ export default function TrackingPage() {
                 {issue.address ?? t(`issue.type.${issue.type}`, issue.type)}
               </h1>
               <p className="mt-1 text-sm text-ink-300">
-                {t("tracking.opened")} {opened.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
+                {t("tracking.opened")} {opened.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Kolkata" })} IST
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -168,7 +171,7 @@ export default function TrackingPage() {
           <Meta
             icon={Clock}
             label={t("tracking.sla")}
-            value={issue.sla_deadline ? new Date(issue.sla_deadline).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "—"}
+            value={issue.sla_deadline ? new Date(issue.sla_deadline).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Kolkata" }) + " IST" : "—"}
           />
         </div>
 
@@ -301,7 +304,7 @@ export default function TrackingPage() {
             <div className="text-xs text-ink-500">{crew.department}</div>
             {issue.scheduled_at && (
               <div className="mt-3 text-xs text-ink-600">
-                {t("tracking.scheduled")} · {new Date(issue.scheduled_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
+                {t("tracking.scheduled")} · {new Date(issue.scheduled_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Kolkata" })} IST
               </div>
             )}
           </div>
@@ -401,7 +404,7 @@ function TimelineRow({
           <div className="text-sm font-semibold text-ink-900">{title}</div>
           <div className="flex items-center gap-2 text-xs text-ink-500">
             {channelTag && <Pill tone="ink">{channelTag}</Pill>}
-            {at && <span>{at.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</span>}
+            {at && <span>{at.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" })} IST</span>}
           </div>
         </div>
         <p className="mt-1 text-sm text-ink-600">{body}</p>
@@ -418,7 +421,7 @@ function TimelineRow({
             Forwarded to WhatsApp
             {whatsapp.sent_at && (
               <span className="font-mono">
-                · {new Date(whatsapp.sent_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
+                · {new Date(whatsapp.sent_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" })} IST
               </span>
             )}
             {whatsapp.status === "simulated" && (

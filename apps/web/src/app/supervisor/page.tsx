@@ -321,8 +321,8 @@ function SupervisorPageInner() {
                       {selected.sla_deadline && (
                         <div className="font-mono text-[10px] text-ink-500">
                           due {new Date(selected.sla_deadline).toLocaleString("en-IN", {
-                            dateStyle: "medium", timeStyle: "short",
-                          })}
+                            dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Kolkata",
+                          })} IST
                         </div>
                       )}
                     </div>
@@ -333,7 +333,7 @@ function SupervisorPageInner() {
                     {selected.delivered_at ? (
                       <Pill tone="ink">
                         <Send className="h-3 w-3" /> Sent via {CHANNEL_LABEL[selected.delivered_channel ?? ""] ?? "—"} ·{" "}
-                        {new Date(selected.delivered_at).toLocaleString("en-IN", { dateStyle: "short", timeStyle: "short" })}
+                        {new Date(selected.delivered_at).toLocaleString("en-IN", { dateStyle: "short", timeStyle: "short", timeZone: "Asia/Kolkata" })} IST
                       </Pill>
                     ) : (
                       <Pill tone="rose">Not yet dispatched</Pill>
@@ -341,7 +341,7 @@ function SupervisorPageInner() {
                     {selected.acked_at ? (
                       <Pill tone="emerald">
                         <CheckCircle2 className="h-3 w-3" /> Acknowledged ·{" "}
-                        {new Date(selected.acked_at).toLocaleString("en-IN", { dateStyle: "short", timeStyle: "short" })}
+                        {new Date(selected.acked_at).toLocaleString("en-IN", { dateStyle: "short", timeStyle: "short", timeZone: "Asia/Kolkata" })} IST
                       </Pill>
                     ) : (
                       <Pill tone="amber">Awaiting acknowledgement</Pill>
