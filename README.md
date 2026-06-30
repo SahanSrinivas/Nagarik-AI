@@ -6,7 +6,7 @@ water leakage, street lights, etc.), with MILP-optimized crew dispatch.
 
 Built for the Coding Ninjas "Community Hero" challenge.
 
-## The Winning Architecture
+## Architecture
 
 ```
 Citizen (photo + voice note + GPS)
@@ -50,7 +50,7 @@ Voice notes pass through a two-layer guardrail (Gemini-side prompt rules + deter
 
 Verified end-to-end on 6 synthetic clips (en/hi/kn/te civic + prompt-injection + PII) — **16/16 guardrail assertions pass**.
 
-## Why This Wins
+## Agentic AI
 
 1. **7-agent visible orchestration** — LangGraph runtime shows agents executing live
 2. **MILP solver on real BBMP data** — quantified 38% faster resolution, 23% less travel
@@ -60,7 +60,7 @@ Verified end-to-end on 6 synthetic clips (en/hi/kn/te civic + prompt-injection +
 6. **Voice-first accessibility** — Kannada / Hindi / Telugu / English in one multimodal call
 7. **System-failure fallback** — Community DIY unlocks when L3 SLA breaches
 
-## Why This Wins
+## Closed Loop Solution
 
 1. **7-agent visible orchestration** — LangGraph runtime shows agents executing live
 2. **MILP solver on real BBMP data** — quantified 38% faster resolution, 23% less travel
