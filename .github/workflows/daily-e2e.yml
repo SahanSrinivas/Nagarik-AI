@@ -1,12 +1,22 @@
 name: Daily end-to-end verification
 
-# Runs every day at 02:30 UTC (08:00 IST). Also triggerable manually from
-# the Actions tab for ad-hoc reruns. The actual probe logic lives in
-# e2e/ci/ so it can be invoked locally with the same code path.
+# Runs 4× a day, every 6 hours, starting at 04:10 IST. Cron is UTC, so
+# 04:10 IST → 22:40 UTC (previous day), then +6h each. Also triggerable
+# manually from the Actions tab for ad-hoc reruns. The actual probe
+# logic lives in e2e/ci/ so it can be invoked locally with the same code
+# path.
+#
+#   22:40 UTC  →  04:10 IST
+#   04:40 UTC  →  10:10 IST
+#   10:40 UTC  →  16:10 IST
+#   16:40 UTC  →  22:10 IST
 
 on:
   schedule:
-    - cron: "30 2 * * *"
+    - cron: "40 22 * * *"
+    - cron: "40 4 * * *"
+    - cron: "40 10 * * *"
+    - cron: "40 16 * * *"
   workflow_dispatch:
 
 permissions:
