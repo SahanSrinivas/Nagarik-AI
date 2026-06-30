@@ -126,10 +126,21 @@ export default function TrackingPage() {
   const [err, setErr] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
 
+  // Poll while the issue is still progressing; stop once it's resolved
+  // (no further state changes possible — saves a continuous 2s-cadence
+  // request storm that was making the page feel slow).
+  // Was: setInterval(... 2000). Now: 8s while active, no polling once
+  // the timeline is terminal.
+  const isTerminal =
+    data?.issue?.status === "resolved" ||
+    data?.issue?.status === "closed" ||
+    data?.issue?.status === "rejected";
+
   useEffect(() => {
-    const t = setInterval(() => setTick((x) => x + 1), 2000);
+    if (isTerminal) return;
+    const t = setInterval(() => setTick((x) => x + 1), 8000);
     return () => clearInterval(t);
-  }, []);
+  }, [isTerminal]);
 
   useEffect(() => {
     if (!id) return;

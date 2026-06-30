@@ -33,6 +33,7 @@ export default function HomePage() {
   const router = useRouter();
   const { me, token, logout, refresh } = useAuth();
   const [mine, setMine] = useState<MyIssue[]>([]);
+  const [mineLoaded, setMineLoaded] = useState(false);
 
   useEffect(() => {
     // Bounce to login if not signed in (after auth bootstrap settles).
@@ -41,10 +42,13 @@ export default function HomePage() {
       return () => clearTimeout(t);
     }
     refresh();
+    let cancelled = false;
     authedFetch("/issues/mine")
       .then((r) => r.ok ? r.json() : [])
-      .then(setMine)
-      .catch(() => setMine([]));
+      .then((rows) => { if (!cancelled) setMine(rows); })
+      .catch(() => { if (!cancelled) setMine([]); })
+      .finally(() => { if (!cancelled) setMineLoaded(true); });
+    return () => { cancelled = true; };
   }, [token, router, refresh]);
 
   if (!me) {
@@ -127,7 +131,11 @@ export default function HomePage() {
             </div>
             <div className="mt-3 text-base font-semibold">Track your reports</div>
             <div className="mt-1 text-sm text-ink-600">
-              {mine.length === 0 ? "No reports yet — submit one to get started." : `${mine.length} active · live status`}
+              {!mineLoaded
+                ? "Checking your reports…"
+                : mine.length === 0
+                  ? "No reports yet — submit one to get started."
+                  : `${mine.length} active · live status`}
             </div>
             <div className="mt-3 inline-flex items-center gap-1 text-xs text-brand-700">
               View <ArrowRight className="h-3 w-3" />
@@ -153,7 +161,32 @@ export default function HomePage() {
       {/* My reports list */}
       <section id="my-reports" className="space-y-3">
         <h2 className="text-base font-semibold" style={{ color: "rgb(var(--text-primary))" }}>My recent reports</h2>
-        {mine.length === 0 ? (
+        {!mineLoaded ? (
+          <div className="space-y-2.5" aria-busy="true" aria-live="polite">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="animate-pulse rounded-xl p-4"
+                style={{
+                  background: "rgb(var(--bg-surface))",
+                  border: "1px solid rgb(var(--border-color))",
+                }}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <div className="h-4 w-2/3 rounded" style={{ background: "rgb(var(--bg-surface-hover))" }} />
+                    <div className="h-3 w-1/2 rounded" style={{ background: "rgb(var(--bg-surface-hover))" }} />
+                  </div>
+                  <div className="h-5 w-16 rounded-full" style={{ background: "rgb(var(--bg-surface-hover))" }} />
+                </div>
+                <div className="mt-3 flex gap-2">
+                  <div className="h-7 w-24 rounded-lg" style={{ background: "rgb(var(--bg-surface-hover))" }} />
+                  <div className="h-7 w-28 rounded-lg" style={{ background: "rgb(var(--bg-surface-hover))" }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : mine.length === 0 ? (
           <div className="card p-6 text-center text-base"
             style={{ color: "rgb(var(--text-secondary))" }}>
             <Award className="mx-auto mb-2 h-6 w-6 text-brand-600" />

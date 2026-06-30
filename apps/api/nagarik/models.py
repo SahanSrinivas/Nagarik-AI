@@ -167,6 +167,14 @@ class Issue(Base):
     __table_args__ = (
         # GIST index for fast nearest-neighbor queries.
         Index("ix_issues_location", "location", postgresql_using="gist"),
+        # Composite index for /issues/mine — WHERE reporter_id = ? ORDER BY
+        # created_at DESC LIMIT N. Lets Postgres skip the sort.
+        Index(
+            "ix_issues_reporter_id_created_at",
+            "reporter_id",
+            "created_at",
+            postgresql_ops={"created_at": "DESC"},
+        ),
         # IVFFlat for embedding similarity is created at first query time
         # by the DedupAgent — only when pgvector is actually installed.
     )
