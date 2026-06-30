@@ -8,9 +8,15 @@ import { api } from "@/lib/api";
 
 export default function DashboardPage() {
   const [wards, setWards] = useState<{ ward: string; total: number; resolved: number }[]>([]);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    api.wardStats().then(setWards).catch(() => {});
+    let cancelled = false;
+    api.wardStats()
+      .then((rows) => { if (!cancelled) setWards(rows); })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setLoaded(true); });
+    return () => { cancelled = true; };
   }, []);
 
   const maxTotal = Math.max(1, ...wards.map((w) => w.total));
@@ -65,8 +71,19 @@ export default function DashboardPage() {
                 </motion.tr>
               );
             })}
-            {wards.length === 0 && (
-              <tr><td colSpan={5} className="p-8 text-center text-ink-500">No data yet — run `python -m scripts.seed`.</td></tr>
+            {!loaded && [0, 1, 2, 3, 4].map((i) => (
+              <tr key={`sk-${i}`} className="border-t border-ink-100">
+                <td className="p-4"><div className="h-3 w-32 animate-pulse rounded bg-ink-100" /></td>
+                <td className="p-4"><div className="h-2 w-40 animate-pulse rounded-full bg-ink-100" /></td>
+                <td className="p-4"><div className="h-3 w-10 animate-pulse rounded bg-ink-100" /></td>
+                <td className="p-4"><div className="h-3 w-10 animate-pulse rounded bg-ink-100" /></td>
+                <td className="p-4 text-right"><div className="ml-auto h-3 w-12 animate-pulse rounded bg-ink-100" /></td>
+              </tr>
+            ))}
+            {loaded && wards.length === 0 && (
+              <tr><td colSpan={5} className="p-8 text-center text-ink-500">
+                No ward activity yet — once citizens start reporting, ward-level throughput will show here.
+              </td></tr>
             )}
           </tbody>
         </table>

@@ -11,9 +11,15 @@ import { api } from "@/lib/api";
 
 export default function ImpactPage() {
   const [board, setBoard] = useState<{ id: string; name: string; xp: number; badge: string | null }[]>([]);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    api.leaderboard().then(setBoard).catch(() => {});
+    let cancelled = false;
+    api.leaderboard()
+      .then((rows) => { if (!cancelled) setBoard(rows); })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setLoaded(true); });
+    return () => { cancelled = true; };
   }, []);
 
   const top = board.slice(0, 3);
@@ -34,7 +40,18 @@ export default function ImpactPage() {
         </p>
       </header>
 
-      {top.length > 0 && (
+      {!loaded ? (
+        <div className="grid gap-4 sm:grid-cols-3" aria-busy="true" aria-live="polite">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="card animate-pulse p-6 text-center">
+              <div className="mx-auto h-14 w-14 rounded-2xl bg-ink-100" />
+              <div className="mx-auto mt-3 h-3 w-16 rounded bg-ink-100" />
+              <div className="mx-auto mt-2 h-4 w-32 rounded bg-ink-100" />
+              <div className="mx-auto mt-2 h-6 w-24 rounded bg-ink-100" />
+            </div>
+          ))}
+        </div>
+      ) : top.length > 0 && (
         <Stagger step={0.08} className="grid gap-4 sm:grid-cols-3">
           {top.map((c, i) => (
             <Reveal key={c.id}>
@@ -88,8 +105,18 @@ export default function ImpactPage() {
                 <td className="p-4">{c.badge ? <Pill tone="brand">{c.badge}</Pill> : <span className="text-ink-400">—</span>}</td>
               </motion.tr>
             ))}
-            {board.length === 0 && (
-              <tr><td colSpan={4} className="p-8 text-center text-ink-500">No citizens yet — run `python -m scripts.seed`.</td></tr>
+            {!loaded && [0, 1, 2, 3, 4].map((i) => (
+              <tr key={`sk-${i}`} className="border-t border-ink-100">
+                <td className="p-4"><div className="h-3 w-6 animate-pulse rounded bg-ink-100" /></td>
+                <td className="p-4"><div className="h-3 w-40 animate-pulse rounded bg-ink-100" /></td>
+                <td className="p-4 text-right"><div className="ml-auto h-3 w-16 animate-pulse rounded bg-ink-100" /></td>
+                <td className="p-4"><div className="h-5 w-20 animate-pulse rounded-full bg-ink-100" /></td>
+              </tr>
+            ))}
+            {loaded && board.length === 0 && (
+              <tr><td colSpan={4} className="p-8 text-center text-ink-500">
+                No civic heroes yet — be the first to <Link href="/report" className="font-semibold text-brand-700 hover:underline">report an issue</Link> and start earning XP.
+              </td></tr>
             )}
           </tbody>
         </table>
