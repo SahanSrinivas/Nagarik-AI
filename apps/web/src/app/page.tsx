@@ -699,17 +699,13 @@ export default function MarketingHome() {
       {/* WHATSAPP DEMO PHONE — Framer Motion showing live citizen updates ──── */}
       <WhatsAppPhoneDemo />
 
-      {/* V2 CAPABILITIES — the four upgrades that just shipped on top of the
-          7-agent loop. Each block links to where the citizen / supervisor
-          experiences it. Keeps the marketing site honest: every claim points
-          to running code, not a roadmap line item. */}
+      {/* CAPABILITIES — four upgrades grafted onto the 7-agent loop. Each
+          block links to where the citizen / supervisor experiences it.
+          Keeps the marketing site honest: every claim points to running
+          code, not a roadmap line item. */}
       <section>
         <header className="mb-6">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider"
-            style={{ color: "rgb(var(--accent))" }}>
-            <Sparkles className="h-3.5 w-3.5" /> V2 · Just shipped
-          </div>
-          <h2 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
+          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
             Four upgrades that take NagarikAI from working app to civic platform
           </h2>
           <p className="mt-3 max-w-2xl text-base text-ink-600 sm:text-lg">
@@ -755,11 +751,6 @@ export default function MarketingHome() {
                   <li className="flex items-start gap-2"><Users className="mt-0.5 h-3.5 w-3.5" style={{ color: "#a855f7" }} /> Threshold: <strong>5 volunteer-hours</strong> OR <strong>₹1,500</strong>.</li>
                   <li className="flex items-start gap-2"><CalendarClock className="mt-0.5 h-3.5 w-3.5" style={{ color: "#a855f7" }} /> Threshold met → platform generates a DIY workplan (tools, safety, meet-up).</li>
                 </ul>
-                <Link href="/tracking"
-                  className="inline-flex items-center gap-1 text-xs font-semibold"
-                  style={{ color: "rgb(var(--accent))" }}>
-                  See it on a real tracking page <ArrowRight className="h-3 w-3" />
-                </Link>
               </div>
             </motion.div>
           </Reveal>
