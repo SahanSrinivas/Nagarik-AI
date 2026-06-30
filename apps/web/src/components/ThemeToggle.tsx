@@ -22,17 +22,20 @@ function applyMode(mode: Mode) {
 }
 
 export function ThemeToggle({ className }: { className?: string }) {
-  const [mode, setMode] = useState<Mode>("system");
+  // Default = Light. Users can still cycle to Dark / System; this just
+  // means a first-time visitor lands on the light palette instead of
+  // inheriting their OS-level dark preference.
+  const [mode, setMode] = useState<Mode>("light");
 
   useEffect(() => {
-    const stored = (window.localStorage.getItem(STORAGE_KEY) as Mode | null) ?? "system";
+    const stored = (window.localStorage.getItem(STORAGE_KEY) as Mode | null) ?? "light";
     setMode(stored);
     applyMode(stored);
 
     // Track OS-level changes when user is in "system" mode.
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     const onChange = () => {
-      const cur = (window.localStorage.getItem(STORAGE_KEY) as Mode | null) ?? "system";
+      const cur = (window.localStorage.getItem(STORAGE_KEY) as Mode | null) ?? "light";
       if (cur === "system") applyMode("system");
     };
     mq.addEventListener("change", onChange);
@@ -72,7 +75,7 @@ export function ThemeToggle({ className }: { className?: string }) {
 export const THEME_BOOT_SCRIPT = `
 (function() {
   try {
-    var s = localStorage.getItem('${STORAGE_KEY}') || 'system';
+    var s = localStorage.getItem('${STORAGE_KEY}') || 'light';
     var dark = s === 'dark' || (s === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
     if (dark) document.documentElement.classList.add('dark');
   } catch (e) {}

@@ -526,7 +526,7 @@ function SupervisorPageInner() {
                     {selected.audio_transcript && (
                       <div className="mt-3">
                         <div className="text-[10px] uppercase tracking-wider text-ink-500">Verbatim transcript</div>
-                        <p className="mt-1 text-sm" style={{ direction: "auto" }}>
+                        <p className="mt-1 text-sm" dir="auto">
                           {selected.audio_transcript}
                         </p>
                       </div>

@@ -287,7 +287,7 @@ export default function TrackingPage() {
               <audio src={issue.before_audio_url} controls className="mt-2 w-full" />
             )}
             {issue.audio_transcript && (
-              <p className="mt-2 text-sm" style={{ direction: "auto", color: "rgb(var(--text-primary))" }}>
+              <p className="mt-2 text-sm" dir="auto" style={{ color: "rgb(var(--text-primary))" }}>
                 &ldquo;{issue.audio_transcript}&rdquo;
               </p>
             )}
