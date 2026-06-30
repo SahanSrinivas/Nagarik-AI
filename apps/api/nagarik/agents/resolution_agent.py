@@ -109,6 +109,15 @@ def run_resolution(state: AgentState) -> AgentState:
                     "xp": XP_PER_RESOLVED_REPORT,
                 },
             )
+            # Viral growth loop — make the before/after share asset available
+            # the instant the fix is verified. The PNG is rendered on demand
+            # by routes/share.py; here we just record the URL on the issue
+            # so the citizen UI can show a one-tap "Share fix" button.
+            try:
+                from nagarik.routes.share import mark_share_ready
+                mark_share_ready(state["issue_id"])
+            except Exception as exc:  # noqa: BLE001 — share is best-effort
+                log.warning("resolution: mark_share_ready failed: %s", exc)
         elif verdict.startswith("rejected"):
             # Push back to scheduled — crew has to redo.
             db.execute(

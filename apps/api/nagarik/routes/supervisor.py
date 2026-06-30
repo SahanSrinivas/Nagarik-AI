@@ -53,6 +53,7 @@ def _to_queue_row(issue: Issue, now: datetime) -> dict[str, Any]:
             sla_tone = "red"
         elif delta < 120:
             sla_tone = "amber"
+    ai_meta = issue.ai_classification or {}
     return {
         "id": str(issue.id),
         "type": getattr(issue.type, "value", str(issue.type)),
@@ -65,6 +66,17 @@ def _to_queue_row(issue: Issue, now: datetime) -> dict[str, Any]:
         "description": (issue.description or "")[:200],
         "before_photo_url": issue.before_photo_url,
         "before_video_url": getattr(issue, "before_video_url", None),
+        "before_audio_url": getattr(issue, "before_audio_url", None),
+        # V2 — Budget Estimator (the truck-loading view from the marketing copy)
+        "estimated_materials": list(getattr(issue, "estimated_materials", []) or []),
+        "estimated_cost_inr": getattr(issue, "estimated_cost_inr", None),
+        # V2 — Voice-first transcript surfaced so the supervisor reads the
+        # citizen's actual words, not just the AI summary.
+        "audio_transcript": ai_meta.get("audio_transcript", "") or "",
+        "audio_translation_en": ai_meta.get("audio_translation_en", "") or "",
+        "audio_context": ai_meta.get("audio_context", "") or "",
+        "audio_language": ai_meta.get("audio_language", "") or "",
+        "audio_rejected": bool(ai_meta.get("audio_rejected", False)),
         "delivered_at": issue.delivered_at.isoformat() if issue.delivered_at else None,
         "delivered_channel": issue.delivered_channel,
         "acked_at": issue.acked_at.isoformat() if issue.acked_at else None,
@@ -120,6 +132,26 @@ def queue(
         Issue.severity.desc(),
     ).limit(limit)
     rows = [_to_queue_row(i, now) for i in db.scalars(stmt).all()]
+    # V2 — "Truck-loading bill" rollup. Sum the per-issue cost estimates so
+    # the dispatcher sees today's procurement cost at a glance, plus the most
+    # common materials (so the depot supervisor knows what to pre-load).
+    bill_inr = sum(int(r["estimated_cost_inr"] or 0) for r in rows)
+    material_tally: dict[str, dict[str, float | str]] = {}
+    for r in rows:
+        for m in r.get("estimated_materials") or []:
+            key = f"{m.get('name','')}|{m.get('unit','')}"
+            slot = material_tally.setdefault(
+                key, {"name": m.get("name", ""), "unit": m.get("unit", "unit"), "qty": 0.0}
+            )
+            try:
+                slot["qty"] = float(slot["qty"]) + float(m.get("qty", 0) or 0)
+            except (TypeError, ValueError):
+                pass
+    materials_top = sorted(
+        material_tally.values(),
+        key=lambda x: float(x["qty"]),
+        reverse=True,
+    )[:6]
     summary = {
         "total": len(rows),
         "breached": sum(1 for r in rows if r["sla_tone"] == "red"),
@@ -127,6 +159,9 @@ def queue(
         "green": sum(1 for r in rows if r["sla_tone"] == "green"),
         "acked": sum(1 for r in rows if r["acked_at"]),
         "escalated": sum(1 for r in rows if r["escalation_level"] > 0),
+        # V2 estimator rollup
+        "materials_bill_inr": bill_inr,
+        "materials_top": materials_top,
     }
     return {"department": dept.name, "summary": summary, "items": rows}
 

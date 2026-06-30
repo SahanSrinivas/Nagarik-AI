@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { useT } from "@/i18n";
 import { uploadPhoto, uploadVideo } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { VoiceRecorder } from "@/components/VoiceRecorder";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -59,6 +60,7 @@ export default function ReportPage() {
   const [evidenceKind, setEvidenceKind] = useState<"photo" | "video">("photo");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [submitted, setSubmitted] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -145,6 +147,7 @@ export default function ReportPage() {
           lat, lng, description: desc,
           before_photo_url: evidenceKind === "photo" ? photoUrl : null,
           before_video_url: evidenceKind === "video" ? videoUrl : null,
+          before_audio_url: audioUrl,
           whatsapp_number: whatsapp || null,
         }),
       });
@@ -364,6 +367,10 @@ export default function ReportPage() {
             placeholder={t("report.description_placeholder")}
           />
         </label>
+
+        {/* Voice-first multimodal — record a Kannada/Hindi/English note that
+            Gemini 2.5 Flash ingests alongside the photo in a single pass. */}
+        <VoiceRecorder onUploaded={setAudioUrl} />
 
         {/* WhatsApp opt-in — animated 'shaky bump' on mount to draw the eye.
             Captures the citizen's number per-issue so anonymous reports work

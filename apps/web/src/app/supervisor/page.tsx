@@ -10,6 +10,8 @@ import {
   Inbox,
   LogOut,
   MapPin,
+  Mic,
+  Receipt,
   Send,
   ShieldAlert,
   Siren,
@@ -32,6 +34,16 @@ interface QueueItem {
   description: string;
   before_photo_url: string | null;
   before_video_url: string | null;
+  before_audio_url: string | null;
+  // V2 — AI Budget Estimator
+  estimated_materials: { name: string; qty: number; unit: string }[];
+  estimated_cost_inr: number | null;
+  // V2 — Voice-first
+  audio_transcript: string;
+  audio_translation_en: string;
+  audio_context: string;
+  audio_language: string;
+  audio_rejected: boolean;
   delivered_at: string | null;
   delivered_channel: string | null;
   acked_at: string | null;
@@ -44,7 +56,17 @@ interface QueueItem {
 
 interface QueueResponse {
   department: string;
-  summary: { total: number; breached: number; amber: number; green: number; acked: number; escalated: number };
+  summary: {
+    total: number;
+    breached: number;
+    amber: number;
+    green: number;
+    acked: number;
+    escalated: number;
+    // V2 rollup — sum of estimated_cost_inr + most-loaded materials
+    materials_bill_inr: number;
+    materials_top: { name: string; qty: number; unit: string }[];
+  };
   items: QueueItem[];
 }
 
@@ -193,6 +215,59 @@ function SupervisorPageInner() {
             </div>
           )}
         </div>
+
+        {/* V2 — Today's truck-loading bill. Sums the per-issue Gemini cost
+            estimates across this dept's open queue + lists the most-loaded
+            materials so the depot supervisor knows exactly what to pre-load
+            on the dispatch truck. The marketing copy says "budgeted line
+            item before the truck even leaves the depot" — this is that. */}
+        {queue && (queue.summary.materials_bill_inr > 0 || queue.summary.materials_top.length > 0) && (
+          <div className="flex flex-wrap items-center gap-3 border-t px-6 py-3"
+            style={{
+              background: "linear-gradient(90deg, rgba(245, 158, 11, 0.06) 0%, rgb(var(--bg-surface)) 100%)",
+              borderColor: "rgba(245, 158, 11, 0.20)",
+            }}>
+            <div className="flex items-center gap-2">
+              <span className="grid h-7 w-7 place-items-center rounded-lg text-white"
+                style={{ background: "linear-gradient(135deg, #f59e0b, #d97706)" }}>
+                <Receipt className="h-3.5 w-3.5" />
+              </span>
+              <div>
+                <div className="text-[10px] uppercase tracking-wider"
+                  style={{ color: "rgb(var(--text-muted))" }}>
+                  Today&apos;s truck-loading bill
+                </div>
+                <div className="text-base font-semibold">
+                  ≈ ₹{queue.summary.materials_bill_inr.toLocaleString("en-IN")}
+                  <span className="ml-1 text-[10px] font-normal"
+                    style={{ color: "rgb(var(--text-muted))" }}>
+                    across {queue.summary.total} open tickets
+                  </span>
+                </div>
+              </div>
+            </div>
+            {queue.summary.materials_top.length > 0 && (
+              <div className="ml-auto flex flex-wrap items-center gap-1.5">
+                <span className="text-[10px] uppercase tracking-wider"
+                  style={{ color: "rgb(var(--text-muted))" }}>
+                  Pre-load:
+                </span>
+                {queue.summary.materials_top.map((m, i) => (
+                  <span key={`${m.name}-${i}`}
+                    className="rounded-full px-2 py-0.5 text-[11px]"
+                    style={{
+                      background: "rgb(var(--bg-surface-hover))",
+                      border: "1px solid rgb(var(--border-light))",
+                    }}>
+                    <strong>{Number.isInteger(m.qty) ? m.qty : m.qty.toFixed(1)}</strong>{" "}
+                    <span style={{ color: "rgb(var(--text-muted))" }}>{m.unit}</span>{" "}
+                    · {m.name}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </header>
 
       {/* ─── Body — 3 columns ─── */}
@@ -263,6 +338,20 @@ function SupervisorPageInner() {
                     {it.delivered_channel && (
                       <span className="rounded-full bg-ink-100 px-1.5 py-0.5 font-mono text-ink-600">
                         {CHANNEL_LABEL[it.delivered_channel] ?? it.delivered_channel}
+                      </span>
+                    )}
+                    {/* V2 — Estimator chip: cost lands per row */}
+                    {typeof it.estimated_cost_inr === "number" && it.estimated_cost_inr > 0 && (
+                      <span title="AI budget estimate"
+                        className="rounded-full bg-amber-100 px-1.5 py-0.5 font-semibold text-amber-800">
+                        ≈ ₹{it.estimated_cost_inr.toLocaleString("en-IN")}
+                      </span>
+                    )}
+                    {/* V2 — Voice-note chip with the detected language */}
+                    {it.audio_language && !it.audio_rejected && (
+                      <span title="Citizen attached a voice note"
+                        className="rounded-full bg-purple-100 px-1.5 py-0.5 font-semibold uppercase text-purple-700">
+                        🎙 {it.audio_language}
                       </span>
                     )}
                   </div>
@@ -407,6 +496,90 @@ function SupervisorPageInner() {
                       className="mt-3 max-h-64 w-full rounded-xl border border-ink-200 object-contain" />
                   ) : null}
                 </div>
+
+                {/* V2 — Voice note + Gemini transcript/translation/context.
+                    Surfaces the citizen's actual words AND the AI summary so
+                    a Hindi/Kannada/Telugu voice note works for the supervisor
+                    who may only read English. PII already redacted server-side. */}
+                {(selected.audio_transcript || selected.audio_translation_en || selected.before_audio_url) && (
+                  <div className="card p-5"
+                    style={{ borderColor: "rgba(168, 85, 247, 0.30)" }}>
+                    <div className="flex items-center gap-2">
+                      <Mic className="h-4 w-4" style={{ color: "#7e22ce" }} />
+                      <div className="text-[10px] uppercase tracking-wider text-ink-500">
+                        Citizen voice note
+                      </div>
+                      {selected.audio_language && (
+                        <span className="rounded-full bg-purple-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-purple-700">
+                          {selected.audio_language}
+                        </span>
+                      )}
+                      {selected.audio_rejected && (
+                        <span className="rounded-full bg-rose-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-rose-700">
+                          Rejected by guardrail
+                        </span>
+                      )}
+                    </div>
+                    {selected.before_audio_url && (
+                      <audio src={selected.before_audio_url} controls className="mt-3 w-full" />
+                    )}
+                    {selected.audio_transcript && (
+                      <div className="mt-3">
+                        <div className="text-[10px] uppercase tracking-wider text-ink-500">Verbatim transcript</div>
+                        <p className="mt-1 text-sm" style={{ direction: "auto" }}>
+                          {selected.audio_transcript}
+                        </p>
+                      </div>
+                    )}
+                    {selected.audio_translation_en && selected.audio_language !== "en" && (
+                      <div className="mt-3 rounded-xl p-3"
+                        style={{ background: "rgb(var(--bg-surface-hover))", border: "1px solid rgb(var(--border-light))" }}>
+                        <div className="text-[10px] uppercase tracking-wider text-ink-500">English translation</div>
+                        <p className="mt-1 text-sm italic">{selected.audio_translation_en}</p>
+                      </div>
+                    )}
+                    {selected.audio_context && (
+                      <div className="mt-3 rounded-xl p-3"
+                        style={{ background: "rgba(245, 158, 11, 0.06)", border: "1px solid rgba(245, 158, 11, 0.25)" }}>
+                        <div className="text-[10px] uppercase tracking-wider"
+                          style={{ color: "#b45309" }}>What the voice note adds</div>
+                        <p className="mt-1 text-sm">{selected.audio_context}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* V2 — Estimator panel (per-issue). Mirrors the rollup at
+                    the top of the page but with the specific materials for
+                    THIS ticket so the crew knows what to put on the truck. */}
+                {(selected.estimated_materials?.length ?? 0) > 0 && (
+                  <div className="card p-5">
+                    <div className="flex items-center gap-2">
+                      <Receipt className="h-4 w-4" style={{ color: "#b45309" }} />
+                      <div className="text-[10px] uppercase tracking-wider text-ink-500">
+                        AI budget estimate
+                      </div>
+                      {typeof selected.estimated_cost_inr === "number" && (
+                        <span className="ml-auto rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold uppercase text-amber-800">
+                          ≈ ₹{selected.estimated_cost_inr.toLocaleString("en-IN")}
+                        </span>
+                      )}
+                    </div>
+                    <ul className="mt-3 flex flex-wrap gap-2">
+                      {selected.estimated_materials.map((m, i) => (
+                        <li key={`${m.name}-${i}`}
+                          className="rounded-xl px-2.5 py-1 text-xs"
+                          style={{
+                            background: "rgb(var(--bg-surface-hover))",
+                            border: "1px solid rgb(var(--border-light))",
+                          }}>
+                          <span className="font-semibold">{m.qty}</span>{" "}
+                          <span className="text-ink-500">{m.unit}</span> · {m.name}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>

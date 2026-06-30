@@ -113,6 +113,32 @@ def _tick() -> dict:
             _emit_escalation_notice(str(issue.id), 3, issue.routed_department or "the department")
             counts["level3_bumped"] += 1
 
+        # 4. Community-DIY unlock — low-severity (1-2) issues that reach
+        # escalation level 3 with no resolution have effectively been
+        # abandoned by the system. Open them up to citizen crowdfunding
+        # so neighbours can clean the garbage / repaint the crosswalk /
+        # plant the median themselves. Only fires once per issue.
+        stmt = select(Issue).where(
+            Issue.status.in_(OPEN_STATUSES),
+            Issue.severity <= 2,
+            Issue.escalation_level >= 3,
+            Issue.diy_unlocked_at.is_(None),
+        )
+        unlocked_count = 0
+        for issue in db.scalars(stmt).all():
+            issue.diy_unlocked_at = now
+            db.add(issue)
+            db.flush()
+            try:
+                from nagarik.notifications import emit
+                emit(str(issue.id), "diy_unlocked",
+                     extras={"type": str(issue.type), "ward": issue.ward or ""})
+            except Exception:  # noqa: BLE001 — notification is best-effort
+                pass
+            unlocked_count += 1
+        if unlocked_count:
+            counts["diy_unlocked"] = unlocked_count
+
         db.commit()
     return counts
 

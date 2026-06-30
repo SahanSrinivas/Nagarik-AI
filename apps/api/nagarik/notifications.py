@@ -52,6 +52,8 @@ TEMPLATES: dict[str, tuple[str, str]] = {
     "escalated_lvl1":  ("Missed SLA — escalated",     "{dept} didn't act in time. We've re-pinged the dept supervisor directly."),
     "escalated_lvl2":  ("Escalated to councillor",    "{dept} still silent 24h on. Ward councillor has been looped in."),
     "escalated_lvl3":  ("RTI draft prepared",         "72h with no movement. We've drafted an RTI you can file in one tap from your dashboard."),
+    "diy_unlocked":    ("Community DIY unlocked",     "{dept} hasn't acted. Neighbours can now pledge funds or volunteer hours to fix this together."),
+    "diy_threshold":   ("Community Heroes assembled", "Threshold met — your DIY workplan is ready. Tap to see the schedule."),
 }
 
 

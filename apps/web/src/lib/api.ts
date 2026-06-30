@@ -14,12 +14,41 @@ export interface Issue {
   after_photo_url: string | null;
   before_video_url?: string | null;
   after_video_url?: string | null;
+  before_audio_url?: string | null;
   routed_department: string | null;
   sla_deadline: string | null;
   duplicate_of_id: string | null;
   ai_confidence: number;
+  // V2 fields — populated post-classification / post-resolution
+  estimated_materials?: { name: string; qty: number; unit: string }[];
+  estimated_cost_inr?: number | null;
+  share_image_url?: string | null;
+  diy_unlocked_at?: string | null;
+  diy_threshold_met_at?: string | null;
   resolved_at: string | null;
   created_at: string;
+}
+
+export interface Pledge {
+  id: string;
+  issue_id: string;
+  citizen_id: string;
+  kind: "funds" | "hours";
+  amount_inr: number | null;
+  hours: number | null;
+  note: string | null;
+  created_at: string;
+}
+
+export interface DiyState {
+  unlocked: boolean;
+  unlocked_at: string | null;
+  threshold_met: boolean;
+  threshold_met_at: string | null;
+  funds_total_inr: number;
+  hours_total: number;
+  pledges: Pledge[];
+  schedule: Record<string, unknown>;
 }
 
 export interface AgentEvent {
@@ -162,3 +191,35 @@ export async function uploadVideo(file: File): Promise<string> {
   });
   return slot.public_url;
 }
+
+/** Upload a recorded voice note (m4a / webm-opus). Same signed-URL dance. */
+export async function uploadAudio(blob: Blob, mime = "audio/m4a"): Promise<string> {
+  const slot = await api.signedUpload(mime);
+  if (!slot.upload_url) return slot.public_url;
+  await fetch(slot.upload_url, {
+    method: "PUT",
+    headers: { "Content-Type": mime },
+    body: blob,
+  });
+  return slot.public_url;
+}
+
+export const pledgesApi = {
+  state: (issueId: string) => call<DiyState>(`/issues/${issueId}/diy`),
+  create: (
+    issueId: string,
+    body: { kind: "funds" | "hours"; amount_inr?: number; hours?: number; note?: string },
+    token?: string | null,
+  ) =>
+    fetch(`${BASE}/issues/${issueId}/pledges`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(body),
+    }).then(async (r) => {
+      if (!r.ok) throw new Error(`${r.status} ${await r.text()}`);
+      return r.json() as Promise<Pledge>;
+    }),
+};

@@ -16,8 +16,10 @@ import {
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { CommunityFixCard } from "@/components/CommunityFixCard";
 import { Reveal, Stagger } from "@/components/Motion";
 import { Pill, SeverityPill, StatusPill } from "@/components/Pill";
+import { ShareFixButton } from "@/components/ShareFixButton";
 import { useI18n } from "@/i18n";
 
 interface LocationResolver {
@@ -58,6 +60,16 @@ interface Tracking {
     after_photo_url: string | null;
     before_video_url?: string | null;
     after_video_url?: string | null;
+    before_audio_url?: string | null;
+    audio_transcript?: string;
+    audio_translation_en?: string;
+    audio_context?: string;
+    audio_language?: string;
+    audio_rejected?: boolean;
+    share_image_url?: string | null;
+    diy_unlocked_at?: string | null;
+    estimated_materials?: { name: string; qty: number; unit: string }[];
+    estimated_cost_inr?: number | null;
     ai_confidence?: number;
     ai_bbox?: [number, number, number, number] | null;   // normalised 0-1
     ai_focus_label?: string | null;
@@ -234,9 +246,104 @@ export default function TrackingPage() {
               label="fix verified"
               tone="verified"
             />
+            {/* Viral before/after share — one-tap share to WhatsApp/X via
+                Web Share API. The PNG is rendered server-side by share.py. */}
+            <div className="mt-3">
+              <ShareFixButton
+                issueId={issue.id}
+                shareImagePath={issue.share_image_url ?? null}
+                resolvedAt={issue.resolved_at}
+                createdAt={issue.created_at}
+                issueType={issue.type}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* V2 — Voice-first transcript + translation. Shown to the citizen
+            so they can verify what was understood + see the Gemini
+            context-summary that goes to the dispatcher. */}
+        {(issue.audio_transcript || issue.before_audio_url) && (
+          <div className="border-t border-ink-100 px-6 py-4">
+            <div className="flex items-center justify-between gap-2">
+              <div className="text-xs font-semibold uppercase tracking-wider"
+                style={{ color: "rgb(var(--accent))" }}>
+                Your voice note · Gemini multimodal
+              </div>
+              <div className="flex items-center gap-1.5">
+                {issue.audio_language && (
+                  <span className="rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-purple-700">
+                    {issue.audio_language}
+                  </span>
+                )}
+                {issue.audio_rejected && (
+                  <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-rose-700">
+                    Voice note rejected
+                  </span>
+                )}
+              </div>
+            </div>
+            {issue.before_audio_url && (
+              <audio src={issue.before_audio_url} controls className="mt-2 w-full" />
+            )}
+            {issue.audio_transcript && (
+              <p className="mt-2 text-sm" style={{ direction: "auto", color: "rgb(var(--text-primary))" }}>
+                &ldquo;{issue.audio_transcript}&rdquo;
+              </p>
+            )}
+            {issue.audio_translation_en && issue.audio_language !== "en" && (
+              <p className="mt-1 text-xs italic" style={{ color: "rgb(var(--text-muted))" }}>
+                EN: {issue.audio_translation_en}
+              </p>
+            )}
+            {issue.audio_context && (
+              <p className="mt-2 text-xs" style={{ color: "rgb(var(--text-secondary))" }}>
+                <strong>Dispatcher hint:</strong> {issue.audio_context}
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* AI Budget Estimator — surfaces the Vision Agent's materials/cost
+            so a supervisor can plan truck-loading at a glance. */}
+        {(issue.estimated_materials?.length ?? 0) > 0 && (
+          <div className="border-t border-ink-100 px-6 py-4">
+            <div className="flex items-center justify-between gap-2">
+              <div className="text-xs font-semibold uppercase tracking-wider"
+                style={{ color: "rgb(var(--accent))" }}>
+                AI budget estimate
+              </div>
+              {typeof issue.estimated_cost_inr === "number" && (
+                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-amber-800">
+                  ≈ ₹{issue.estimated_cost_inr.toLocaleString("en-IN")}
+                </span>
+              )}
+            </div>
+            <ul className="mt-2 flex flex-wrap gap-2">
+              {(issue.estimated_materials ?? []).map((m, i) => (
+                <li key={`${m.name}-${i}`}
+                  className="rounded-xl px-2.5 py-1 text-xs"
+                  style={{
+                    background: "rgb(var(--bg-surface-hover))",
+                    border: "1px solid rgb(var(--border-light))",
+                  }}>
+                  <span className="font-semibold">{m.qty}</span>{" "}
+                  <span style={{ color: "rgb(var(--text-muted))" }}>{m.unit}</span>{" "}
+                  · {m.name}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-2 text-[11px]" style={{ color: "rgb(var(--text-muted))" }}>
+              Gemini estimates physical dimensions from the photo, then maps
+              to a fixed unit-price table. Helps the dispatcher pre-load the truck.
+            </p>
           </div>
         )}
       </section>
+
+      {/* Community DIY + crowdfunding — only renders when sev≤2 issue has
+          breached its level-3 SLA. The card no-ops otherwise. */}
+      <CommunityFixCard issueId={issue.id} />
 
       {/* ---- TIMELINE ---- */}
       <section>

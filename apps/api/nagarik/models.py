@@ -96,9 +96,20 @@ class Issue(Base):
     before_video_url: Mapped[str | None] = mapped_column(String(500))
     after_video_url: Mapped[str | None] = mapped_column(String(500))
 
+    # Native voice note (Kannada / Hindi / English) supplied by the citizen.
+    # Gemini 2.5 Flash ingests audio + image in a single multimodal call —
+    # bypasses the latency-heavy STT pipeline and keeps regional context
+    # (slang, place names) intact.
+    before_audio_url: Mapped[str | None] = mapped_column(String(500))
+
     # Filled in by VisionAgent.
     ai_classification: Mapped[dict] = mapped_column(JSON, default=dict)
     ai_confidence: Mapped[float] = mapped_column(Float, default=0.0)
+    # AI budget estimator (Vision Agent upgrade) — itemised materials list
+    # and a single rupee total for the supervisor's truck-loading view.
+    # Examples in tests: [{"name":"cold-mix asphalt","qty":3,"unit":"bag"}]
+    estimated_materials: Mapped[list] = mapped_column(JSON, default=list)
+    estimated_cost_inr: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     # Filled in by DedupAgent — CLIP image embedding for similarity search.
     image_embedding: Mapped[list[float] | None] = mapped_column(EmbeddingType, nullable=True)
@@ -128,6 +139,20 @@ class Issue(Base):
     # transition for this issue also fires a WhatsApp template to the
     # number via nagarik.whatsapp.send_citizen_update().
     whatsapp_number: Mapped[str | None] = mapped_column(String(20))
+
+    # Viral before/after share asset — populated by ResolutionAgent when
+    # CLIP verifies the fix. Points at /issues/{id}/share.png (rendered on
+    # demand by routes/share.py).
+    share_image_url: Mapped[str | None] = mapped_column(String(500))
+
+    # Community DIY + crowdfunding ladder. diy_unlocked_at fires when an
+    # issue with severity ≤ 2 breaches its SLA (level-3 escalation) — that's
+    # when citizens can pledge. diy_threshold_met_at fires when 5 volunteer
+    # hours' worth of pledges OR ≥1 funded pledge accumulates, at which
+    # point we generate diy_schedule (Claude-prompted SOP for the citizens).
+    diy_unlocked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    diy_threshold_met_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    diy_schedule: Mapped[dict] = mapped_column(JSON, default=dict)
 
     resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
@@ -232,3 +257,27 @@ class AgentEvent(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     issue: Mapped[Issue] = relationship(back_populates="events")
+
+
+class Pledge(Base):
+    """A citizen's pledge of money OR volunteer hours on an SLA-breached issue.
+
+    Mocked for now — `amount_inr` is a number, not a charge. Razorpay can
+    be wired later by checking `paid_at` before counting the pledge. The
+    threshold logic in routes/pledges.py treats kind='hours' and kind='funds'
+    independently:
+
+      hours_threshold:  Σ hours ≥ 5         → unlocks DIY schedule
+      funds_threshold:  Σ amount_inr ≥ 1500 → also unlocks
+    """
+
+    __tablename__ = "pledges"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    issue_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("issues.id", ondelete="CASCADE"), index=True)
+    citizen_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("citizens.id"), index=True)
+    kind: Mapped[str] = mapped_column(String(10))        # 'funds' | 'hours'
+    amount_inr: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    hours: Mapped[float | None] = mapped_column(Float, nullable=True)
+    note: Mapped[str | None] = mapped_column(String(200))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

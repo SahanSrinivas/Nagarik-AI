@@ -103,6 +103,20 @@ def tracking(
             "after_photo_url": issue.after_photo_url,
             "before_video_url": getattr(issue, "before_video_url", None),
             "after_video_url": getattr(issue, "after_video_url", None),
+            "before_audio_url": getattr(issue, "before_audio_url", None),
+            # V2 — Voice-first audio surface (post-guardrail scrub)
+            "audio_transcript": ai_meta.get("audio_transcript", "") or "",
+            "audio_translation_en": ai_meta.get("audio_translation_en", "") or "",
+            "audio_context": ai_meta.get("audio_context", "") or "",
+            "audio_language": ai_meta.get("audio_language", "") or "",
+            "audio_rejected": bool(ai_meta.get("audio_rejected", False)),
+            "estimated_materials": list(getattr(issue, "estimated_materials", []) or []),
+            "estimated_cost_inr": getattr(issue, "estimated_cost_inr", None),
+            "share_image_url": getattr(issue, "share_image_url", None),
+            "diy_unlocked_at": (
+                issue.diy_unlocked_at.isoformat()
+                if getattr(issue, "diy_unlocked_at", None) else None
+            ),
             "routed_department": issue.routed_department,
             "sla_deadline": issue.sla_deadline.isoformat() if issue.sla_deadline else None,
             "scheduled_at": issue.scheduled_at.isoformat() if issue.scheduled_at else None,

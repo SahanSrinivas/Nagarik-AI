@@ -10,12 +10,16 @@ import {
   Award,
   Brain,
   Building2,
+  CalendarClock,
   Camera,
   CheckCircle2,
   Cpu,
   Droplet,
   Eye,
   GitBranch,
+  HandCoins,
+  Hammer,
+  Languages,
   Lightbulb,
   Lock,
   LogIn,
@@ -23,9 +27,12 @@ import {
   Map,
   Medal,
   MessageCircle,
+  Mic,
   Construction,
+  Receipt,
   RefreshCw,
   Send,
+  Share2,
   ShieldCheck,
   Shield,
   Shovel,
@@ -38,6 +45,8 @@ import {
   Trophy,
   Truck,
   UserCheck,
+  Users,
+  Volume2,
   Waves,
   Webhook,
   Wrench,
@@ -690,6 +699,238 @@ export default function MarketingHome() {
       {/* WHATSAPP DEMO PHONE — Framer Motion showing live citizen updates ──── */}
       <WhatsAppPhoneDemo />
 
+      {/* V2 CAPABILITIES — the four upgrades that just shipped on top of the
+          7-agent loop. Each block links to where the citizen / supervisor
+          experiences it. Keeps the marketing site honest: every claim points
+          to running code, not a roadmap line item. */}
+      <section>
+        <header className="mb-6">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider"
+            style={{ color: "rgb(var(--accent))" }}>
+            <Sparkles className="h-3.5 w-3.5" /> V2 · Just shipped
+          </div>
+          <h2 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
+            Four upgrades that take NagarikAI from working app to civic platform
+          </h2>
+          <p className="mt-3 max-w-2xl text-base text-ink-600 sm:text-lg">
+            Every feature below runs in the live build today — not on a slide. The
+            7-agent loop, the MILP solver, and the closed-loop CLIP verifier are still
+            the spine; these four upgrades graft new tissue onto each end of it.
+          </p>
+        </header>
+
+        <Stagger step={0.07} className="grid gap-5 sm:grid-cols-2">
+          {/* ── 1. Community DIY & Crowdfunding ──────────────────────── */}
+          <Reveal>
+            <motion.div whileHover={{ y: -3 }} className="card overflow-hidden">
+              <div className="flex items-center gap-3 px-6 py-3"
+                style={{
+                  background: "linear-gradient(90deg, rgba(168, 85, 247, 0.12), rgba(236, 72, 153, 0.06))",
+                  borderBottom: "1px solid rgba(168, 85, 247, 0.30)",
+                }}>
+                <span className="grid h-9 w-9 place-items-center rounded-xl text-white"
+                  style={{ background: "linear-gradient(135deg, #a855f7, #ec4899)" }}>
+                  <Hammer className="h-4 w-4" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-semibold">Community DIY &amp; Crowdfunding</div>
+                  <div className="text-xs" style={{ color: "rgb(var(--text-muted))" }}>
+                    When the system fails, neighbours can take over.
+                  </div>
+                </div>
+                <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider"
+                  style={{ background: "rgba(168, 85, 247, 0.16)", color: "#7e22ce" }}>
+                  Citizens become Heroes
+                </span>
+              </div>
+              <div className="space-y-3 p-6 text-sm" style={{ color: "rgb(var(--text-secondary))" }}>
+                <p>
+                  A low-severity issue (overflowing garbage, faded crosswalk, dark
+                  lane) that breaches its <strong>Level&nbsp;3 SLA</strong> with no
+                  municipal action automatically unlocks a <strong>Community Fix</strong>{" "}
+                  module on the citizen&apos;s tracking page.
+                </p>
+                <ul className="space-y-1.5 text-xs">
+                  <li className="flex items-start gap-2"><HandCoins className="mt-0.5 h-3.5 w-3.5" style={{ color: "#a855f7" }} /> Citizens pledge small amounts (₹100/500/1,000) or volunteer hours.</li>
+                  <li className="flex items-start gap-2"><Users className="mt-0.5 h-3.5 w-3.5" style={{ color: "#a855f7" }} /> Threshold: <strong>5 volunteer-hours</strong> OR <strong>₹1,500</strong>.</li>
+                  <li className="flex items-start gap-2"><CalendarClock className="mt-0.5 h-3.5 w-3.5" style={{ color: "#a855f7" }} /> Threshold met → platform generates a DIY workplan (tools, safety, meet-up).</li>
+                </ul>
+                <Link href="/tracking"
+                  className="inline-flex items-center gap-1 text-xs font-semibold"
+                  style={{ color: "rgb(var(--accent))" }}>
+                  See it on a real tracking page <ArrowRight className="h-3 w-3" />
+                </Link>
+              </div>
+            </motion.div>
+          </Reveal>
+
+          {/* ── 2. AI Resource & Budget Estimator ─────────────────────── */}
+          <Reveal>
+            <motion.div whileHover={{ y: -3 }} className="card overflow-hidden">
+              <div className="flex items-center gap-3 px-6 py-3"
+                style={{
+                  background: "linear-gradient(90deg, rgba(245, 158, 11, 0.12), rgba(217, 119, 6, 0.06))",
+                  borderBottom: "1px solid rgba(245, 158, 11, 0.30)",
+                }}>
+                <span className="grid h-9 w-9 place-items-center rounded-xl text-white"
+                  style={{ background: "linear-gradient(135deg, #f59e0b, #d97706)" }}>
+                  <Receipt className="h-4 w-4" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-semibold">AI Budget Estimator</div>
+                  <div className="text-xs" style={{ color: "rgb(var(--text-muted))" }}>
+                    Vision Agent upgrade: dimensions → materials → cost.
+                  </div>
+                </div>
+                <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider"
+                  style={{ background: "rgba(245, 158, 11, 0.18)", color: "#b45309" }}>
+                  Truck-loading view
+                </span>
+              </div>
+              <div className="space-y-3 p-6 text-sm" style={{ color: "rgb(var(--text-secondary))" }}>
+                <p>
+                  Gemini 2.5 Flash now classifies <em>and</em> estimates physical
+                  dimensions + required materials. Supervisors get a budgeted line
+                  item before the truck even leaves the depot.
+                </p>
+                <div className="rounded-2xl p-3 text-xs"
+                  style={{
+                    background: "rgb(var(--bg-surface-hover))",
+                    border: "1px solid rgb(var(--border-light))",
+                    fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+                  }}>
+                  <div>2×2 m pothole detected.</div>
+                  <div className="mt-1">Materials: 3 bags cold-mix asphalt.</div>
+                  <div>Estimated cost: <strong>₹1,500</strong>.</div>
+                </div>
+                <p className="text-xs" style={{ color: "rgb(var(--text-muted))" }}>
+                  Unit-price table is held in the Vision Agent&apos;s prompt — easy
+                  for a BBMP procurement officer to tune per quarter.
+                </p>
+              </div>
+            </motion.div>
+          </Reveal>
+
+          {/* ── 3. Viral Before/After Growth Loop ─────────────────────── */}
+          <Reveal>
+            <motion.div whileHover={{ y: -3 }} className="card overflow-hidden">
+              <div className="flex items-center gap-3 px-6 py-3"
+                style={{
+                  background: "linear-gradient(90deg, rgba(99, 102, 241, 0.12), rgba(236, 72, 153, 0.06))",
+                  borderBottom: "1px solid rgba(99, 102, 241, 0.30)",
+                }}>
+                <span className="grid h-9 w-9 place-items-center rounded-xl text-white"
+                  style={{ background: "linear-gradient(135deg, #6366f1, #ec4899)" }}>
+                  <Share2 className="h-4 w-4" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-semibold">Viral Before/After loop</div>
+                  <div className="text-xs" style={{ color: "rgb(var(--text-muted))" }}>
+                    CLIP verifies → split-image generates → one-tap share.
+                  </div>
+                </div>
+                <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider"
+                  style={{ background: "rgba(99, 102, 241, 0.18)", color: "#4338ca" }}>
+                  Organic growth
+                </span>
+              </div>
+              <div className="space-y-3 p-6 text-sm" style={{ color: "rgb(var(--text-secondary))" }}>
+                <p>
+                  The instant the Resolution Agent&apos;s CLIP audit passes, a
+                  watermarked <strong>Before&nbsp;|&nbsp;After</strong> graphic with
+                  &ldquo;Fixed in 36 hours via NagarikAI&rdquo; is auto-rendered.
+                  A single tap fires the Web Share API into WhatsApp, X, Instagram.
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="aspect-[4/3] rounded-xl"
+                    style={{ background: "linear-gradient(135deg, #57534e, #292524)" }}>
+                    <div className="grid h-full place-items-center text-[10px] font-semibold uppercase tracking-wider text-white opacity-80">
+                      Before
+                    </div>
+                  </div>
+                  <div className="aspect-[4/3] rounded-xl"
+                    style={{ background: "linear-gradient(135deg, #166534, #14532d)" }}>
+                    <div className="grid h-full place-items-center text-[10px] font-semibold uppercase tracking-wider text-white opacity-90">
+                      After · ✓
+                    </div>
+                  </div>
+                </div>
+                <p className="text-xs" style={{ color: "rgb(var(--text-muted))" }}>
+                  Solves discoverability without a marketing budget — every fix
+                  becomes a recruitment moment for the next citizen.
+                </p>
+              </div>
+            </motion.div>
+          </Reveal>
+
+          {/* ── 4. Voice-First Multimodal Audio ───────────────────────── */}
+          <Reveal>
+            <motion.div whileHover={{ y: -3 }} className="card overflow-hidden">
+              <div className="flex items-center gap-3 px-6 py-3"
+                style={{
+                  background: "linear-gradient(90deg, rgba(220, 38, 38, 0.10), rgba(245, 158, 11, 0.06))",
+                  borderBottom: "1px solid rgba(220, 38, 38, 0.25)",
+                }}>
+                <span className="grid h-9 w-9 place-items-center rounded-xl text-white"
+                  style={{ background: "linear-gradient(135deg, #dc2626, #f59e0b)" }}>
+                  <Mic className="h-4 w-4" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-semibold">Voice-first multimodal</div>
+                  <div className="text-xs" style={{ color: "rgb(var(--text-muted))" }}>
+                    Kannada · हिंदी · English — drops literacy barriers.
+                  </div>
+                </div>
+                <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider"
+                  style={{ background: "rgba(220, 38, 38, 0.16)", color: "#b91c1c" }}>
+                  Native audio
+                </span>
+              </div>
+              <div className="space-y-3 p-6 text-sm" style={{ color: "rgb(var(--text-secondary))" }}>
+                <p>
+                  Tap the mic on <code className="font-mono">/report</code>, describe the issue in
+                  your language. Gemini 2.5 Flash ingests photo <strong>and</strong> audio in a
+                  single multimodal call — no latency-heavy STT round-trip, no
+                  glossary mismatches on local place names.
+                </p>
+                <div className="rounded-2xl p-3 text-xs italic"
+                  style={{
+                    background: "rgb(var(--bg-surface-hover))",
+                    border: "1px solid rgb(var(--border-light))",
+                  }}>
+                  <Volume2 className="mb-1 inline h-3 w-3" />{" "}
+                  &ldquo;Ee pothole inda thumba problem agtide&rdquo; →{" "}
+                  <span className="not-italic font-semibold">
+                    &ldquo;This pothole is causing a lot of problems.&rdquo;
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-xs">
+                  <Languages className="h-3.5 w-3.5" style={{ color: "#dc2626" }} />
+                  <span style={{ color: "rgb(var(--text-muted))" }}>
+                    The same audio also feeds the dispatcher context — &ldquo;3 weeks
+                    standing, schoolchildren walk past at 8am&rdquo;.
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+          </Reveal>
+        </Stagger>
+
+        <div className="mt-6 rounded-2xl p-4 text-sm"
+          style={{
+            background: "rgb(var(--bg-surface-hover))",
+            border: "1px solid rgb(var(--border-light))",
+            color: "rgb(var(--text-secondary))",
+          }}>
+          <strong style={{ color: "rgb(var(--text-primary))" }}>Why these four together?</strong>{" "}
+          Voice removes the report-side bottleneck (literacy). Estimator removes
+          the dispatch-side bottleneck (budgeting). Before/After removes the
+          discoverability bottleneck (acquisition). DIY removes the failure-mode
+          bottleneck (what happens when the city doesn&apos;t show up). Each one
+          closes a hole the original 7-agent loop couldn&apos;t.
+        </div>
+      </section>
+
       {/* ROADMAP ─ what's next, what we'd build after the hackathon ──────── */}
       <section>
         <header className="mb-6">
@@ -754,13 +995,6 @@ export default function MarketingHome() {
               title: "Multi-city rollout",
               body: "Hyderabad, Chennai, Mumbai, Delhi. The ward polygons, SOP table, and department list are config; the agent loop and MILP are not. Roughly 1 week of data ingestion per city plus a local MoU.",
               tag: "Scale",
-            },
-            {
-              when: "Q3",
-              icon: Brain,
-              title: "Voice-first reporting in Kannada + Hindi",
-              body: "Open the report page, hold the mic, describe the issue in your language. Gemini transcribes + classifies + asks the one clarifying question the model couldn&apos;t resolve from the photo. Drops literacy barriers entirely.",
-              tag: "Accessibility",
             },
             {
               when: "Q3",
