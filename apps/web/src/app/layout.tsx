@@ -45,12 +45,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               backgroundColor: "rgb(var(--bg-canvas) / 0.72)",
             }}
           >
-            <div className="container flex h-16 items-center justify-between gap-3">
+            <div className="container flex h-16 items-center justify-between gap-4">
               <Link href="/" aria-label="NagarikAI home">
                 <Brand />
               </Link>
               <NavBar />
-              <div className="ml-2 flex items-center gap-2 lg:ml-4">
+              <div className="ml-3 flex items-center gap-2 border-l pl-3 lg:ml-5 lg:pl-5"
+                style={{ borderColor: "rgb(var(--border-light))" }}>
                 <ThemeToggle />
                 <LanguageSwitcher />
               </div>
