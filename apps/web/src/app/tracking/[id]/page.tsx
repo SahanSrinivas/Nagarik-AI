@@ -184,7 +184,11 @@ export default function TrackingPage() {
             <div className="flex flex-wrap gap-2">
               <StatusPill value={issue.status} />
               <SeverityPill value={issue.severity} />
-              {issue.ward && <Pill tone="ink">{issue.ward}</Pill>}
+              {issue.ward && (
+                <span className="pill bg-white/15 text-white ring-1 ring-inset ring-white/25">
+                  {issue.ward}
+                </span>
+              )}
             </div>
           </div>
         </div>

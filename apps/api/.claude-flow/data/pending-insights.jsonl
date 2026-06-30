@@ -127,3 +127,5 @@
 {"type":"edit","file":"/Users/sahan_kolluri/Pegasus/Work/NagarikAI/apps/web/src/components/LanguageSwitcher.tsx","timestamp":1782443293731,"sessionId":null}
 {"type":"edit","file":"/Users/sahan_kolluri/Pegasus/Work/NagarikAI/apps/web/src/app/providers.tsx","timestamp":1782443310880,"sessionId":null}
 {"type":"edit","file":"/Users/sahan_kolluri/Pegasus/Work/NagarikAI/apps/web/src/app/report/page.tsx","timestamp":1782443343468,"sessionId":null}
+{"type":"edit","file":"/Users/sahan_kolluri/Pegasus/Work/NagarikAI/.github/workflows/daily-e2e.yml","timestamp":1782858873549,"sessionId":null}
+{"type":"edit","file":"/Users/sahan_kolluri/Pegasus/Work/NagarikAI/apps/api/alembic/versions/0009_enable_rls.py","timestamp":1782859096411,"sessionId":null}

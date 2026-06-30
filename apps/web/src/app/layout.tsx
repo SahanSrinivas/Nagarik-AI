@@ -50,7 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <Brand />
               </Link>
               <NavBar />
-              <div className="flex items-center gap-2">
+              <div className="ml-2 flex items-center gap-2 lg:ml-4">
                 <ThemeToggle />
                 <LanguageSwitcher />
               </div>
